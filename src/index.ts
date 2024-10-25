@@ -4,7 +4,7 @@ import { ShardingManager } from "discord.js"; // First, we import the ShardingMa
 import * as ReadLine from "node:readline"; // Then we import the readline module, this is used later for the CLI.
 import log from "./utils/log";
 
-const manager = new ShardingManager("./dist/bot.js", {
+const manager = new ShardingManager("./dist/src/bot.js", {
   // Then we create the ShardingManager with the bot entrypoint.
   token: process.env.TOKEN, // We use the token from the environment variables.
   respawn: true, // We make sure the bot will respawn if it crashes.
@@ -17,6 +17,7 @@ manager.once("shardCreate", (shard) => {
     const rl = ReadLine.createInterface({
       input: process.stdin,
       output: process.stdout,
+      prompt: "",
     });
     rl.setPrompt("> ");
 
@@ -50,8 +51,7 @@ manager.once("shardCreate", (shard) => {
           console.log("Exit command received, shutting down...");
           log({
             header: "Shutting Down",
-            payload: `Shutting down... ${Date.now()}`,
-            type: "info",
+            type: "warn",
           });
           await manager.broadcastEval((c) => c.destroy());
           console.clear();
@@ -61,7 +61,10 @@ manager.once("shardCreate", (shard) => {
         case "restart": // Restart the bot.
           console.log("Restart command received, restarting...");
           await manager.broadcastEval((c) => c.destroy());
-          await manager.respawnAll();
+          log({
+            header: "Restarting shards",
+            type: "info",
+          });
           break;
 
         case "log": // Log the inputs
@@ -104,11 +107,10 @@ manager.once("shardCreate", (shard) => {
           );
           break;
       }
-
-      rl.prompt(); // re-give the prompt.
     });
-
-    rl.prompt();
+    setTimeout(() => {
+      rl.prompt();
+    }, 2000);
   });
 });
 

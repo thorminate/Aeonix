@@ -19,8 +19,10 @@ export default async (bot: Client) => {
 
       userData.statusEffects.filter((statusEffect) => {
         if (statusEffect.timestamp < Date.now()) {
+          console.log(statusEffect);
           return false;
         } else {
+          console.log(statusEffect);
           return true;
         }
       });

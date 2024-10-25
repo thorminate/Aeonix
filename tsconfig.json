@@ -7,6 +7,10 @@
     "module": "NodeNext",
     "resolveJsonModule": true
   },
-  "exclude": ["./node_modules/**/*", "./dist"],
-  "include": ["./src/**/*"] // Specify the path to your TypeScript files
+  "exclude": ["./node_modules/**/*", "./dist/**/*", "./config.json"],
+  "include": [
+    "./src/**/*",
+    "src/events/ready/01register-commands.ts",
+    "src/events/ready/playerOnboarding.ts"
+  ] // Specify the path to your TypeScript files
 }

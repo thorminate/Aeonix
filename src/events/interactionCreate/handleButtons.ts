@@ -6,18 +6,13 @@
 
 import {
   ActionRowBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   Client,
   ButtonInteraction,
-  GuildMemberRoleManager,
-  TextChannel,
-  GuildChannelManager,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
+  ButtonBuilder,
+  ButtonStyle,
 } from "discord.js"; // Import the discord.js library.
 import userData from "../../models/userDatabaseSchema"; // Import the user database schema.
 import log from "../../utils/log";
@@ -27,148 +22,63 @@ export default async (bot: Client, buttonInteraction: ButtonInteraction) => {
   switch (buttonInteraction.customId) {
     // Onboarding buttons
     case "begin-onboarding":
-      let user = await userData.findOne({
-        id: buttonInteraction.user.id,
-        guild: buttonInteraction.guild.id,
-      });
-      const userDiscord = await buttonInteraction.guild.members.fetch(
-        buttonInteraction.user.id
-      );
+      try {
+        const onboardingButton = new ButtonBuilder()
+          .setCustomId("onboarding-modal-start")
+          .setLabel("Start")
+          .setStyle(ButtonStyle.Danger);
 
-      if (!user) {
-        const newUser = new userData({
-          id: buttonInteraction.user.id,
-          guild: buttonInteraction.guild.id,
-          isOnboard: false,
-        });
-
-        user = newUser;
-
-        await user.save();
-      }
-      if (
-        user.isOnboard &&
-        !userDiscord.roles.cache.has("1270791621289578607")
-      ) {
-        await buttonInteraction.reply({
-          content:
-            "You have already completed the onboarding process, but you don't have the player role. Fixing...",
+        const reply = await buttonInteraction.reply({
+          content: "Welcome to The System, future player!",
+          components: [
+            new ActionRowBuilder<ButtonBuilder>().addComponents(
+              onboardingButton
+            ),
+          ],
           ephemeral: true,
         });
 
         setTimeout(() => {
-          (buttonInteraction.member.roles as GuildMemberRoleManager).add(
-            buttonInteraction.guild.roles.cache.find(
-              (role) => role.id === "1270791621289578607"
-            )
-          );
-        }, 2000);
-        return;
-      } else if (user.isOnboard) {
-        await buttonInteraction.reply({
-          content: "You have already completed the onboarding process.",
-          ephemeral: true,
+          reply.delete();
+        }, 15 * 1000);
+      } catch (error) {
+        console.error(error);
+        log({
+          header: "Error",
+          payload: `${error}`,
+          type: "error",
         });
-        return;
       }
-      const onboardingChannel = (
-        buttonInteraction.guild.channels as GuildChannelManager
-      ).cache.get("1270790941892153404") as TextChannel;
-      const messages = await onboardingChannel.messages.fetch({ limit: 1 });
-      const message = messages.first();
-
-      // Ensure the message has components
-      if (!message || !message.components || message.components.length === 0) {
-        console.error("No components found in the message.");
-        return;
-      }
-
-      const actionRow = message.components[0];
-      const beginOnboardingButtonData = actionRow.components[0].data;
-
-      // Recreate the button using ButtonBuilder
-      const beginOnboardingButton = new ButtonBuilder()
-        .setCustomId("welcome-channel-begin-onboarding")
-        .setLabel("Onboarding player...")
-        .setStyle(ButtonStyle.Success)
-        .setDisabled(true);
-
-      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        beginOnboardingButton
-      );
-
-      await message.edit({
-        components: [row],
-      });
-
-      // Set a timeout to reset the button after 15 minutes (15 * 60 * 1000 ms)
-      const resetTimeout = setTimeout(async () => {
-        await resetButton();
-      }, 2 * 60 * 1000);
-
-      // Function to reset the button
-      const resetButton = async () => {
-        const resetButton = new ButtonBuilder()
-          .setCustomId("welcome-channel-begin-onboarding")
-          .setLabel("Begin Onboarding")
-          .setStyle(ButtonStyle.Success)
-          .setDisabled(false);
-
-        const resetRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          resetButton
-        );
-
-        await message.edit({
-          components: [resetRow],
-        });
-      };
-
-      if (user.isOnboard) {
-        clearTimeout(resetTimeout);
-        await resetButton();
-      }
-
-      const speciesMenu = new StringSelectMenuBuilder()
-        .setCustomId("species-select")
-        .setPlaceholder("Select your species!")
-        .addOptions(
-          new StringSelectMenuOptionBuilder()
-            .setLabel("Human")
-            .setDescription("Humans are the most common and versatile species.")
-            .setEmoji("👨")
-            .setValue("Human"),
-          new StringSelectMenuOptionBuilder()
-            .setLabel("Elf")
-            .setDescription(
-              "Elves are known for their tall build and attunement to nature."
-            )
-            .setEmoji("🧝")
-            .setValue("Elf"),
-          new StringSelectMenuOptionBuilder()
-            .setLabel("Dwarf")
-            .setDescription("Dwarves are known for their dexterity and smarts.")
-            .setEmoji("🧙")
-            .setValue("Dwarf"),
-          new StringSelectMenuOptionBuilder()
-            .setLabel("Orc")
-            .setDescription(
-              "Orcs are known for their brutish strength and resilience."
-            )
-            .setEmoji("🧟")
-            .setValue("Orc")
-        );
-      const speciesRow =
-        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-          speciesMenu
-        );
-
-      buttonInteraction.reply({
-        content: "First off, select your species!",
-        components: [speciesRow],
-        ephemeral: true,
-      });
       break;
 
+    case "onboarding-modal-start":
+      try {
+        const onboardingModal = new ModalBuilder()
+          .setCustomId("onboarding-modal")
+          .setTitle("Onboarding")
+          .setComponents(
+            new ActionRowBuilder<TextInputBuilder>().addComponents(
+              new TextInputBuilder()
+                .setCustomId("onboarding-modal-name")
+                .setLabel("Persona Name")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setPlaceholder("This cannot be changed!")
+                .setMaxLength(32)
+                .setMinLength(3)
+            )
+          );
+
+        await buttonInteraction.showModal(onboardingModal);
+      } catch (error) {
+        console.error(error);
+        log({
+          header: "Onboarding Error",
+          payload: `${error}`,
+          type: "error",
+        });
+      }
+      break;
     // Edit environment modals
     case "edit-environment-items-button":
       try {
@@ -284,7 +194,7 @@ export default async (bot: Client, buttonInteraction: ButtonInteraction) => {
       } catch (error) {
         console.log(error);
         log({
-          header: "Error",
+          header: "Error editing environment channels",
           payload: `${error}`,
           type: "error",
         });

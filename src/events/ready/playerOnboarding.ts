@@ -9,7 +9,7 @@ import log from "../../utils/log";
 
 export default async (bot: Client) => {
   try {
-    const welcomeChannel = bot.channels.cache.get("1270790941892153404");
+    const welcomeChannel = bot.channels.cache.get("1294690937783717969");
     if (!(welcomeChannel instanceof TextChannel)) return;
     await welcomeChannel.bulkDelete(100);
 

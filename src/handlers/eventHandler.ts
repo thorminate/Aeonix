@@ -4,6 +4,7 @@ import { Client } from "discord.js"; // Get the discord.js library for setting t
 import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
 import url from "url";
+import log from "../utils/log";
 
 export default (bot: Client) => {
   // Export the function.
@@ -26,7 +27,15 @@ export default (bot: Client) => {
         const filePath = path.resolve(eventFile); // Get the path to the event file.
         const fileUrl = url.pathToFileURL(filePath); // Get the URL to the event file.
         const eventFunction = await import(fileUrl.toString()); // Get the event function.
-        await eventFunction.default.default(bot, arg); // Run the event function. (no idea why the extra default is needed)
+        // Run the event function. (no idea why the extra default is needed)
+        await eventFunction.default.default(bot, arg).catch((err: any) => {
+          console.log(err);
+          log({
+            header: "Event Error, unable to process event",
+            payload: `${err}`,
+            type: "error",
+          });
+        });
       }
     });
   }

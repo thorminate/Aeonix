@@ -8,8 +8,6 @@ import {
   ActionRowBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   Client,
   StringSelectMenuInteraction,
   RoleSelectMenuInteraction,
@@ -19,6 +17,7 @@ import {
   TextChannel,
   GuildMemberRoleManager,
 } from "discord.js";
+import config from "../../../config.json";
 
 export default async (
   bot: Client,
@@ -30,7 +29,7 @@ export default async (
     | MentionableSelectMenuInteraction
 ) => {
   switch (interaction.customId) {
-    case "species-select":
+    case "onboarding-species-selection":
       if (!interaction.isStringSelectMenu()) return;
       let user = await userData.findOne({ id: interaction.user.id });
 
@@ -42,65 +41,66 @@ export default async (
         user = newUser;
       }
 
-      await interaction.values.forEach(async (value) => {
-        user.species = value;
-        if (value === "Human") {
-          user.multipliers.strength = 1.1;
-          user.multipliers.will = 1.1;
-          user.multipliers.cognition = 1.1;
-        } else if (value === "Elf") {
-          user.multipliers.strength = 0.9;
-          user.multipliers.will = 1.3;
-          user.multipliers.cognition = 1.1;
-        } else if (value === "Dwarf") {
-          user.multipliers.strength = 1.1;
-          user.multipliers.will = 0.9;
-          user.multipliers.cognition = 1.3;
-        } else if (value === "Orc") {
-          user.multipliers.strength = 1.3;
-          user.multipliers.will = 1.1;
-          user.multipliers.cognition = 0.9;
-        }
-        await user.save();
+      const value = interaction.values[0];
+      user.species = value;
+      if (value === "Human") {
+        user.multipliers.strength = 1.1;
+        user.multipliers.will = 1.1;
+        user.multipliers.cognition = 1.1;
+      } else if (value === "Elf") {
+        user.multipliers.strength = 0.9;
+        user.multipliers.will = 1.3;
+        user.multipliers.cognition = 1.1;
+      } else if (value === "Dwarf") {
+        user.multipliers.strength = 1.1;
+        user.multipliers.will = 0.9;
+        user.multipliers.cognition = 1.3;
+      } else if (value === "Orc") {
+        user.multipliers.strength = 1.3;
+        user.multipliers.will = 1.1;
+        user.multipliers.cognition = 0.9;
+      }
+      await user.save();
 
-        const classMenu = new StringSelectMenuBuilder()
-          .setCustomId("class-select")
-          .setPlaceholder("Select your class!")
-          .addOptions(
-            new StringSelectMenuOptionBuilder()
-              .setLabel("Warrior")
-              .setDescription(
-                "Warriors are the most common and versatile class."
-              )
-              .setEmoji("⚔️")
-              .setValue("Warrior"),
-            new StringSelectMenuOptionBuilder()
-              .setLabel("Ranger")
-              .setDescription(
-                "Rangers are known for their quick and stealthy moves."
-              )
-              .setEmoji("🏹")
-              .setValue("Ranger"),
-            new StringSelectMenuOptionBuilder()
-              .setLabel("Rogue")
-              .setDescription(
-                "Rogues are known for their sneaky and stealthy moves."
-              )
-              .setEmoji("🗡️")
-              .setValue("Rogue")
-          );
+      const classMenu = new StringSelectMenuBuilder()
+        .setCustomId("class-select")
+        .setPlaceholder("Select your class!")
+        .addOptions(
+          new StringSelectMenuOptionBuilder()
+            .setLabel("Warrior")
+            .setDescription("Warriors are the most common and versatile class.")
+            .setEmoji("⚔️")
+            .setValue("Warrior"),
+          new StringSelectMenuOptionBuilder()
+            .setLabel("Ranger")
+            .setDescription(
+              "Rangers are known for their quick and stealthy moves."
+            )
+            .setEmoji("🏹")
+            .setValue("Ranger"),
+          new StringSelectMenuOptionBuilder()
+            .setLabel("Rogue")
+            .setDescription(
+              "Rogues are known for their sneaky and stealthy moves."
+            )
+            .setEmoji("🗡️")
+            .setValue("Rogue")
+        );
 
-        const classRow =
-          new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-            classMenu
-          );
+      const classRow =
+        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+          classMenu
+        );
 
-        interaction.reply({
-          content: "Perfect! Now select your class!",
-          components: [classRow],
-          ephemeral: true,
-        });
+      const reply = await interaction.reply({
+        content: "Perfect! Now select your class!",
+        components: [classRow],
+        ephemeral: true,
       });
+
+      setTimeout(() => {
+        reply.delete();
+      }, 60 * 1000);
       break;
 
     case "class-select":
@@ -119,34 +119,19 @@ export default async (
           ephemeral: true,
         });
         const onboardingChannel = interaction.guild.channels.cache.get(
-          "1270790941892153404"
+          config.onboardingChannel
         ) as TextChannel;
 
         if (!onboardingChannel) {
-          interaction.reply({
+          interaction.followUp({
             content:
-              "Onboarding channel doesn't exist! Please contact an admin.",
+              "Onboarding channel doesn't exist according to discords channel fetch by config.json! Please contact an admin.",
             ephemeral: true,
           });
           return;
         }
-        const messages = await onboardingChannel.messages.fetch({ limit: 1 });
-        const message = messages.first();
-        const resetButton = new ButtonBuilder()
-          .setCustomId("begin-onboarding")
-          .setLabel("Begin Onboarding")
-          .setStyle(ButtonStyle.Success)
-          .setDisabled(false);
-
-        const resetRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          resetButton
-        );
-
-        await message.edit({
-          components: [resetRow],
-        });
         (interaction.member.roles as GuildMemberRoleManager).add(
-          "1270791621289578607"
+          config.playerRole
         );
       }
       break;

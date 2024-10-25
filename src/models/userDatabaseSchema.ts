@@ -13,6 +13,11 @@ const userData = new Schema({
     type: String,
     required: true,
   },
+  name: {
+    // Define the user's persona name.
+    type: String,
+    required: true,
+  },
   environment: {
     // Define the current environment.
     type: String,
@@ -28,16 +33,32 @@ const userData = new Schema({
     type: Number,
     default: 0,
   },
+  maxHealth: {
+    // Define the maximum amount of health.
+    type: Number,
+    default: 1,
+  },
+  health: {
+    // Define the current health.
+    type: Number,
+    default: 1,
+  },
+  maxWill: {
+    // Define the maximum amount of will.
+    type: Number,
+    default: 0,
+  },
+  will: {
+    // Define the current will.
+    type: Number,
+    default: 0,
+  },
   strength: {
     // Define the strength.
     type: Number,
     default: 0,
   },
-  will: {
-    // Define the will.
-    type: Number,
-    default: 0,
-  },
+
   cognition: {
     // Define the cognition.
     type: Number,

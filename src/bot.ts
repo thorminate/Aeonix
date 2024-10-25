@@ -4,7 +4,7 @@
  * @param {Client} bot
  * @param {string} token
  */
-import { Client, DiscordAPIError, IntentsBitField } from "discord.js"; // Get the discord.js library.
+import { Client, IntentsBitField, Partials } from "discord.js"; // Get the discord.js library.
 import mongoose from "mongoose"; // Get the mongoose library.
 import eventHandler from "./handlers/eventHandler"; // Get the event handler.
 import log from "./utils/log";
@@ -36,28 +36,50 @@ const bot = new Client({
     IntentsBitField.Flags.MessageContent,
     IntentsBitField.Flags.GuildPresences,
   ],
+  partials: [
+    Partials.Channel,
+    Partials.GuildMember,
+    Partials.GuildScheduledEvent,
+    Partials.Message,
+    Partials.Reaction,
+    Partials.User,
+    Partials.ThreadMember,
+  ],
 });
 
-const MongoDBToken = process.env.MONGODB_URI + "the_system"; // Get the MongoDB token.
+const MongoDBToken = process.env.MONGODB_URI + "the_system"; // Get the MongoDB token and concatenate it with 'the_system'.
 const DiscordToken = process.env.TOKEN; // Get the Discord token.
 // Connect to DB and Discord.
 (async () => {
   // Connect to MongoDB and Discord asynchronously.
   try {
+    log({
+      header: "Beginning Bot Setup",
+      type: "info",
+    });
     process.stdout.write("Attempting to connect to DB..."); // Log that we are attempting to connect to the DB.
-    await mongoose.connect(MongoDBToken).then(() => {
-      //Change the text to say "Attempting to connect to DB... Connected"
-      process.stdout.write(" Connected\n");
-    }); // Connect to the DB. When the connection is successful, log that it was successful.
+    await mongoose.connect(MongoDBToken);
+    process.stdout.write(" Confirmed\n"); // Connect to the DB. When the connection is successful, log that it was successful.
+    log({
+      header: "Connected to DB",
+      type: "info",
+    });
 
     process.stdout.write("Setting up events..."); // Log that we are setting up the events.
     eventHandler(bot); // Set up the events.
     process.stdout.write(" Confirmed\n");
+    log({
+      header: "Events Set Up",
+      type: "info",
+    });
 
     process.stdout.write("Establishing connection to Discord..."); // Log that we are connecting to Discord.
-    await bot
-      .login(DiscordToken)
-      .then(() => process.stdout.write(" Connected\n")); // Connect to Discord. When the connection is successful, log that it was successful.
+    await bot.login(DiscordToken);
+    process.stdout.write(" Connected\n"); // Connect to Discord. When the connection is successful, log that it was successful.
+    log({
+      header: "Connected to Discord",
+      type: "info",
+    });
   } catch (error) {
     console.log(`Index Error: ${error}`); // Log the error.
     log({

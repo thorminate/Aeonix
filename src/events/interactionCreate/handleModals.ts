@@ -10,9 +10,12 @@ import {
   Client,
   GuildMemberRoleManager,
   TextChannel,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  ActionRowBuilder,
 } from "discord.js";
 import buttonWrapper from "../../utils/buttonWrapper";
-import userData from "../../models/userDatabaseSchema";
+import UserData from "../../models/userDatabaseSchema";
 import itemData from "../../models/itemDatabaseSchema";
 import environmentData from "../../models/environmentDatabaseSchema";
 import ms from "ms";
@@ -560,7 +563,7 @@ export default async (
           name: "start",
         });
         deleteEnvironmentObj.environmentUsers.forEach(async (id: string) => {
-          const userObj = await userData.findOne({
+          const userObj = await UserData.findOne({
             id,
             guild: modalInteraction.guild.id,
           });
@@ -602,7 +605,7 @@ export default async (
           return;
         }
         relocateUserId.forEach(async (relocateUserId: string) => {
-          const relocateUserObj = await userData.findOne({
+          const relocateUserObj = await UserData.findOne({
             id: relocateUserId,
           });
 
@@ -925,6 +928,75 @@ export default async (
           });
         }
 
+        break;
+
+      //region Onboarding modals
+
+      case "onboarding-modal":
+        const onboardingName = modalInteraction.fields.getTextInputValue(
+          "onboarding-modal-name"
+        );
+        let onboardingUser = await UserData.findOne({
+          id: modalInteraction.user.id,
+          guild: modalInteraction.guild.id,
+        });
+
+        if (!onboardingUser) {
+          onboardingUser = new UserData({
+            id: modalInteraction.user.id,
+            guild: modalInteraction.guild.id,
+            name: onboardingName,
+          });
+        }
+
+        onboardingUser.name = onboardingName;
+        await onboardingUser.save();
+        const onboardingSpeciesSelection = new StringSelectMenuBuilder()
+          .setCustomId("onboarding-species-selection")
+          .setPlaceholder("Select your species")
+          .addOptions(
+            new StringSelectMenuOptionBuilder({
+              label: "Human",
+              value: "Human",
+              emoji: "🧑",
+              description: "Humans are the most common and versatile species.",
+            }),
+            new StringSelectMenuOptionBuilder({
+              label: "Elf",
+              value: "Elf",
+              emoji: "🧝",
+              description:
+                "Elves are known for their magical abilities and agility.",
+            }),
+            new StringSelectMenuOptionBuilder({
+              label: "Dwarf",
+              value: "Dwarf",
+              emoji: "🧙",
+              description:
+                "Dwarves are known for their dexterity and intelligence.",
+            }),
+            new StringSelectMenuOptionBuilder({
+              label: "Orc",
+              value: "Orc",
+              emoji: "🧛",
+              description: "Orcs are known for their resilience and strength.",
+            })
+          );
+        const onboardingSpeciesSelectionRow =
+          new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+            onboardingSpeciesSelection
+          );
+
+        const reply = await modalInteraction.reply({
+          content:
+            "The database has been updated, your name has been saved. Please select your species",
+          components: [onboardingSpeciesSelectionRow],
+          ephemeral: true,
+        });
+
+        setTimeout(async () => {
+          await reply.delete();
+        }, 5 * 60 * 1000);
         break;
 
       default:
