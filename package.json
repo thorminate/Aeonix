@@ -1,5 +1,5 @@
 {
-  "name": "the_system",
+  "name": "floura",
   "version": "0.0.1",
   "main": "dist/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   "keywords": [],
   "author": "Thorminate",
   "license": "CC-BY-NC-SA-4.0",
-  "description": "The system is a discord bot i made for my fellow RPGers. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
+  "description": "Floura is a discord bot i made for my fellow RPGers. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "dependencies": {
     "discord.js": "^14.16.2",
     "mongodb": "^6.9.0",

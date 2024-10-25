@@ -78,11 +78,9 @@ export default async (
       });
       // create environment
       const createEnvironment = new EnvironmentData({
-        environmentName: name,
-        environmentItems: itemsData.map(
-          (item: Array<Document | string>) => item[1]
-        ),
-        environmentChannel: channel,
+        name: name,
+        items: itemsData.map((item: Array<Document | string>) => item[1]),
+        channel: channel,
       });
       await createEnvironment.save();
       await interaction.reply({
@@ -97,9 +95,9 @@ export default async (
     } else {
       // create environment
       const createEnvironment = new EnvironmentData({
-        environmentName: name,
-        environmentItems: [],
-        environmentChannel: channel,
+        name: name,
+        items: [],
+        channel: channel,
       });
       await createEnvironment.save();
       await interaction.reply({

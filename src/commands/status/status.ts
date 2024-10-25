@@ -16,6 +16,7 @@ import {
   ModalBuilder,
   EmbedBuilder,
   HTTPError,
+  InteractionReplyOptions,
 } from "discord.js";
 import UserData from "../../models/userDatabaseSchema";
 import calculateLevelExp from "../../utils/calculateLevelExp";
@@ -56,7 +57,7 @@ module.exports = {
       // if user doesn't exist in database, say so and return
       if (!userData) {
         interaction.editReply(
-          "You haven't been integrated into the system yet. Head over to <#1270790941892153404>"
+          "You haven't been integrated into Floura's database yet. Head over to <#1270790941892153404>"
         );
         return;
       }
@@ -75,6 +76,25 @@ module.exports = {
 
       async function playerMenu(prevAdmin = false) {
         if (!interaction.isCommand()) return;
+        const playerEmbed = new EmbedBuilder()
+          .setTitle(`Status menu`)
+          .setDescription(
+            `Hello <@${userObj.user.id}>!\nYour level is **${
+              userData.level
+            }** and you have **${userData.exp}/${calculateLevelExp(
+              userData.level + 1
+            )}** experience.`
+          )
+          .addFields(
+            {
+              name: "***Stats:***",
+              value: `**Strength:** ***${userData.strength}***\n**Will:** ***${userData.will}***\n**Cognition:** ***${userData.cognition}***`,
+            },
+            {
+              name: "***Skills:***",
+              value: `${skillsDisplay}`,
+            }
+          );
         const inventory = new ButtonBuilder()
           .setLabel("Inventory")
           .setStyle(ButtonStyle.Primary)
@@ -90,34 +110,16 @@ module.exports = {
             .setDisabled(false);
 
           playerReply = await interaction.editReply({
-            content: `Hello <@${userObj.user.id}>!\nYour level is **${
-              userData.level
-            }** and you have **${userData.exp}/${calculateLevelExp(
-              userData.level + 1
-            )}** experience.\n# ***Stats:***\n**Strength:** ***${
-              userData.strength
-            }***\n**Will:** ***${userData.will}***\n**Cognition:** ***${
-              userData.cognition
-            }***\n# ***Skills:***\n${skillsDisplay}`,
-            //@ts-ignore
+            embeds: [playerEmbed],
             ephemeral: true,
             components: buttonWrapper([inventory, backToAdmin]),
-          });
+          } as InteractionReplyOptions);
         } else {
           playerReply = await interaction.editReply({
-            content: `Hello <@${userObj.user.id}>!\nYour level is **${
-              userData.level
-            }** and you have **${userData.exp}/${calculateLevelExp(
-              userData.level + 1
-            )}** experience.\n# ***Stats:***\n**Strength:** ***${
-              userData.strength
-            }***\n**Will:** ***${userData.will}***\n**Cognition:** ***${
-              userData.cognition
-            }***\n# ***Skills:***\n${skillsDisplay}`,
-            //@ts-ignore
+            embeds: [playerEmbed],
             ephemeral: true,
             components: buttonWrapper([inventory]),
-          });
+          } as InteractionReplyOptions);
         }
 
         // make sure the user who ran the command is the one who clicked the button
@@ -184,7 +186,6 @@ module.exports = {
         // send welcome message to admin
 
         const adminEmbed = new EmbedBuilder()
-          .setColor(0x0099ff)
           .setTitle(`Welcome, ${userObj.user.displayName}!`)
           .setAuthor({
             name: "Administrator Menu",
@@ -205,7 +206,6 @@ module.exports = {
             },
             { name: "Skills", value: skillsDisplay }
           )
-          .setTimestamp(Date.now())
           .setFooter({
             text: "What Action Would You Like To Perform?",
             iconURL: bot.user.avatarURL(),
@@ -856,7 +856,7 @@ module.exports = {
 
                   const createSkillActionInput = new TextInputBuilder()
                     .setCustomId("create-skill-action-input")
-                    .setLabel("What the system says when the skill is used")
+                    .setLabel("What Floura says when the skill is used")
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true);
 
@@ -1272,7 +1272,7 @@ module.exports = {
 
                   const createStatusEffectActionInput = new TextInputBuilder()
                     .setCustomId("create-status-effect-action-input")
-                    .setLabel("What the system does when applied")
+                    .setLabel("What Floura does when applied")
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true);
 

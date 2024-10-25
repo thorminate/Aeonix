@@ -1,8 +1,7 @@
 import { Document } from "mongodb";
 import log from "../../utils/log";
-import { nodeModuleNameResolver } from "typescript";
 
-function getRandomMultiplier(min: number, max: number) {
+function getRandomFromRange(min: number, max: number) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -22,11 +21,18 @@ export default async (
     if (levelAmount < 1) {
       return user;
     }
-    const strengthMultiplied =
-      getRandomMultiplier(1, 5) * user.strengthMultiplier;
-    const willMultiplied = getRandomMultiplier(1, 5) * user.willMultiplier;
-    const cognitionMultiplied =
-      getRandomMultiplier(1, 5) * user.cognitionMultiplier;
+    const strengthMultiplied = Math.imul(
+      user.multipliers.strength,
+      getRandomFromRange(1, 15)
+    );
+    const willMultiplied = Math.imul(
+      user.multipliers.will,
+      getRandomFromRange(1, 15)
+    );
+    const cognitionMultiplied = Math.imul(
+      user.multipliers.cognition,
+      getRandomFromRange(1, 15)
+    );
 
     for (let i = 0; i < levelAmount; i++) {
       user.exp = 0;
@@ -44,6 +50,7 @@ export default async (
     await user.save();
     return user;
   } catch (error) {
+    console.log(error);
     log({
       header: "Level Up Error",
       payload: `${error}`,

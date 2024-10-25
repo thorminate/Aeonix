@@ -29,7 +29,7 @@ export default async (bot: Client, buttonInteraction: ButtonInteraction) => {
           .setStyle(ButtonStyle.Danger);
 
         const reply = await buttonInteraction.reply({
-          content: "Welcome to The System, future player!",
+          content: "Welcome to Floura, future player!",
           components: [
             new ActionRowBuilder<ButtonBuilder>().addComponents(
               onboardingButton

@@ -26,10 +26,10 @@ export default async (bot: Client) => {
 
     await welcomeChannel.send({
       content:
-        "Hello, and welcome to The System!" +
+        "Hello, and welcome to Floura!" +
         " This server is primarily for testing my bot, although we have tons of RP mashed in too!" +
         "\n\nYou are currently not able to see any channels other than a few for the onboarding process and the non-player-hangout area." +
-        " These channels are for setting you up, (such as initializing your persona into the database, the persona being your digital presence with the system)" +
+        " These channels are for setting you up, (such as initializing your persona into the database, the persona being your digital presence with Floura)" +
         " we will also go through the skill system and how other important stats work." +
         "\n\nWhen you have read through the information, please press the button below, and the bot will validate your persona's existence in the database," +
         " thereafter giving you the <@&1270791621289578607> role." +

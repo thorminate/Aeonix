@@ -352,6 +352,7 @@ export default async (
           items: createEnvironmentItemsPromises,
           channel: createEnvironmentChannel,
         });
+        break;
 
       case "edit-environment-name-modal":
         // get input values

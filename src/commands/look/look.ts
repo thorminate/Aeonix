@@ -29,7 +29,7 @@ module.exports = {
       if (!userData) {
         await interaction.editReply({
           content:
-            "You haven't been integrated into the system yet. Head over to <#1270790941892153404>",
+            "You haven't been integrated into Floura's database yet. Head over to <#1270790941892153404>",
         });
         return;
       }
