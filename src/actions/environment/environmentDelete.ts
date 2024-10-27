@@ -26,7 +26,7 @@ export default async (
   const startEnvironmentObj = await EnvironmentData.findOne({
     name: "start",
   });
-  deleteEnvironmentObj.environmentUsers.forEach(async (id: string) => {
+  deleteEnvironmentObj.users.forEach(async (id: string) => {
     const userObj = await UserData.findOne({
       id,
       guild: interaction.guild.id,
