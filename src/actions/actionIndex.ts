@@ -1,19 +1,24 @@
-import levelUp from "./user/levelUp";
-import giveStat from "./user/giveStat";
-import createSkill from "./skill/createSkill";
-import grantSkill from "./skill/grantSkill";
-import deleteSkill from "./skill/deleteSkill";
-import revokeSkill from "./skill/revokeSkill";
-import createItem from "./item/createItem";
-import giveItem from "./item/giveItem";
-import revokeItem from "./item/revokeItem";
-import deleteItem from "./item/deleteItem";
+import userLevelUp from "./user/userLevelUp";
+import userGiveStat from "./user/userGiveStat";
+import userRelocate from "./user/userRelocate";
+import skillCreate from "./skill/createSkill";
+import skillGrant from "./skill/grantSkill";
+import skillDelete from "./skill/deleteSkill";
+import skillRevoke from "./skill/revokeSkill";
+import itemCreate from "./item/createItem";
+import itemGive from "./item/giveItem";
+import itemRevoke from "./item/revokeItem";
+import itemDelete from "./item/deleteItem";
 import statusCreate from "./status/statusCreate";
 import statusDelete from "./status/statusDelete";
 import statusGrant from "./status/statusGrant";
 import environmentCreate from "./environment/environmentCreate";
 import environmentEditName from "./environment/environmentEditName";
 import environmentEditItems from "./environment/environmentEditItems";
+import environmentEditChannel from "./environment/environmentEditChannel";
+import environmentDelete from "./environment/environmentDelete";
+import botSendMessage from "./bot/botSendMessage";
+import { send } from "process";
 
 /**
  * Index of all the actions
@@ -26,20 +31,21 @@ export default {
   // export the index
   user: {
     // user actions
-    levelUp,
-    giveStat,
+    levelUp: userLevelUp,
+    giveStat: userGiveStat,
+    relocate: userRelocate,
   },
   skill: {
-    create: createSkill,
-    grant: grantSkill,
-    delete: deleteSkill,
-    revoke: revokeSkill,
+    create: skillCreate,
+    grant: skillGrant,
+    delete: skillDelete,
+    revoke: skillRevoke,
   },
   item: {
-    create: createItem,
-    give: giveItem,
-    revoke: revokeItem,
-    delete: deleteItem,
+    create: itemCreate,
+    give: itemGive,
+    revoke: itemRevoke,
+    delete: itemDelete,
   },
   statusEffect: {
     create: statusCreate,
@@ -51,6 +57,11 @@ export default {
     edit: {
       name: environmentEditName,
       items: environmentEditItems,
+      channel: environmentEditChannel,
     },
+    delete: environmentDelete,
+  },
+  bot: {
+    send: botSendMessage,
   },
 };

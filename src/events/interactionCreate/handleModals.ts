@@ -411,41 +411,14 @@ export default async (
         const editEnvironmentChannelName: string = modalInteraction.fields
           .getTextInputValue("edit-environment-name-input")
           .toLowerCase();
-        const editEnvironmentChannel = modalInteraction.fields
+        const editEnvironmentChannel: string = modalInteraction.fields
           .getTextInputValue("edit-environment-channel-input")
           .toLowerCase();
 
-        const editEnvironmentChannelData =
-          await modalInteraction.guild.channels.cache.get(
-            editEnvironmentChannel
-          );
-        if (!editEnvironmentChannelData) {
-          await modalInteraction.reply({
-            content: "Channel not found!",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        const editEnvironmentChannelObj = await environmentData.findOne({
+        await actions.environment.edit.channel(modalInteraction, {
           name: editEnvironmentChannelName,
+          channel: editEnvironmentChannel,
         });
-
-        if (!editEnvironmentChannelObj) {
-          await modalInteraction.reply({
-            content: "Environment not found!",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        editEnvironmentChannelObj.channel = editEnvironmentChannel;
-        await editEnvironmentChannelObj.save();
-        await modalInteraction.reply({
-          content: `Successfully edited environment ${editEnvironmentChannelName} to <#${editEnvironmentChannel}>.`,
-          ephemeral: true,
-        });
-
         break;
 
       case "delete-environment-modal":
@@ -454,37 +427,8 @@ export default async (
           .getTextInputValue("delete-environment-name-input")
           .toLowerCase();
 
-        const deleteEnvironmentObj: any = await environmentData.findOne({
+        await actions.environment.delete(modalInteraction, {
           name: deleteEnvironmentName,
-        });
-        if (!deleteEnvironmentObj) {
-          await modalInteraction.reply({
-            content: "Environment not found!",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        const startEnvironmentObj = await environmentData.findOne({
-          name: "start",
-        });
-        deleteEnvironmentObj.environmentUsers.forEach(async (id: string) => {
-          const userObj = await UserData.findOne({
-            id,
-            guild: modalInteraction.guild.id,
-          });
-          if (!userObj) return;
-
-          userObj.environment = "start";
-          startEnvironmentObj.users.push(id);
-          await userObj.save();
-          await startEnvironmentObj.save();
-        });
-
-        await deleteEnvironmentObj.deleteOne();
-        await modalInteraction.reply({
-          content: `Successfully deleted environment ${deleteEnvironmentName}.`,
-          ephemeral: true,
         });
         break;
 
@@ -499,54 +443,9 @@ export default async (
           .split(",")
           .map((id: string) => id.trim());
 
-        const relocateEnvironmentObj = await environmentData.findOne({
-          name: relocateNameInput,
-        });
-
-        if (!relocateEnvironmentObj) {
-          await modalInteraction.reply({
-            content: "Environment not found!",
-            ephemeral: true,
-          });
-          return;
-        }
-        relocateUserId.forEach(async (relocateUserId: string) => {
-          const relocateUserObj = await UserData.findOne({
-            id: relocateUserId,
-          });
-
-          if (!relocateUserObj) {
-            await modalInteraction.reply({
-              content: "User not found!",
-              ephemeral: true,
-            });
-            return;
-          }
-          if (relocateUserObj.environment) {
-            const relocateUserPreviousEnvironmentObj =
-              await environmentData.findOne({
-                name: relocateUserObj.environment,
-              });
-
-            if (relocateUserPreviousEnvironmentObj) {
-              relocateUserPreviousEnvironmentObj.users =
-                relocateUserPreviousEnvironmentObj.users.filter(
-                  (user: string) => user !== relocateUserId
-                );
-
-              await relocateUserPreviousEnvironmentObj.save();
-            }
-          }
-          relocateUserObj.environment = relocateEnvironmentObj.name;
-          relocateEnvironmentObj.users.push(relocateUserId);
-          await relocateUserObj.save();
-          await relocateEnvironmentObj.save();
-        });
-
-        const relocateUserIds = relocateUserId.join(">, <@");
-        await modalInteraction.reply({
-          content: `Successfully relocated user(s) <@${relocateUserIds}> to environment ${relocateNameInput}.`,
-          ephemeral: true,
+        await actions.user.relocate(modalInteraction, {
+          environmentName: relocateNameInput,
+          userId: relocateUserId,
         });
         break;
 
@@ -560,28 +459,10 @@ export default async (
           "send-message-content-input"
         );
 
-        // Validate and format the inputs
-        if (sendMessageChannel === "here") {
-          sendMessageChannel = modalInteraction.channel.id;
-        }
-        const sendMessageChannelObj =
-          modalInteraction.guild.channels.cache.get(sendMessageChannel);
-
-        if (!sendMessageChannelObj) {
-          await modalInteraction.reply({
-            content: "Channel not found!",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        // send message
-        await (sendMessageChannelObj as TextChannel).send(sendMessageContent);
-        await modalInteraction.reply({
-          content: `Sent message in ${sendMessageChannelObj.name}.`,
-          ephemeral: true,
+        await actions.bot.send(modalInteraction, {
+          channel: sendMessageChannel,
+          content: sendMessageContent,
         });
-
         break;
 
       // Moderation Modals
