@@ -8,6 +8,8 @@ import { Client, IntentsBitField, Partials } from "discord.js"; // Get the disco
 import mongoose from "mongoose"; // Get the mongoose library.
 import eventHandler from "./handlers/eventHandler"; // Get the event handler.
 import log from "./utils/log";
+import { config } from "dotenv"; // Get the dotenv config function.
+config(); // Load the .env file.
 
 // Define 'bot'
 const bot = new Client({

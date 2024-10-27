@@ -364,25 +364,10 @@ export default async (
           .getTextInputValue("edit-environment-new-name-input")
           .toLowerCase();
 
-        // Validate and format the inputs
-        const editEnvironmentNameData = await environmentData.findOne({
-          name: editEnvironmentName,
+        await actions.environment.edit.name(modalInteraction, {
+          oldName: editEnvironmentName,
+          newName: editEnvironmentNewName,
         });
-
-        if (editEnvironmentNameData) {
-          editEnvironmentNameData.name = editEnvironmentNewName;
-          await editEnvironmentNameData.save();
-
-          await modalInteraction.reply({
-            content: `Successfully renamed environment ${editEnvironmentName} to ${editEnvironmentNewName}.`,
-            ephemeral: true,
-          });
-        } else {
-          await modalInteraction.reply({
-            content: "Environment not found!",
-            ephemeral: true,
-          });
-        }
         break;
 
       case "edit-environment-items-modal":
@@ -402,103 +387,23 @@ export default async (
             .split(",")
             .map((item) => item.trim());
 
-        const editEnvironmentItemsData = await environmentData.findOne({
+        if (
+          editEnvironmentItemsOperator !== "add" &&
+          editEnvironmentItemsOperator !== "remove" &&
+          editEnvironmentItemsOperator !== "set"
+        ) {
+          await modalInteraction.reply({
+            content: "Invalid operator. Must be 'add', 'remove', or 'set'.",
+            ephemeral: true,
+          });
+          return;
+        }
+
+        await actions.environment.edit.items(modalInteraction, {
           name: editEnvironmentItemsName,
+          operator: editEnvironmentItemsOperator,
+          items: editEnvironmentItemsPromises,
         });
-
-        if (!editEnvironmentItemsData) {
-          await modalInteraction.reply({
-            content: "Environment not found!",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        const editEnvironmentItems: Array<Document | string> =
-          await Promise.all(
-            editEnvironmentItemsPromises.map(async (itemName: string) => {
-              // for each item
-              const item = await itemData.findOne({ name: itemName }); // get their corresponding data
-              if (!item) return itemName;
-              else return item;
-            })
-          );
-        const editEnvironmentInvalidItems = editEnvironmentItems.filter(
-          // filter out valid items into new array
-          (item) => !item
-        );
-        if (editEnvironmentInvalidItems.length > 0) {
-          // if there are invalid items
-          await modalInteraction.reply({
-            // say so verbosely
-            content: `Items ${editEnvironmentInvalidItems
-              .map((item, index) => editEnvironmentItems[index])
-              .join(", ")} not found, make sure they exist in the database.`,
-            ephemeral: true,
-          });
-          return;
-        }
-        switch (editEnvironmentItemsOperator) {
-          case "add":
-            if (
-              editEnvironmentItemsData.items.includes(
-                editEnvironmentItems.map((item: any) => item.itemName)
-              )
-            ) {
-              await modalInteraction.reply({
-                content: `Items ${editEnvironmentItems
-                  .map((item: any) => item.itemName)
-                  .join(
-                    ", "
-                  )} already in environment ${editEnvironmentItemsName}.`,
-                ephemeral: true,
-              });
-              return;
-            }
-            editEnvironmentItemsData.items.push(
-              ...editEnvironmentItems.map((item: any) => item.itemName)
-            );
-
-            await editEnvironmentItemsData.save();
-            await modalInteraction.reply({
-              content: `Successfully added item(s) ${editEnvironmentItems
-                .map((item: any) => item.itemName)
-                .join(", ")} to environment ${editEnvironmentItemsName}.`,
-              ephemeral: true,
-            });
-            break;
-
-          case "remove":
-            editEnvironmentItemsData.items =
-              editEnvironmentItemsData.items.filter(
-                (itemName: string) =>
-                  !editEnvironmentItems.some(
-                    (item: any) => item.itemName === itemName
-                  )
-              );
-            await editEnvironmentItemsData.save();
-            await modalInteraction.reply({
-              content: `Successfully removed items in environment ${editEnvironmentItemsName} to ${editEnvironmentItems
-                .map((item: any) => item.itemName)
-                .join(", ")}.`,
-              ephemeral: true,
-            });
-            break;
-
-          case "set":
-            editEnvironmentItemsData.items = editEnvironmentItems.map(
-              (item: any) => item.itemName
-            );
-
-            await editEnvironmentItemsData.save();
-            await modalInteraction.reply({
-              content: `Successfully set items in environment ${editEnvironmentItemsName} to ${editEnvironmentItems
-                .map((item: any) => item.itemName)
-                .join(", ")}.`,
-              ephemeral: true,
-            });
-            break;
-        }
         break;
 
       case "edit-environment-channel-modal":

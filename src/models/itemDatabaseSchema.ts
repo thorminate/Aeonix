@@ -30,4 +30,4 @@ const itemData = new Schema({
   },
 });
 
-export default model("itemData", itemData); // Export the model.
+export default model("item", itemData); // Export the model.

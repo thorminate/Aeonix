@@ -113,4 +113,4 @@ const userData = new Schema({
   },
 });
 
-export default model("userDatabase", userData); // Export the model.
+export default model("user", userData); // Export the model.

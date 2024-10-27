@@ -21,15 +21,8 @@ export default async (
   try {
     const { name, items, channel } = options;
 
-    const itemsData = await Promise.all(
-      items.map(async (itemName: string) => {
-        // for each item
-        if (itemName === "none") return itemName;
-        const item: Document = await ItemData.findOne({ name: itemName }); // get their corresponding data
-        return [item, itemName]; // return the item object into the new array
-      })
-    );
-
+    //region Validation
+    //Channel validation
     if (!interaction.guild.channels.cache.has(channel)) {
       // if channel id is not a number
       await interaction.reply({
@@ -39,6 +32,8 @@ export default async (
       });
       return;
     }
+
+    //Environment validation
     if (
       await EnvironmentData.findOne({
         name: name,
@@ -53,8 +48,28 @@ export default async (
       return;
     }
 
-    if (!itemsData.includes("none")) {
-      // Check if all items exist
+    //Item validation
+    const __itemsData: Array<Array<Document | string> | string> =
+      await Promise.all(
+        items.map(async (itemName: string) => {
+          // for each item
+          if (itemName === "none") return itemName;
+          const item: Document = await ItemData.findOne({ name: itemName }); // get their corresponding data
+          if (!item) {
+            return [null, itemName]; // return null if item doesn't exist
+          }
+          return [item, itemName]; // return the item object into the new array
+        })
+      );
+    let itemsData: Array<Array<Document | string>> | string;
+    if (__itemsData.includes("none")) {
+      itemsData = "none";
+    } else {
+      itemsData = __itemsData as Array<Array<Document | string>>;
+    }
+
+    if (itemsData !== "none" && typeof itemsData !== "string") {
+      // if item is not none then check if all items exist
       const invalidItems = itemsData.filter(
         // filter out valid items into new array
         (item) => !item[0]
@@ -70,29 +85,27 @@ export default async (
         });
         return;
       }
-      // give all items the environment name
+      // give all valid items the environment name
       itemsData.forEach(async (item: any) => {
         // for each existing item
         item[0].itemEnvironments.push(name);
         item[0].save();
       });
-      // create environment
+      // create environment with valid items
       const createEnvironment = new EnvironmentData({
-        name: name,
+        name,
         items: itemsData.map((item: Array<Document | string>) => item[1]),
-        channel: channel,
+        channel,
       });
       await createEnvironment.save();
       await interaction.reply({
-        content: `Successfully created environment ${name}.\nWith item(s): ${items
-          .map((item: any) => {
-            if (!item) return "none";
-            else return item[1];
-          })
+        content: `Successfully created environment ${name}.\nWith item(s): ${itemsData
+          .map((item: Array<Document | string>) => item[1])
           .join(", ")}. \nAnd channel: <#${channel}>`,
         ephemeral: true,
       });
     } else {
+      // if there are no items
       // create environment
       const createEnvironment = new EnvironmentData({
         name: name,

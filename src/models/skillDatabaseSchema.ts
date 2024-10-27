@@ -35,4 +35,4 @@ const skillData = new Schema({
   },
 });
 
-export default model("skillData", skillData); // Export the model.
+export default model("skill", skillData); // Export the model.

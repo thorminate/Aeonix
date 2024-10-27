@@ -25,4 +25,4 @@ const statusEffectData = new Schema({
   },
 });
 
-export default model("statusEffectData", statusEffectData); // Export the model.
+export default model("statusEffect", statusEffectData); // Export the model.

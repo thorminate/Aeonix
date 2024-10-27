@@ -12,6 +12,8 @@ import statusCreate from "./status/statusCreate";
 import statusDelete from "./status/statusDelete";
 import statusGrant from "./status/statusGrant";
 import environmentCreate from "./environment/environmentCreate";
+import environmentEditName from "./environment/environmentEditName";
+import environmentEditItems from "./environment/environmentEditItems";
 
 /**
  * Index of all the actions
@@ -46,5 +48,9 @@ export default {
   },
   environment: {
     create: environmentCreate,
+    edit: {
+      name: environmentEditName,
+      items: environmentEditItems,
+    },
   },
 };

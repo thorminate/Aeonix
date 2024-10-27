@@ -25,4 +25,4 @@ const environmentData = new Schema({
   },
 });
 
-export default model("environmentDatabase", environmentData); // Export the model.
+export default model("environment", environmentData); // Export the model.

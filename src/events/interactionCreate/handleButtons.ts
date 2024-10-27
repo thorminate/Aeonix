@@ -28,6 +28,16 @@ export default async (bot: Client, buttonInteraction: ButtonInteraction) => {
           .setLabel("Start")
           .setStyle(ButtonStyle.Danger);
 
+        if (
+          (await userData.findOne({ id: buttonInteraction.user.id }))
+            .isOnboard === true
+        ) {
+          await buttonInteraction.reply({
+            content: "You have already completed onboarding!",
+            ephemeral: true,
+          });
+          return;
+        }
         const reply = await buttonInteraction.reply({
           content: "Welcome to Floura, future player!",
           components: [

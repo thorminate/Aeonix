@@ -17,7 +17,10 @@ import {
   TextChannel,
   GuildMemberRoleManager,
 } from "discord.js";
-import config from "../../../config.json";
+import { config } from "dotenv";
+config({
+  path: "../../../.env",
+});
 
 export default async (
   bot: Client,
@@ -119,7 +122,7 @@ export default async (
           ephemeral: true,
         });
         const onboardingChannel = interaction.guild.channels.cache.get(
-          config.onboardingChannel
+          process.env.ONBOARDING_CHANNEL
         ) as TextChannel;
 
         if (!onboardingChannel) {
@@ -131,7 +134,7 @@ export default async (
           return;
         }
         (interaction.member.roles as GuildMemberRoleManager).add(
-          config.playerRole
+          process.env.PLAYER_ROLE
         );
       }
       break;
