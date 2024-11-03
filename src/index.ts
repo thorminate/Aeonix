@@ -16,20 +16,18 @@ import log from "./utils/log";
       output: process.stdout,
     });
 
-    const questionAsync = promisify(rl.question).bind(rl);
+    const prompt = promisify(rl.question).bind(rl);
 
-    const token = await questionAsync("Enter your token: ");
+    const token = await prompt("Enter your token: ");
     fs.writeFileSync("./.env", `TOKEN="${token}"`);
 
-    const mongodbUri = await questionAsync("Enter your MongoDB URI: ");
+    const mongodbUri = await prompt("Enter your MongoDB URI: ");
     fs.appendFileSync("./.env", `\nMONGODB_URI="${mongodbUri}"`);
 
-    const playerRoleId = await questionAsync(
-      "What ID does the player role have? "
-    );
+    const playerRoleId = await prompt("What ID does the player role have? ");
     fs.appendFileSync("./.env", `\nPLAYER_ROLE="${playerRoleId}"`);
 
-    const onboardingChannelId = await questionAsync(
+    const onboardingChannelId = await prompt(
       "What ID does the onboarding channel have? "
     );
     fs.appendFileSync(
