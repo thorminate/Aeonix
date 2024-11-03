@@ -90,6 +90,4 @@ const DiscordToken = process.env.TOKEN; // Get the Discord token.
       type: "error",
     });
   }
-  const user = await bot.users.fetch("1269666272954683512");
-  console.log(user.avatarURL({}));
 })();
