@@ -23,6 +23,10 @@ import calculateLevelExp from "../../utils/calculateLevelExp";
 import buttonWrapper from "../../utils/buttonWrapper";
 import commandVerify from "../../utils/commandVerify";
 import log from "../../utils/log";
+import { config } from "dotenv";
+config({
+  path: "../../../.env",
+});
 
 module.exports = {
   name: "status",
@@ -57,7 +61,7 @@ module.exports = {
       // if user doesn't exist in database, say so and return
       if (!userData) {
         interaction.editReply(
-          "You haven't been integrated into Floura's database yet. Head over to <#1270790941892153404>"
+          `You haven't been integrated into Aeonix's database yet. Head over to <#${process.env.ONBOARDING_CHANNEL}>`
         );
         return;
       }
@@ -856,7 +860,7 @@ module.exports = {
 
                   const createSkillActionInput = new TextInputBuilder()
                     .setCustomId("create-skill-action-input")
-                    .setLabel("What Floura says when the skill is used")
+                    .setLabel("What it says when the skill is used")
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true);
 
@@ -1272,7 +1276,7 @@ module.exports = {
 
                   const createStatusEffectActionInput = new TextInputBuilder()
                     .setCustomId("create-status-effect-action-input")
-                    .setLabel("What Floura does when applied")
+                    .setLabel("What the status effect does when applied")
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true);
 

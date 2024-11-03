@@ -3,6 +3,10 @@ import commandVerify from "../../utils/commandVerify";
 import UserData from "../../models/userDatabaseSchema";
 import EnvironmentData from "../../models/environmentDatabaseSchema";
 import log from "../../utils/log";
+import { config } from "dotenv";
+config({
+  path: "../../../.env",
+});
 
 module.exports = {
   name: "look",
@@ -28,8 +32,7 @@ module.exports = {
 
       if (!userData) {
         await interaction.editReply({
-          content:
-            "You haven't been integrated into Floura's database yet. Head over to <#1270790941892153404>",
+          content: `You haven't been integrated into Aeonix's database yet. Head over to <#${process.env.ONBOARDING_CHANNEL}>`,
         });
         return;
       }

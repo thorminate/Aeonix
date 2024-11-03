@@ -34,7 +34,7 @@ export default async (bot: Client, message: Message) => {
         await message.reply(`Item ${itemName} not found in your inventory.`);
       }
     } else {
-      await message.reply("You are not registered in Floura's database.");
+      await message.reply("You are not registered in Aeonix's database.");
     }
   }
   async function useSkill(message: any, skillName: any) {
@@ -67,7 +67,7 @@ export default async (bot: Client, message: Message) => {
         await message.reply(`Skill ${skillName} not found.`);
       }
     } else {
-      await message.reply("You are not registered in Floura's database.");
+      await message.reply("You are not registered in Aeonix's database.");
     }
   }
 

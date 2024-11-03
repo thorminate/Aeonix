@@ -39,7 +39,7 @@ export default async (bot: Client, buttonInteraction: ButtonInteraction) => {
           return;
         }
         const reply = await buttonInteraction.reply({
-          content: "Welcome to Floura, future player!",
+          content: "Welcome to Aeonix, future player!",
           components: [
             new ActionRowBuilder<ButtonBuilder>().addComponents(
               onboardingButton
