@@ -35,6 +35,11 @@ import log from "./utils/log";
       `\nONBOARDING_CHANNEL="${onboardingChannelId}"`
     );
 
+    const rulesChannelId = await prompt(
+      "What ID does the rules channel have? "
+    );
+    fs.appendFileSync("./.env", `\nRULES_CHANNEL="${rulesChannelId}"`);
+
     rl.close();
 
     console.log("Created .env file successfully.\n\n\n");
@@ -48,6 +53,27 @@ import log from "./utils/log";
       token: process.env.TOKEN, // We use the token from the environment variables.
       respawn: true, // We make sure the bot will respawn if it crashes.
     });
+
+    function spawn() {
+      // This function spawns the shards.
+      manager.spawn().catch((error) => {
+        // Spawn the shards. Catch errors.
+        console.error("The shard failed to launch:"); // Log the error.
+        console.error(
+          error.stack,
+          error.message,
+          error.name,
+          error.cause,
+          error
+        ); // Log the error.
+        log({
+          header: "Shard failed to launch",
+          payload: `${error.stack}\n${error.message}\n${error.name}\n${error.cause}\n${error}`,
+          type: "fatal",
+        });
+      });
+    }
+    spawn();
 
     manager.once("shardCreate", (shard) => {
       // This event is fired when a shard is spawned.
@@ -100,10 +126,13 @@ import log from "./utils/log";
             case "restart": // Restart the bot.
               console.log("Restart command received, restarting...");
               await manager.broadcastEval((c) => c.destroy());
-              log({
-                header: "Restarting shards",
-                type: "info",
-              });
+              setTimeout(() => {
+                spawn();
+                log({
+                  header: "Restarting shards",
+                  type: "info",
+                });
+              }, 6 * 1000);
               break;
 
             case "log": // Log the inputs
@@ -150,17 +179,6 @@ import log from "./utils/log";
         setTimeout(() => {
           rl.prompt();
         }, 2000);
-      });
-    });
-
-    manager.spawn().catch((error) => {
-      // Spawn the shards. Catch errors.
-      console.error("The shard failed to launch:"); // Log the error.
-      console.error(error.stack, error.message, error.name, error.cause, error); // Log the error.
-      log({
-        header: "Shard failed to launch",
-        payload: `${error.stack}\n${error.message}\n${error.name}\n${error.cause}\n${error}`,
-        type: "fatal",
       });
     });
   }, 2000);
