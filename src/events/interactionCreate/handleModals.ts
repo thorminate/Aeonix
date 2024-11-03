@@ -4,22 +4,15 @@
  * @param {Interaction} modalInteraction The interaction that ran the command.
  */
 import {
-  ButtonBuilder,
-  ButtonStyle,
   ModalSubmitInteraction,
   Client,
   GuildMemberRoleManager,
-  TextChannel,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   ActionRowBuilder,
 } from "discord.js";
-import buttonWrapper from "../../utils/buttonWrapper";
 import UserData from "../../models/userDatabaseSchema";
-import itemData from "../../models/itemDatabaseSchema";
-import environmentData from "../../models/environmentDatabaseSchema";
 import ms from "ms";
-import { Document } from "mongoose";
 import actions from "../../actions/actionIndex";
 import path from "path";
 import log from "../../utils/log";
@@ -492,6 +485,10 @@ export default async (
           modalInteraction.fields.getTextInputValue("kick-user-reason-input") ||
           "No reason provided";
 
+        await actions.user.kick(modalInteraction, {
+          userId: kickUserId,
+          reason: kickUserReason,
+        });
         break;
 
       case "timeout-user-modal":
@@ -500,7 +497,7 @@ export default async (
         const timeoutUserId = modalInteraction.fields.getTextInputValue(
           "timeout-user-target-input"
         );
-        let timeoutUserDuration = modalInteraction.fields.getTextInputValue(
+        const timeoutUserDuration = modalInteraction.fields.getTextInputValue(
           "timeout-user-duration-input"
         );
         const timeoutUserReason =
@@ -508,107 +505,11 @@ export default async (
             "timeout-user-reason-input"
           ) || "No reason provided";
 
-        // get the target user object
-        const timeoutUser = await modalInteraction.guild.members.fetch(
-          timeoutUserId
-        );
-
-        // check if the target user exists, else edit the reply and return
-        if (!timeoutUser) {
-          await modalInteraction.reply({
-            content: `That user doesn't exist in this server.\n${timeoutUserReason}`,
-            ephemeral: true,
-          });
-          return;
-        }
-
-        // check if the target user is a bot
-        if (timeoutUser.user.bot) {
-          await modalInteraction.reply({
-            content: "You cannot timeout a bot.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        // check if the target user is the owner of the server
-        if (timeoutUser.id === modalInteraction.guild.ownerId) {
-          await modalInteraction.reply({
-            content: "I cannot timeout my creator.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        //get duration in ms
-        const timeoutUserDurationMs = ms(timeoutUserDuration);
-
-        //check if duration is valid
-        if (isNaN(timeoutUserDurationMs)) {
-          await modalInteraction.reply({
-            content: "Invalid duration. Please enter a valid duration.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        //check if the duration is below 5 seconds or above 28 days
-        if (
-          timeoutUserDurationMs < 5000 ||
-          timeoutUserDurationMs > 28 * 24 * 60 * 60 * 1000
-        ) {
-          await modalInteraction.reply({
-            content:
-              "Invalid duration. Please enter a duration between 5 seconds and 28 days.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        // define role positions
-        const timeoutUserRolePosition = timeoutUser.roles.highest.position;
-        const timeoutUserRequesterRolePosition = (
-          modalInteraction.member.roles as GuildMemberRoleManager
-        ).highest.position;
-        const timeoutUserBotRolePosition =
-          modalInteraction.guild.members.me.roles.highest.position;
-
-        // check if the target user is of a higher position than the request user
-        if (timeoutUserRolePosition >= timeoutUserRequesterRolePosition) {
-          await modalInteraction.reply({
-            content:
-              "That user is of a higher position of the power hierarchy than you. Therefore you cannot timeout them.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        // check if the target user is of a higher position than the bot
-        if (timeoutUserRolePosition >= timeoutUserBotRolePosition) {
-          await modalInteraction.reply({
-            content:
-              "That user is of a higher position of the power hierarchy than me. Therefore i cannot timeout them.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        // timeout the user
-        try {
-          await timeoutUser.timeout(timeoutUserDurationMs, timeoutUserReason);
-          await modalInteraction.reply({
-            content: `The user <@${timeoutUser.user.id}> has been timed out successfully.\n${timeoutUserReason}`,
-            ephemeral: true,
-          });
-        } catch (error) {
-          console.error("Error timing out user: ", error);
-          log({
-            header: "Error timing out user",
-            payload: `${timeoutUser.user.id} - ${timeoutUser.user.tag}\n${error}`,
-            type: "error",
-          });
-        }
-
+        await actions.user.timeout(modalInteraction, {
+          userId: timeoutUserId,
+          duration: timeoutUserDuration,
+          reason: timeoutUserReason,
+        });
         break;
 
       //region Onboarding modals

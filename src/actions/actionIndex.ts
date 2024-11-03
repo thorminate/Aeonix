@@ -2,6 +2,8 @@ import userLevelUp from "./user/userLevelUp";
 import userGiveStat from "./user/userGiveStat";
 import userRelocate from "./user/userRelocate";
 import userBan from "./user/userBan";
+import userKick from "./user/userKick";
+import userTimeout from "./user/userTimeout";
 import skillCreate from "./skill/createSkill";
 import skillGrant from "./skill/grantSkill";
 import skillDelete from "./skill/deleteSkill";
@@ -35,6 +37,8 @@ export default {
     giveStat: userGiveStat,
     relocate: userRelocate,
     ban: userBan,
+    kick: userKick,
+    timeout: userTimeout,
   },
   skill: {
     create: skillCreate,
