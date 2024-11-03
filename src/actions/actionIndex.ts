@@ -1,6 +1,7 @@
 import userLevelUp from "./user/userLevelUp";
 import userGiveStat from "./user/userGiveStat";
 import userRelocate from "./user/userRelocate";
+import userBan from "./user/userBan";
 import skillCreate from "./skill/createSkill";
 import skillGrant from "./skill/grantSkill";
 import skillDelete from "./skill/deleteSkill";
@@ -18,7 +19,6 @@ import environmentEditItems from "./environment/environmentEditItems";
 import environmentEditChannel from "./environment/environmentEditChannel";
 import environmentDelete from "./environment/environmentDelete";
 import botSendMessage from "./bot/botSendMessage";
-import { send } from "process";
 
 /**
  * Index of all the actions
@@ -34,6 +34,7 @@ export default {
     levelUp: userLevelUp,
     giveStat: userGiveStat,
     relocate: userRelocate,
+    ban: userBan,
   },
   skill: {
     create: skillCreate,
@@ -54,12 +55,12 @@ export default {
   },
   environment: {
     create: environmentCreate,
+    delete: environmentDelete,
     edit: {
       name: environmentEditName,
       items: environmentEditItems,
       channel: environmentEditChannel,
     },
-    delete: environmentDelete,
   },
   bot: {
     send: botSendMessage,

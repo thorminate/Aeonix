@@ -11,6 +11,6 @@
   "include": [
     "./src/**/*",
     "src/events/ready/01register-commands.ts",
-    "src/events/ready/playerOnboarding.ts"
+    "src/events/ready/02playerOnboarding.ts"
   ] // Specify the path to your TypeScript files
 }

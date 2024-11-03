@@ -476,44 +476,10 @@ export default async (
           "ban-user-reason-input"
         );
 
-        // Validate the inputs
-        if (banUserId === "") {
-          await modalInteraction.reply({
-            content: "Please fill in the required fields.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        const buttonConfirm = new ButtonBuilder()
-          .setCustomId("ban-user-confirm")
-          .setLabel("Confirm")
-          .setStyle(ButtonStyle.Danger)
-          .setDisabled(false);
-
-        const buttonCancel = new ButtonBuilder()
-          .setCustomId("ban-user-cancel")
-          .setLabel("Cancel")
-          .setStyle(ButtonStyle.Success)
-          .setDisabled(false);
-
-        await modalInteraction.reply({
-          content: "Are you sure you want to ban this user?",
-          ephemeral: true,
-          components: buttonWrapper([buttonConfirm, buttonCancel]),
+        await actions.user.ban(modalInteraction, {
+          user: banUserId,
+          reason: banUserReason,
         });
-
-        const collector =
-          modalInteraction.channel.createMessageComponentCollector({
-            filter: (m) => m.user.id === modalInteraction.user.id,
-            max: 1,
-          });
-
-        collector.on("collect", async (i) => {
-          if (i.customId === "ban-user-confirm") {
-          }
-        });
-
         break;
 
       case "kick-user-modal":
