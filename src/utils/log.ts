@@ -15,13 +15,13 @@ export default (options: Options) => {
 
   const date = new Date();
 
-  if (!fs.existsSync(path.join(__dirname, "..", "..", "..", "logs"))) {
-    fs.mkdirSync(path.join(__dirname, "..", "..", "..", "logs"), {
+  if (!fs.existsSync(path.join(__dirname, "..", "..", "logs"))) {
+    fs.mkdirSync(path.join(__dirname, "..", "..", "logs"), {
       recursive: true,
     });
   }
   if (!folder) {
-    folder = path.join(__dirname, "..", "..", "..", "logs");
+    folder = path.join(__dirname, "..", "..", "logs");
   }
   const logStream = fs.createWriteStream(
     path.join(folder, `${date.toISOString().slice(0, 10)}.log`),
