@@ -20,107 +20,68 @@ export default async (bot: Client) => {
   try {
     await rulesChannel.bulkDelete(10);
     await rulesChannel.send({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("Rules")
-          .setDescription(
-            "Thank you for joining Aeonix! The rules will be categorized within the section below. In each category the consequences will be ranked by severity. Low severity (/) all the way to very-high severity (////)."
-          )
-          .setColor(0x7ab2d3)
-          .addFields({
-            name: "Severity",
-            value:
-              "**Low severity (/)** will result in a verbal warning by one of the staff.\n**Medium Severity (//)** results in a temporary mute by one of the staff.\n**High Severity (///)** results in a kick by one of the staff.\n**Very-High Severity (////)** results in a permanent ban from the server.\n\n***Reminder:*** The severity rating can be changed if staff deem it necessary.",
-          }),
-        new EmbedBuilder()
-          .setTitle("Universal")
-          .setDescription(
-            "General rules to ensure a positive and safe environment."
-          )
-          .setColor(0x7ab2d3)
-          .addFields(
-            {
-              name: "Respect Staff Decisions (/)",
-              value:
-                "The staff works to ensure a positive experience for everyone. Disrespecting or challenging their decisions publicly may result in a warning or mute.",
-            },
-            {
-              name: "Report Issues Properly (/)",
-              value:
-                "If you witness a rule violation or face issues, report it to staff privately rather than publicly escalating the situation.",
-            },
-            {
-              name: "Respect Privacy (/)",
-              value:
-                "Sharing personal information of others without their consent is not allowed and will lead to a temporary or permanent ban, depending on severity.",
-            }
-          ),
-        new EmbedBuilder()
-          .setTitle("Roleplay")
-          .setDescription("Rules that apply to in-game personas.")
-          .setColor(0x7ab2d3)
-          .setImage("")
-          .addFields(
-            {
-              name: "Metagaming (/)",
-              value:
-                "Using information your character couldn't know in-game for advantage is strictly prohibited. Offenders may be warned or kicked by staff.",
-            },
-            {
-              name: "Powergaming (//)",
-              value:
-                "Forcing actions or consequences on other characters without consent is not allowed. Repeated offenses may lead to a kick or further consequences.",
-            },
-            {
-              name: "Inappropriate Roleplay (////)",
-              value:
-                "Any form of graphic, explicit, or otherwise inappropriate roleplay is grounds for a permanent ban. Please ensure all interactions are respectful and within server guidelines.",
-            },
-            {
-              name: "Breaking Character (/)",
-              value:
-                "Consistently speaking OOC (out of character) in roleplay channels disrupts immersion and will result in a warning. Use the designated OOC channels for any out-of-character discussions.",
-            },
-            {
-              name: "Respectful Roleplay (/)",
-              value:
-                "Avoid themes or actions that may be sensitive or triggering for others. Be mindful of the environment, and if in doubt, ask for consent before introducing certain themes into your roleplay.",
-            }
-          ),
-        new EmbedBuilder()
-          .setTitle("Chatting")
-          .setDescription(
-            "Rules that apply to people chatting OOC (out of character)."
-          )
-          .setColor(0x7ab2d3)
-          .addFields(
-            {
-              name: "Spamming (/)",
-              value:
-                "Spamming or excessive use of caps will result in a temporary mute by one of the staff.",
-            },
-            {
-              name: "Harassment (//)",
-              value:
-                "Harassing, insulting, or belittling other members is strictly prohibited and will lead to a kick and possible further consequences based on the severity of actions.",
-            },
-            {
-              name: "Advertising (///)",
-              value:
-                "Unsolicited advertising is not permitted and will result in a permanent ban. Self-promotion is only allowed in designated channels with staff approval.",
-            },
-            {
-              name: "Trolling and Provocation (/)",
-              value:
-                "Intentional trolling, baiting, or provoking others is not tolerated and will result in a warning or mute depending on the severity.",
-            },
-            {
-              name: "Respectful Communication (/)",
-              value:
-                "Engage in conversations politely and constructively. Offensive language or remarks about sensitive topics, including politics and religion, are discouraged to maintain a welcoming environment.",
-            }
-          ),
-      ],
+      files: ["https://thorminate.github.io/Aeonix/images/rules.png"],
+    });
+    await rulesChannel.send({
+      content:
+        `Thank you for joining Aeonix! The rules will be categorized within the section below. In each category the consequences will be ranked by severity. Low severity (/) all the way to very-high severity (////)` +
+        `\n### Severity` +
+        `\n**Low severity (/)** will result in a verbal warning by one of the staff.` +
+        `\n**Medium Severity (//)** results in a temporary mute by one of the staff.` +
+        `\n**High Severity (///)** results in a kick by one of the staff.` +
+        `\n**Very-High Severity (////)** results in a permanent ban from the server.` +
+        `\n\n***Reminder:*** The severity rating can be changed if staff deem it necessary.`,
+    });
+    await rulesChannel.send({
+      content:
+        `\n\n\n# Universal` +
+        `\nGeneral rules to ensure a positive and safe environment.` +
+        `\n\n### Respecting Staff Decisions (/)` +
+        `\nThe staff works to ensure a positive experience for everyone. Disrespecting or challenging their decisions publicly may result in a warning or mute.` +
+        `\n\n### Respecting Other Members (/)` +
+        `\nIf you witness a rule violation or face issues, report it to staff privately rather than publicly escalating the situation.` +
+        `\n\n### No Spamming (/)` +
+        `\nSpamming or excessive use of caps will result in a temporary mute by one of the staff.` +
+        `\n\n### No Advertising (/)` +
+        `\nUnsolicited advertising is not permitted and will result in a permanent ban. Self-promotion is only allowed in designated channels with staff approval.` +
+        `\n\n### No NSFW Content (/)` +
+        `\nNSFW content is not allowed and will result in a permanent ban. Self-promotion is only allowed in designated channels with staff approval.` +
+        `\n\n### No Harassment (/)` +
+        `\nHarassing, insulting, or belittling other members is strictly prohibited and will lead to a kick and possible further consequences based on the severity of actions.` +
+        `\n\n### No Violence (/)` +
+        `\nViolence is strictly prohibited and will lead to a kick and possible further consequences based on the severity of actions.` +
+        `\n\n### No Trolling and Provocation (/)` +
+        `\nIntentional trolling, baiting, or provoking others is not tolerated and will result in a warning or mute depending on the severity.`,
+    });
+    await rulesChannel.send({
+      content:
+        `\n\n\n# Roleplay` +
+        `\nRules that apply to in-game personas.` +
+        `\n\n### Metagaming (/)` +
+        `\nUsing information your character couldn't know in-game for advantage is strictly prohibited. Offenders may be warned or kicked by staff.` +
+        `\n\n### Powergaming (//)` +
+        `\nForcing actions or consequences on other characters without consent is not allowed. Repeated offenses may lead to a kick or further consequences.` +
+        `\n\n### Inappropriate Roleplay (////)` +
+        `\nAny form of graphic, explicit, or otherwise inappropriate roleplay is grounds for a permanent ban. Please ensure all interactions are respectful and within server guidelines.` +
+        `\n\n### Breaking Character (/)` +
+        `\nConsistently speaking OOC (out of character) in roleplay channels disrupts immersion and will result in a warning. Use the designated OOC channels for any out-of-character discussions.` +
+        `\n\n### Respectful Roleplay (/)` +
+        `\nRoleplay channels are not allowed. Please ensure your actions are respectful and within server guidelines. If you are unsure, ask staff.`,
+    });
+    await rulesChannel.send({
+      content:
+        `\n\n\n# Chatting` +
+        `\nRules that apply to people chatting OOC (out of character).` +
+        `\n\n### Spamming (/)` +
+        `\nSpamming or excessive use of caps will result in a temporary mute by one of the staff.` +
+        `\n\n### Harassment (//)` +
+        `\nHarassing, insulting, or belittling other members is strictly prohibited and will lead to a kick and possible further consequences based on the severity of actions.` +
+        `\n\n### Advertising (///)` +
+        `\nUnsolicited advertising is not permitted and will result in a permanent ban. Self-promotion is only allowed in designated channels with staff approval.` +
+        `\n\n### Trolling and Provocation (/)` +
+        `\nIntentional trolling, baiting, or provoking others is not tolerated and will result in a warning or mute depending on the severity.` +
+        `\n\n### Respectful Communication (/)` +
+        `\nAll communication should be respectful and within server guidelines. If you are unsure, ask staff.`,
     });
   } catch (error) {
     console.log(error);
