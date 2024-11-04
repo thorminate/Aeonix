@@ -59,6 +59,7 @@ export default async (bot: Client) => {
           .setTitle("Roleplay")
           .setDescription("Rules that apply to in-game personas.")
           .setColor(0x7ab2d3)
+          .setImage("")
           .addFields(
             {
               name: "Metagaming (/)",
