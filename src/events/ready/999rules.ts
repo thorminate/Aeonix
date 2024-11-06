@@ -20,7 +20,12 @@ export default async (bot: Client) => {
   try {
     await rulesChannel.bulkDelete(10);
     await rulesChannel.send({
-      files: ["https://thorminate.github.io/Aeonix/images/rules.png"],
+      files: [
+        {
+          attachment: "https://thorminate.github.io/aeonix/images/rules.png",
+          name: "rules.png",
+        },
+      ],
     });
     await rulesChannel.send({
       content:
