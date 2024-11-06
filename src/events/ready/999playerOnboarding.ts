@@ -25,6 +25,14 @@ export default async (bot: Client) => {
       );
 
     await welcomeChannel.send({
+      files: [
+        {
+          attachment: "https://thorminate.github.io/aeonix/images/welcome.png",
+          name: "welcome.png",
+        },
+      ],
+    });
+    await welcomeChannel.send({
       content:
         "Hello, and welcome to Aeonix!" +
         " This server is primarily for testing my bot, although we have tons of RP mashed in too!" +
