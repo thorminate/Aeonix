@@ -27,7 +27,7 @@ export default async (bot: Client) => {
     await welcomeChannel.send({
       files: [
         {
-          attachment: "https://thorminate.github.io/aeonix/images/welcome.png",
+          attachment: "./images/welcome.png",
           name: "welcome.png",
         },
       ],

@@ -17,6 +17,8 @@ import {
   EmbedBuilder,
   HTTPError,
   InteractionReplyOptions,
+  Message,
+  ButtonInteraction,
 } from "discord.js";
 import UserData from "../../models/userDatabaseSchema";
 import calculateLevelExp from "../../utils/calculateLevelExp";
@@ -105,7 +107,7 @@ module.exports = {
           .setCustomId("inventory")
           .setDisabled(false);
 
-        let playerReply: any;
+        let playerReply: Message<boolean> | Promise<Message<boolean>>;
         if (prevAdmin === true) {
           const backToAdmin = new ButtonBuilder()
             .setLabel("Reload as admin")
@@ -127,7 +129,7 @@ module.exports = {
         }
 
         // make sure the user who ran the command is the one who clicked the button
-        const filter = (i: CommandInteraction) =>
+        const filter = (i: ButtonInteraction) =>
           i.user.id === interaction.user.id;
 
         // collect button clicks
@@ -136,13 +138,12 @@ module.exports = {
           filter,
         });
 
-        collector.on("collect", async (i: MessageComponentInteraction) => {
-          if (i.replied) return;
-          if (i.customId === "inventory") {
+        collector.on("collect", async (i: ButtonInteraction) => {
+          if (i.replied || i.deferred) return;
+          else if (i.customId === "inventory") {
             const formattedInventory =
-              userData.inventory
-                .map((item) => `${item.itemName}`)
-                .join(",\n") || "is empty...";
+              userData.inventory.map((item) => `${item.name}`).join(",\n") ||
+              "is empty...";
             await i.reply({
               content: `## Your inventory\n ${formattedInventory}`,
               ephemeral: true,
@@ -292,10 +293,7 @@ module.exports = {
                 const embed = new EmbedBuilder()
                   .setColor(0x0099ff)
                   .setTitle(
-                    `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`
+                    `What would you like to do, Administrator ${userObj.user.globalName[0].toUpperCase()}?`
                   );
                 if (prevPlayer === true) {
                   await buttonInteraction.editReply({
@@ -365,10 +363,7 @@ module.exports = {
                 const envEmbed = new EmbedBuilder()
                   .setColor(0x0099ff)
                   .setTitle(
-                    `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`
+                    `What would you like to do, Administrator ${userObj.user.globalName[0].toUpperCase()}?`
                   );
                 if (prevPlayer === true) {
                   await buttonInteraction.editReply({
@@ -407,7 +402,6 @@ module.exports = {
 
                 // Edit the original reply to disable the button
                 await interaction.editReply({
-                  content: `loading...`,
                   components: moderationUpdatedComponents,
                 });
                 // Define buttons for submenu
@@ -430,11 +424,13 @@ module.exports = {
                   .setCustomId("timeout_user")
                   .setDisabled(false);
 
+                const modEmbed = new EmbedBuilder()
+                  .setColor(0x0099ff)
+                  .setTitle(
+                    `What would you like to do, Administrator ${userObj.user.globalName[0].toUpperCase()}?`
+                  );
                 await buttonInteraction.update({
-                  content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                    0,
-                    1
-                  )}?`,
+                  embeds: [modEmbed],
                   components: buttonWrapper([
                     banUserButton,
                     kickUserButton,
@@ -465,7 +461,6 @@ module.exports = {
 
                 // Edit the original reply to disable the button
                 await interaction.editReply({
-                  content: `loading...`,
                   components: botPerformUpdatedComponents,
                 });
 
@@ -475,21 +470,20 @@ module.exports = {
                   .setStyle(ButtonStyle.Secondary)
                   .setCustomId("send_message")
                   .setDisabled(false);
+                const sendEmbed = new EmbedBuilder()
+                  .setColor(0x0099ff)
+                  .setTitle(
+                    `What would you like to do, Administrator ${userObj.user.globalName[0].toUpperCase()}?`
+                  );
 
                 if (prevPlayer === true) {
                   await buttonInteraction.editReply({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
+                    embeds: [sendEmbed],
                     components: buttonWrapper([botPerformSendMessageButton]),
                   });
                 } else {
                   await buttonInteraction.update({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
+                    embeds: [sendEmbed],
                     components: buttonWrapper([botPerformSendMessageButton]),
                   });
                 }
@@ -611,12 +605,14 @@ module.exports = {
                   .setCustomId("revoke_skill")
                   .setDisabled(false);
 
+                const skillEmbed = new EmbedBuilder()
+                  .setColor(0x0099ff)
+                  .setTitle(
+                    `What would you like to do, Administrator ${userObj.user.globalName[0].toUpperCase()}?`
+                  );
                 if (prevPlayer === true) {
                   await buttonInteraction.editReply({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
+                    embeds: [skillEmbed],
                     components: buttonWrapper([
                       createSkillButton,
                       grantSkillButton,
@@ -626,10 +622,7 @@ module.exports = {
                   });
                 } else {
                   await buttonInteraction.update({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
+                    embeds: [skillEmbed],
                     components: buttonWrapper([
                       createSkillButton,
                       grantSkillButton,
@@ -684,12 +677,15 @@ module.exports = {
                   .setCustomId("revoke_item")
                   .setDisabled(false);
 
+                const itemEmbed = new EmbedBuilder()
+                  .setColor(0x0099ff)
+                  .setTitle(
+                    `What would you like to do, Administrator ${userObj.user.globalName[0].toUpperCase()}?`
+                  );
+
                 if (prevPlayer === true) {
                   await buttonInteraction.editReply({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
+                    embeds: [itemEmbed],
                     components: buttonWrapper([
                       createItemButton,
                       giveItemButton,
@@ -699,10 +695,7 @@ module.exports = {
                   });
                 } else {
                   await buttonInteraction.update({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
+                    embeds: [itemEmbed],
                     components: buttonWrapper([
                       createItemButton,
                       giveItemButton,
@@ -756,12 +749,15 @@ module.exports = {
                   .setCustomId("revoke_status_effect")
                   .setDisabled(false);
 
+                const statusEffectEmbed = new EmbedBuilder()
+                  .setColor(0x0099ff)
+                  .setTitle(
+                    `What would you like to do, Administrator ${userObj.user.globalName[0].toUpperCase()}?`
+                  );
+
                 if (prevPlayer === true) {
                   await buttonInteraction.editReply({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
+                    embeds: [statusEffectEmbed],
                     components: buttonWrapper([
                       createStatusEffectButton,
                       grantStatusEffectButton,
@@ -771,10 +767,7 @@ module.exports = {
                   });
                 } else {
                   await buttonInteraction.update({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
+                    embeds: [statusEffectEmbed],
                     components: buttonWrapper([
                       createStatusEffectButton,
                       grantStatusEffectButton,
@@ -1562,18 +1555,10 @@ module.exports = {
 
                 if (prevPlayer === true) {
                   await buttonInteraction.editReply({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
                     components: buttonWrapper(editEnvironmentButtons),
                   });
                 } else {
                   await buttonInteraction.update({
-                    content: `What would you like to do, Administrator ${userObj.user.globalName.substr(
-                      0,
-                      1
-                    )}?`,
                     components: buttonWrapper(editEnvironmentButtons),
                   });
                 }
