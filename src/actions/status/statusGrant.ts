@@ -1,6 +1,6 @@
 import { ModalSubmitInteraction } from "discord.js";
-import StatusEffectData from "../../models/statusEffectDatabaseSchema";
-import UserData from "../../models/userDatabaseSchema";
+import StatusEffectData from "../../models/StatusEffectsData";
+import UserData from "../../models/UserData";
 
 interface Options {
   statusEffectName: string;

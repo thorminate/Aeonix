@@ -1,6 +1,6 @@
 import { ModalSubmitInteraction } from "discord.js";
-import UserData from "../../models/userDatabaseSchema";
-import ItemData from "../../models/itemDatabaseSchema";
+import UserData from "../../models/UserData";
+import ItemData from "../../models/ItemData";
 
 interface Options {
   itemName: string;

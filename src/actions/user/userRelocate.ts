@@ -1,64 +1,173 @@
-import { ModalSubmitInteraction } from "discord.js";
-import EnvironmentData from "../../models/environmentDatabaseSchema";
-import UserData from "../../models/userDatabaseSchema";
+import {
+  CommandInteraction,
+  ModalSubmitInteraction,
+  TextChannel,
+} from "discord.js";
+import EnvironmentData from "../../models/EnvironmentData";
+import UserData from "../../models/UserData";
 
 interface Options {
-  userId: Array<string>;
-  environmentName: string;
+  users: Array<string>;
+  name: string;
 }
 
 export default async (
-  interaction: ModalSubmitInteraction,
+  interaction: ModalSubmitInteraction | CommandInteraction,
   options: Options
 ) => {
-  const { userId, environmentName } = options;
+  const { users, name } = options;
 
-  const environmentData = await EnvironmentData.findOne({
-    name: environmentName,
-  });
-
-  if (!environmentData) {
-    await interaction.reply({
-      content: "Environment not found!",
-      ephemeral: true,
-    });
-    return;
-  }
-
-  userId.forEach(async (relocateUserId: string) => {
-    const relocateUserObj = await UserData.findOne({
-      id: relocateUserId,
+  if (interaction.isModalSubmit()) {
+    const environmentData = await EnvironmentData.findOne({
+      name,
     });
 
-    if (!relocateUserObj) {
+    if (!environmentData) {
       await interaction.reply({
-        content: "User not found!",
+        content: "Environment not found!",
         ephemeral: true,
       });
       return;
     }
-    const prevEnvironmentData = await EnvironmentData.findOne({
-      name: relocateUserObj.environment,
-    });
 
-    if (prevEnvironmentData) {
-      prevEnvironmentData.users = prevEnvironmentData.users.filter(
-        (user: string) => user !== relocateUserId
+    users.forEach(async (userId: string) => {
+      const userObj = await UserData.findOne({
+        id: userId,
+      });
+
+      if (!userObj) {
+        await interaction.reply({
+          content: "User not found!",
+          ephemeral: true,
+        });
+        return;
+      }
+      const prevEnvironmentData = await EnvironmentData.findOne({
+        name: userObj.environment,
+      });
+
+      if (prevEnvironmentData) {
+        prevEnvironmentData.users = prevEnvironmentData.users.filter(
+          (user: string) => user !== userObj.id
+        );
+
+        const prevEnvironmentChannel = interaction.guild.channels.cache.get(
+          prevEnvironmentData.channel
+        );
+
+        if (!(prevEnvironmentChannel instanceof TextChannel)) {
+          await interaction.reply({
+            content:
+              "Your previous environment channel isn't a text channel!, this shouldn't happen. Contact an admin.",
+            ephemeral: true,
+          });
+          return;
+        }
+
+        await prevEnvironmentChannel?.send({
+          content: `<@${userObj.id}> has left this environment.`,
+        });
+
+        await prevEnvironmentChannel?.permissionOverwrites.edit(userObj.id, {
+          ViewChannel: false,
+        });
+
+        await prevEnvironmentData.save();
+      }
+
+      userObj.environment = environmentData.name;
+      const environmentChannel = await interaction.guild.channels.cache.get(
+        environmentData.channel
       );
 
-      await prevEnvironmentData.save();
+      if (!(environmentChannel instanceof TextChannel)) {
+        throw new Error("Channel isn't a text channel!");
+      }
+
+      await environmentChannel?.permissionOverwrites.create(userObj.id, {
+        ViewChannel: true,
+      });
+
+      await environmentChannel?.send({
+        content: `<@${userObj.id}> has joined this environment.`,
+      });
+
+      environmentData.users.push(userObj.id);
+      await userObj.save();
+      await environmentData.save();
+    });
+
+    await interaction.reply({
+      content: `Successfully relocated user(s) <@${users.join(
+        ">, <@"
+      )}> to environment ${name}.`,
+      ephemeral: true,
+    });
+  } else if (interaction.isCommand()) {
+    const environmentData = await EnvironmentData.findOne({
+      name,
+    });
+
+    if (!environmentData) {
+      throw new Error("Environment not found!");
     }
 
-    relocateUserObj.environment = environmentData.name;
-    environmentData.users.push(relocateUserId);
-    await relocateUserObj.save();
-    await relocateUserObj.save();
-  });
+    users.forEach(async (relocateUserId: string) => {
+      const userObj = await UserData.findOne({
+        id: relocateUserId,
+      });
 
-  await interaction.reply({
-    content: `Successfully relocated user(s) <@${userId.join(
-      ">, <@"
-    )}> to environment ${environmentName}.`,
-    ephemeral: true,
-  });
+      if (!userObj) {
+        throw new Error("User not found!");
+      }
+      const prevEnvironmentData = await EnvironmentData.findOne({
+        name: userObj.environment,
+      });
+
+      if (prevEnvironmentData) {
+        prevEnvironmentData.users = prevEnvironmentData.users.filter(
+          (user: string) => user !== relocateUserId
+        );
+        const prevEnvironmentChannel =
+          await interaction.guild.channels.cache.get(
+            prevEnvironmentData.channel
+          );
+
+        if (!(prevEnvironmentChannel instanceof TextChannel)) {
+          throw new Error("Channel isn't a text channel!");
+        }
+
+        await prevEnvironmentChannel?.send({
+          content: `<@${userObj.id}> has left this environment.`,
+        });
+
+        await prevEnvironmentChannel?.permissionOverwrites.edit(userObj.id, {
+          ViewChannel: false,
+        });
+
+        await prevEnvironmentData.save();
+      }
+
+      userObj.environment = environmentData.name;
+      const environmentChannel = await interaction.guild.channels.cache.get(
+        environmentData.channel
+      );
+
+      if (!(environmentChannel instanceof TextChannel)) {
+        throw new Error("Channel isn't a text channel!");
+      }
+
+      await environmentChannel?.permissionOverwrites.create(userObj.id, {
+        ViewChannel: true,
+      });
+
+      await environmentChannel?.send({
+        content: `<@${userObj.id}> has joined this environment.`,
+      });
+
+      environmentData.users.push(relocateUserId);
+      await userObj.save();
+      await environmentData.save();
+    });
+  }
 };

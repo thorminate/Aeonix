@@ -1,6 +1,6 @@
 import { ModalSubmitInteraction } from "discord.js";
-import EnvironmentData from "../../models/environmentDatabaseSchema";
-import ItemData from "../../models/itemDatabaseSchema";
+import EnvironmentData from "../../models/EnvironmentData";
+import ItemData from "../../models/ItemData";
 
 interface Options {
   name: string;

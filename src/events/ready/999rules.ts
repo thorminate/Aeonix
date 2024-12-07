@@ -18,7 +18,11 @@ export default async (bot: Client) => {
   }
 
   try {
-    await rulesChannel.bulkDelete(10);
+    await rulesChannel.bulkDelete(10).catch(() => {
+      console.log(
+        "Failed to delete messages in #rules, please manually delete them. Continuing..."
+      );
+    });
     await rulesChannel.send({
       files: [
         {

@@ -1,6 +1,6 @@
 // on event messageCreate, do this
 import { Client, Message } from "discord.js";
-import userData from "../../models/userDatabaseSchema";
+import userData from "../../models/UserData";
 import calculateLevelExp from "../../utils/calculateLevelExp";
 import actions from "../../actions/actionIndex";
 import log from "../../utils/log";

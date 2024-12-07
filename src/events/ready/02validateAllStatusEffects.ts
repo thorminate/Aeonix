@@ -1,6 +1,6 @@
 import { Client } from "discord.js";
-import StatusEffectData from "../../models/statusEffectDatabaseSchema";
-import UserData from "../../models/userDatabaseSchema";
+import StatusEffectData from "../../models/StatusEffectsData";
+import UserData from "../../models/UserData";
 
 /**
  * This gets all the status effects and makes sure they haven't expired.

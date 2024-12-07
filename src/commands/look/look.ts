@@ -1,14 +1,15 @@
 import { Client, CommandInteraction, GuildMember } from "discord.js";
 import commandVerify from "../../utils/commandVerify";
-import UserData from "../../models/userDatabaseSchema";
-import EnvironmentData from "../../models/environmentDatabaseSchema";
+import UserData from "../../models/UserData";
+import EnvironmentData from "../../models/EnvironmentData";
 import log from "../../utils/log";
 import { config } from "dotenv";
+import commandPrep from "../../utils/commandPrep";
 config({
   path: "../../../.env",
 });
 
-module.exports = {
+export default {
   name: "look",
   description: "Look around in your current environment",
   //devOnly: Boolean,
@@ -21,9 +22,7 @@ module.exports = {
     try {
       if (!commandVerify(interaction)) return;
 
-      await interaction.deferReply({
-        ephemeral: true,
-      });
+      await commandPrep(interaction);
 
       const userData = await UserData.findOne({
         id: interaction.user.id,
@@ -54,8 +53,18 @@ module.exports = {
         return;
       }
 
+      let content: string;
+      if (userEnvironmentData.items.length === 0) {
+        content = `You are in the environment ${userEnvironmentData.name}. There are no items in this environment.`;
+      } else {
+        content = `You are in the environment ${
+          userEnvironmentData.name
+        }. The items in this environment are: ${userEnvironmentData.items.join(
+          ", "
+        )}`;
+      }
       await interaction.editReply({
-        content: (await userEnvironmentData).items.join(", "),
+        content,
       });
     } catch (error) {
       console.log(error);

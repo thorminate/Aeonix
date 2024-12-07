@@ -11,7 +11,7 @@ import {
   StringSelectMenuOptionBuilder,
   ActionRowBuilder,
 } from "discord.js";
-import UserData from "../../models/userDatabaseSchema";
+import UserData from "../../models/UserData";
 import ms from "ms";
 import actions from "../../actions/actionIndex";
 import path from "path";
@@ -414,6 +414,26 @@ export default async (
         });
         break;
 
+      case "edit-environment-adjacents-modal":
+        // get input values
+        const editEnvironmentAdjacentsName: string = modalInteraction.fields
+          .getTextInputValue("edit-environment-name-input")
+          .toLowerCase()
+          .trim();
+
+        const editEnvironmentAdjacentsModifier = modalInteraction.fields
+          .getTextInputValue("edit-environment-adjacents-modifier-input")
+          .toLowerCase()
+          .trim();
+
+        const editEnvironmentAdjacents = modalInteraction.fields
+          .getTextInputValue("edit-environment-adjacents-input")
+          .toLowerCase()
+          .split(",")
+          .map((adjacent) => adjacent.trim());
+
+        break;
+
       case "delete-environment-modal":
         // get input values
         const deleteEnvironmentName: string = modalInteraction.fields
@@ -437,8 +457,8 @@ export default async (
           .map((id: string) => id.trim());
 
         await actions.user.relocate(modalInteraction, {
-          environmentName: relocateNameInput,
-          userId: relocateUserId,
+          name: relocateNameInput,
+          users: relocateUserId,
         });
         break;
 

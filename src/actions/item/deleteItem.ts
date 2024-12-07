@@ -1,7 +1,7 @@
 import { ModalSubmitInteraction } from "discord.js";
-import ItemData from "../../models/itemDatabaseSchema";
-import UserData from "../../models/userDatabaseSchema";
-import EnvironmentData from "../../models/environmentDatabaseSchema";
+import ItemData from "../../models/ItemData";
+import UserData from "../../models/UserData";
+import EnvironmentData from "../../models/EnvironmentData";
 
 export default async (
   interaction: ModalSubmitInteraction,

@@ -11,7 +11,11 @@ export default async (bot: Client) => {
   try {
     const welcomeChannel = bot.channels.cache.get("1294690937783717969");
     if (!(welcomeChannel instanceof TextChannel)) return;
-    await welcomeChannel.bulkDelete(100);
+    await welcomeChannel.bulkDelete(100).catch(() => {
+      console.log(
+        "Failed to delete messages in #onboarding, please manually delete them. Continuing..."
+      );
+    });
 
     const welcomeChannelBeginOnboarding = new ButtonBuilder()
       .setCustomId("begin-onboarding")

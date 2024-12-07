@@ -23,6 +23,11 @@ const environmentData = new Schema({
     type: Array<string>,
     default: [],
   },
+  adjacents: {
+    // Define the environments adjacent environments.
+    type: Array<string>,
+    default: [],
+  },
 });
 
 export default model("environment", environmentData); // Export the model.

@@ -1,6 +1,6 @@
 import { ModalSubmitInteraction } from "discord.js";
-import SkillData from "../../models/skillDatabaseSchema";
-import UserData from "../../models/userDatabaseSchema";
+import SkillData from "../../models/SkillData";
+import UserData from "../../models/UserData";
 
 interface Options {
   skillName: string;

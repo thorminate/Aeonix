@@ -1,6 +1,6 @@
 import { ModalSubmitInteraction } from "discord.js";
-import skillData from "../../models/skillDatabaseSchema";
-import userData from "../../models/userDatabaseSchema";
+import skillData from "../../models/SkillData";
+import userData from "../../models/UserData";
 
 /**
  * Deletes a skill from the database.

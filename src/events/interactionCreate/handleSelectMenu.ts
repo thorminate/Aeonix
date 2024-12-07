@@ -3,7 +3,7 @@
  * @param {Client} bot The instantiating client.
  * @param {Interaction} interaction The interaction that ran the command.
  */
-import userData from "../../models/userDatabaseSchema";
+import userData from "../../models/UserData";
 import {
   ActionRowBuilder,
   StringSelectMenuBuilder,

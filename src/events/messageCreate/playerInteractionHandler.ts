@@ -1,7 +1,7 @@
 import { Message, Client } from "discord.js";
-import userData from "../../models/userDatabaseSchema";
-import skillData from "../../models/skillDatabaseSchema";
-import itemData from "../../models/itemDatabaseSchema";
+import userData from "../../models/UserData";
+import skillData from "../../models/SkillData";
+import itemData from "../../models/ItemData";
 
 export default async (bot: Client, message: Message) => {
   // if message was not made in a guild, author was a bot or the cooldown is active, return

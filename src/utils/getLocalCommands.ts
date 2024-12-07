@@ -1,7 +1,8 @@
 import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
+import url from "url";
 
-export default (exceptions = []) => {
+export default async (exceptions = []) => {
   // Export the function.
   let localCommands = []; // define local commands as an array
 
@@ -16,7 +17,9 @@ export default (exceptions = []) => {
     const commandFiles = getAllFiles(commandCategory); // get all files in the command category
     for (const commandFile of commandFiles) {
       // loop through all files in the command category
-      const commandObject = require(commandFile); // require the file
+      const filePath = path.resolve(commandFile); // get the path to the file
+      const fileUrl = url.pathToFileURL(filePath); // get the url to the file
+      const commandObject = (await import(fileUrl.toString())).default.default; // import the file
 
       if (exceptions.includes(commandObject.name)) {
         // if the command name is in the exceptions array

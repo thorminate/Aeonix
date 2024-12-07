@@ -1,5 +1,5 @@
 import { ModalSubmitInteraction } from "discord.js";
-import UserData from "../../models/userDatabaseSchema";
+import UserData from "../../models/UserData";
 
 interface Options {
   variant: "strength" | "will" | "cognition" | "level" | "exp";

@@ -14,7 +14,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
 } from "discord.js"; // Import the discord.js library.
-import userData from "../../models/userDatabaseSchema"; // Import the user database schema.
+import userData from "../../models/UserData"; // Import the user database schema.
 import log from "../../utils/log";
 
 export default async (bot: Client, buttonInteraction: ButtonInteraction) => {

@@ -10,7 +10,7 @@ import log from "../../utils/log";
 export default async (bot: Client, commandInteraction: CommandInteraction) => {
   if (!commandInteraction.isChatInputCommand()) return;
   // get already registered commands
-  const localCommands = getLocalCommands();
+  const localCommands = await getLocalCommands();
 
   try {
     // check if command name is in localCommands

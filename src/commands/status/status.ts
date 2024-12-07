@@ -20,17 +20,18 @@ import {
   Message,
   ButtonInteraction,
 } from "discord.js";
-import UserData from "../../models/userDatabaseSchema";
+import UserData from "../../models/UserData";
 import calculateLevelExp from "../../utils/calculateLevelExp";
 import buttonWrapper from "../../utils/buttonWrapper";
 import commandVerify from "../../utils/commandVerify";
 import log from "../../utils/log";
 import { config } from "dotenv";
+import commandPrep from "../../utils/commandPrep";
 config({
   path: "../../../.env",
 });
 
-module.exports = {
+export default {
   name: "status",
   description: "Shows your personal menu",
   //devOnly: Boolean,
@@ -44,10 +45,7 @@ module.exports = {
     try {
       if (!commandVerify(interaction)) return;
 
-      // defer reply and make it ephemeral
-      await interaction.deferReply({
-        ephemeral: true,
-      });
+      await commandPrep(interaction);
 
       //define targetUserObj
       const userObj = await interaction.guild.members.fetch(
@@ -1551,6 +1549,10 @@ module.exports = {
                     .setCustomId("edit-environment-channel")
                     .setLabel("Edit Environment Channel")
                     .setStyle(ButtonStyle.Primary),
+                  new ButtonBuilder()
+                    .setCustomId("edit-environment-adjacents")
+                    .setLabel("Edit Environment Adjacents")
+                    .setStyle(ButtonStyle.Primary),
                 ];
 
                 if (prevPlayer === true) {
@@ -1754,6 +1756,68 @@ module.exports = {
                   );
                   log({
                     header: "Edit Environment Channel Error",
+                    payload: `${error}`,
+                    type: "error",
+                  });
+                }
+                break;
+
+              case "edit-environment-adjacents":
+                try {
+                  // Set up the Edit Environment Adjacents modal
+                  const editEnvironmentAdjacentsModal = new ModalBuilder()
+                    .setCustomId("edit-environment-adjacents-modal")
+                    .setTitle("Edit Environment Adjacents");
+
+                  const editEnvironmentAdjacentsNameInput =
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(
+                      new TextInputBuilder()
+                        .setCustomId("edit-environment-name-input")
+                        .setLabel("Environment name")
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(true)
+                        .setPlaceholder("Kobalt")
+                    );
+
+                  const editEnvironmentAdjacentsModifierInput =
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(
+                      new TextInputBuilder()
+                        .setCustomId(
+                          "edit-environment-adjacents-modifier-input"
+                        )
+                        .setLabel("Modifier")
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(true)
+                        .setPlaceholder("Remove, Add or set.")
+                    );
+
+                  const editEnvironmentAdjacentsInput =
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(
+                      new TextInputBuilder()
+                        .setCustomId("edit-environment-adjacents-input")
+                        .setLabel("Adjacents")
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(true)
+                        .setPlaceholder("Kobalt-2, Kobalt-3, Kobalt-4")
+                    );
+
+                  editEnvironmentAdjacentsModal.addComponents(
+                    editEnvironmentAdjacentsNameInput,
+                    editEnvironmentAdjacentsModifierInput,
+                    editEnvironmentAdjacentsInput
+                  );
+
+                  // Show the modal
+                  await buttonInteraction.showModal(
+                    editEnvironmentAdjacentsModal
+                  );
+                } catch (error) {
+                  console.log(
+                    "Error handling Edit Environment Adjacents modal:",
+                    error
+                  );
+                  log({
+                    header: "Edit Environment Adjacents Error",
                     payload: `${error}`,
                     type: "error",
                   });
