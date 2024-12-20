@@ -1,6 +1,12 @@
 import { ModalSubmitInteraction } from "discord.js";
 import ItemData from "../../models/ItemData";
 import EnvironmentData from "../../models/EnvironmentData";
+import {
+  ChannelNotFoundError,
+  EnvironmentAlreadyExistsError,
+  EnvironmentCreationError,
+  ItemNotFoundError,
+} from "../../errors";
 import log from "../../utils/log";
 
 interface Options {
@@ -25,12 +31,10 @@ export default async (
     //Channel validation
     if (!interaction.guild.channels.cache.has(channel)) {
       // if channel id is not a number
-      await interaction.reply({
-        // say so verbosely
-        content: "Channel ID invalid!",
-        ephemeral: true,
-      });
-      return;
+      throw new ChannelNotFoundError(
+        "Channel not found!",
+        "interaction.guild.channels.cache.has(channel) returned false while creating environment."
+      );
     }
 
     //Environment validation
@@ -40,12 +44,12 @@ export default async (
       })
     ) {
       // if environment already exists
-      await interaction.reply({
-        // say so verbosely
-        content: `Environment ${name} already exists.`,
-        ephemeral: true,
-      });
-      return;
+      throw new EnvironmentAlreadyExistsError(
+        `Environment ${name} already exists.`,
+        `await EnvironmentData.findOne({
+        name: ${name},
+      }) returned true while creating environment.`
+      );
     }
 
     //Item validation
@@ -76,14 +80,12 @@ export default async (
       );
       if (invalidItems.length > 0) {
         // if there are invalid items
-        await interaction.reply({
-          // say so verbosely
-          content: `Item(s) ${invalidItems
-            .map((item: null, index: number) => itemsData[index][0])
-            .join(", ")} not found, make sure they exist in the database.`,
-          ephemeral: true,
-        });
-        return;
+        throw new ItemNotFoundError(
+          `Item(s) ${invalidItems} did not exist while creating environment.`,
+          `await ItemData.findOne({ name: ${itemsData.map(
+            (item) => item[1]
+          )} }) returned false while creating environment.`
+        );
       }
       // give all valid items the environment name
       itemsData.forEach(async (item: any) => {
@@ -119,11 +121,11 @@ export default async (
       });
     }
   } catch (err) {
-    console.log(err);
     log({
-      header: "Environment Create Error",
+      header: "Environment Creation Error",
       payload: `${err}`,
       type: "error",
     });
+    throw new EnvironmentCreationError(`${err}`, `while creating environment.`);
   }
 };

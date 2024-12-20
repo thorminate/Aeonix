@@ -36,6 +36,16 @@ export class ChannelNotFoundError extends Error {
     this.cause = cause;
   }
 }
+
+export class ChannelIsNotTextChannelError extends Error {
+  constructor(message: string, cause: string) {
+    super("Channel is not text channel");
+    this.name = "ChannelIsNotTextChannelError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
 export class UserNotFoundError extends Error {
   constructor(message: string, cause: string) {
     super("User not found");
@@ -46,25 +56,76 @@ export class UserNotFoundError extends Error {
   }
 }
 
-export class RoleNotFoundError extends Error {
+export class UserCannotBeBannedError extends Error {
   constructor(message: string, cause: string) {
-    super("Role not found");
-    this.name = "RoleNotFoundError";
+    super("User cannot be banned");
+    this.name = "UserCannotBeBannedError";
     this.message = message;
     this.stack = new Error().stack;
     this.cause = cause;
   }
 }
 
-export class GuildNotFoundError extends Error {
+export class UserCannotBeKickedError extends Error {
   constructor(message: string, cause: string) {
-    super("Guild not found");
-    this.name = "GuildNotFoundError";
+    super("User cannot be kicked");
+    this.name = "UserCannotBeKickedError";
     this.message = message;
     this.stack = new Error().stack;
     this.cause = cause;
   }
 }
+
+export class UserCannotBeMutedError extends Error {
+  constructor(message: string, cause: string) {
+    super("User cannot be muted");
+    this.name = "UserCannotBeMutedError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
+export class UserIsBotError extends Error {
+  constructor(message: string, cause: string) {
+    super("User is a bot");
+    this.name = "UserIsBotError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
+export class UserIsAdminError extends Error {
+  constructor(message: string, cause: string) {
+    super("User is an admin");
+    this.name = "UserIsAdminError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
+export class UserCannotLevelUpError extends Error {
+  constructor(message: string, cause: string) {
+    super("User cannot level up");
+    this.name = "UserCannotLevelUpError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
+export class InvalidTimeoutDurationError extends Error {
+  constructor(message: string, cause: string) {
+    super("Invalid timeout duration");
+    this.name = "InvalidTimeoutDurationError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
 export class EnvironmentAlreadyExistsError extends Error {
   constructor(message: string, cause: string) {
     super("Environment already exists");
@@ -74,6 +135,7 @@ export class EnvironmentAlreadyExistsError extends Error {
     this.cause = cause;
   }
 }
+
 export class ItemNotFoundError extends Error {
   constructor(message: string, cause: string) {
     super("Item not found");
@@ -83,6 +145,7 @@ export class ItemNotFoundError extends Error {
     this.cause = cause;
   }
 }
+
 export class EnvironmentCreationError extends Error {
   constructor(message: string, cause: string) {
     super("Environment creation error");
@@ -92,6 +155,7 @@ export class EnvironmentCreationError extends Error {
     this.cause = cause;
   }
 }
+
 export class EnvironmentDeletionError extends Error {
   constructor(message: string, cause: string) {
     super("Environment deletion error");
@@ -101,6 +165,7 @@ export class EnvironmentDeletionError extends Error {
     this.cause = cause;
   }
 }
+
 export class EnvironmentEditAdjacentsError extends Error {
   constructor(message: string, cause: string) {
     super("Environment edit adjacents error");
@@ -171,23 +236,52 @@ export class ItemNotInInventoryError extends Error {
   }
 }
 
-export default {
-  UnableToProcessEventError,
-  UnableToProcessCommandError,
-  UnableToProcessInteractionError,
-  ChannelNotFoundError,
-  UserNotFoundError,
-  RoleNotFoundError,
-  GuildNotFoundError,
-  EnvironmentAlreadyExistsError,
-  EnvironmentCreationError,
-  EnvironmentDeletionError,
-  EnvironmentEditAdjacentsError,
-  EnvironmentEditChannelError,
-  EnvironmentEditItemsError,
-  EnvironmentEditNameError,
-  EnvironmentAlreadyHasItemsError,
-  ItemNotFoundError,
-  ItemAlreadyExistsError,
-  ItemNotInInventoryError,
-};
+export class SkillNotFoundError extends Error {
+  constructor(message: string, cause: string) {
+    super("Skill not found");
+    this.name = "SkillNotFoundError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
+export class SkillAlreadyExistsError extends Error {
+  constructor(message: string, cause: string) {
+    super("Skill already exists");
+    this.name = "SkillAlreadyExistsError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
+export class StatusEffectNotFoundError extends Error {
+  constructor(message: string, cause: string) {
+    super("Status effect not found");
+    this.name = "StatusEffectNotFoundError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
+export class StatusEffectAlreadyExistsError extends Error {
+  constructor(message: string, cause: string) {
+    super("Status effect already exists");
+    this.name = "StatusEffectAlreadyExistsError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}
+
+export class StatusEffectDurationError extends Error {
+  constructor(message: string, cause: string) {
+    super("Status effect duration error");
+    this.name = "StatusEffectDurationError";
+    this.message = message;
+    this.stack = new Error().stack;
+    this.cause = cause;
+  }
+}

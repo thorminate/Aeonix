@@ -1,5 +1,6 @@
 import { ModalSubmitInteraction } from "discord.js";
 import skillData from "../../models/SkillData";
+import { SkillAlreadyExistsError } from "../../errors";
 
 interface Options {
   name: string;
@@ -21,11 +22,10 @@ export default async (
   // Validate the inputs
   // check if skill already exists
   if (await skillData.findOne({ name: options.name })) {
-    await interaction.reply({
-      content: "Skill already exists. Please choose a different name.",
-      ephemeral: true,
-    });
-    return;
+    throw new SkillAlreadyExistsError(
+      `Skill ${options.name} already exists.`,
+      "Skill already exists"
+    );
   }
 
   // create a new skill and store it in the database

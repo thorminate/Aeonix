@@ -57,8 +57,7 @@ export default async (
 
         if (!(prevEnvironmentChannel instanceof TextChannel)) {
           await interaction.reply({
-            content:
-              "Your previous environment channel isn't a text channel!, this shouldn't happen. Contact an admin.",
+            content: "Channel isn't a text channel!",
             ephemeral: true,
           });
           return;

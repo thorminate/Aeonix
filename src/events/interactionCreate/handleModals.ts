@@ -6,16 +6,19 @@
 import {
   ModalSubmitInteraction,
   Client,
-  GuildMemberRoleManager,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   ActionRowBuilder,
 } from "discord.js";
 import UserData from "../../models/UserData";
-import ms from "ms";
 import actions from "../../actions/actionIndex";
 import path from "path";
 import log from "../../utils/log";
+import {
+  ChannelNotFoundError,
+  EnvironmentCreationError,
+  SkillAlreadyExistsError,
+} from "../../errors";
 
 export default async (
   bot: Client,
@@ -116,13 +119,22 @@ export default async (
           modalInteraction.fields.getTextInputValue("create-skill-will-input")
         );
 
-        actions.skill.create(modalInteraction, {
-          name: createSkillName,
-          description: createSkillDescription,
-          action: createSkillAction,
-          cooldown: createSkillCooldown,
-          will: createSkillWill,
-        });
+        actions.skill
+          .create(modalInteraction, {
+            name: createSkillName,
+            description: createSkillDescription,
+            action: createSkillAction,
+            cooldown: createSkillCooldown,
+            will: createSkillWill,
+          })
+          .catch((error) => {
+            if (error instanceof SkillAlreadyExistsError) {
+              modalInteraction.reply({
+                content: "A skill with that name already exists.",
+                ephemeral: true,
+              });
+            }
+          });
         break;
 
       case "delete-skill-modal":
@@ -332,19 +344,32 @@ export default async (
           modalInteraction.fields
             .getTextInputValue("create-environment-items-input") // get items input
             .toLowerCase() // convert to lowercase
-            .split(",")
-            .map((itemName) => itemName.trim()); // convert to array, split by comma
+            .split(",") // convert to array, split by comma
+            .map((itemName) => itemName.trim()); // trim whitespace
         const createEnvironmentChannel: string =
-          // get channel input and convert to number
+          // get channel input
           modalInteraction.fields.getTextInputValue(
             "create-environment-channel-input"
           );
 
-        await actions.environment.create(modalInteraction, {
-          name: createEnvironmentName,
-          items: createEnvironmentItemsPromises,
-          channel: createEnvironmentChannel,
-        });
+        await actions.environment
+          .create(modalInteraction, {
+            name: createEnvironmentName,
+            items: createEnvironmentItemsPromises,
+            channel: createEnvironmentChannel,
+          })
+          .catch((error) => {
+            if (error instanceof EnvironmentCreationError) {
+              modalInteraction.reply({
+                content: "Error creating environment.",
+                ephemeral: true,
+              });
+            } else if (error instanceof ChannelNotFoundError) {
+              modalInteraction.reply({
+                content: "Channel not found.",
+              });
+            }
+          });
         break;
 
       case "edit-environment-name-modal":
