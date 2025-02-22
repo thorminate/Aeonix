@@ -4,8 +4,9 @@ import fs from "node:fs";
 import ReadLine from "node:readline"; // Then we import the readline module, this is used later for the CLI.
 import { promisify } from "node:util";
 import { ShardingManager } from "discord.js"; // First, we import the ShardingManager.
-import { config } from "dotenv";
 import log from "./utils/log";
+import { config } from "dotenv";
+config();
 
 (async () => {
   if (!fs.existsSync("./.env")) {
@@ -45,8 +46,6 @@ import log from "./utils/log";
     console.log("Created .env file successfully.\n\n\n");
   }
 
-  config();
-
   setTimeout(() => {
     const manager = new ShardingManager("./dist/bot.js", {
       // Then we create the ShardingManager with the bot entrypoint.
@@ -59,16 +58,10 @@ import log from "./utils/log";
       manager.spawn().catch((error) => {
         // Spawn the shards. Catch errors.
         console.error("The shard failed to launch:"); // Log the error.
-        console.error(
-          error.stack,
-          error.message,
-          error.name,
-          error.cause,
-          error
-        ); // Log the error.
+        console.error(error); // Log the error.
         log({
           header: "Shard failed to launch",
-          payload: `${error.stack}\n${error.message}\n${error.name}\n${error.cause}\n${error}`,
+          payload: error,
           type: "fatal",
         });
       });

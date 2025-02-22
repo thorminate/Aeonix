@@ -3,16 +3,16 @@
   "version": "alpha",
   "main": "dist/index.js",
   "scripts": {
-    "start": "tsc && node dist/index.js",
+    "start": "node ./scripts/sanitize.js && tsc && node ./dist/index.js",
     "reset": "rm -rf ./dist && rm -rf ./logs && rm -rf ./node_modules && rm -rf ./package-lock.json && npm i && npm i -g typescript && npm cache clean --force"
   },
   "keywords": [],
   "author": "Thorminate",
   "license": "CC-BY-NC-SA-4.0",
-  "description": "Aeonix is a discord bot I made for my fellow RPGers. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
+  "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "dependencies": {
     "discord.js": "^14.16.2",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "mongodb": "^6.9.0",
     "mongoose": "^8.6.2",
     "ms": "^2.1.3",

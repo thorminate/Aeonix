@@ -20,13 +20,14 @@ import {
   Message,
   ButtonInteraction,
 } from "discord.js";
-import UserData from "../../models/UserData";
+import Player from "../../models/Player";
 import calculateLevelExp from "../../utils/calculateLevelExp";
 import buttonWrapper from "../../utils/buttonWrapper";
 import commandVerify from "../../utils/commandVerify";
 import log from "../../utils/log";
 import { config } from "dotenv";
 import commandPrep from "../../utils/commandPrep";
+import { InventoryEntry } from "../../models/Player";
 config({
   path: "../../../.env",
 });
@@ -53,30 +54,17 @@ export default {
       );
 
       // find user in database and then get their data
-      const userData = await UserData.findOne({
-        id: interaction.user.id,
-        guild: interaction.guild.id,
-      });
+      const player = await Player.load(interaction.user.username);
 
       // if user doesn't exist in database, say so and return
-      if (!userData) {
+      if (!player) {
         interaction.editReply(
           `You haven't been integrated into Aeonix's database yet. Head over to <#${process.env.ONBOARDING_CHANNEL}>`
         );
         return;
       }
 
-      let skillsDisplay: string;
-      if (userData.skills && userData.skills.length > 0) {
-        skillsDisplay = userData.skills
-          .map((skill: string) => {
-            const skillUppercaseLetter = skill[0].toUpperCase();
-            return `${skillUppercaseLetter}${skill.slice(1)}`;
-          })
-          .join(", ");
-      } else {
-        skillsDisplay = "No skills learned yet";
-      }
+      let skillsDisplay = "WIP";
 
       async function playerMenu(prevAdmin = false) {
         if (!interaction.isCommand()) return;
@@ -84,15 +72,15 @@ export default {
           .setTitle(`Status menu`)
           .setDescription(
             `Hello <@${userObj.user.id}>!\nYour level is **${
-              userData.level
-            }** and you have **${userData.exp}/${calculateLevelExp(
-              userData.level + 1
+              player.level
+            }** and you have **${player.xp}/${calculateLevelExp(
+              player.level + 1
             )}** experience.`
           )
           .addFields(
             {
               name: "***Stats:***",
-              value: `**Strength:** ***${userData.strength}***\n**Will:** ***${userData.will}***\n**Cognition:** ***${userData.cognition}***`,
+              value: `**Strength:** ***${player.strength}***\n**Will:** ***${player.will}***\n**Cognition:** ***${player.cognition}***`,
             },
             {
               name: "***Skills:***",
@@ -140,8 +128,9 @@ export default {
           if (i.replied || i.deferred) return;
           else if (i.customId === "inventory") {
             const formattedInventory =
-              userData.inventory.map((item) => `${item.name}`).join(",\n") ||
-              "is empty...";
+              player.inventory
+                .map((item: InventoryEntry) => `${item.name}`)
+                .join(",\n") || "is empty...";
             await i.reply({
               content: `## Your inventory\n ${formattedInventory}`,
               ephemeral: true,
@@ -197,15 +186,15 @@ export default {
           })
           .setDescription(
             `Welcome Administrator <@${userObj.user.id}>!\nYour level is **${
-              userData.level
-            }** and you have **${userData.exp}/${calculateLevelExp(
-              userData.level + 1
+              player.level
+            }** and you have **${player.xp}/${calculateLevelExp(
+              player.level + 1
             )}** experience.\n`
           )
           .addFields(
             {
               name: "Stats",
-              value: `**Strength:** ***${userData.strength}***\n**Will:** ***${userData.will}***\n**Cognition:** ***${userData.cognition}***`,
+              value: `**Strength:** ***${player.strength}***\n**Will:** ***${player.will}***\n**Cognition:** ***${player.cognition}***`,
             },
             { name: "Skills", value: skillsDisplay }
           )

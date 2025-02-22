@@ -8,8 +8,8 @@ import { Client, IntentsBitField, Partials } from "discord.js"; // Get the disco
 import mongoose from "mongoose"; // Get the mongoose library.
 import eventHandler from "./handlers/eventHandler"; // Get the event handler.
 import log from "./utils/log";
-import { config } from "dotenv"; // Get the dotenv config function.
-config(); // Load the .env file.
+import { config } from "dotenv";
+config();
 
 // Define 'bot'
 const bot = new Client({
@@ -61,10 +61,14 @@ const DiscordToken = process.env.TOKEN; // Get the Discord token.
     });
     process.stdout.write("Attempting to connect to DB..."); // Log that we are attempting to connect to the DB.
     await mongoose.connect(MongoDBToken);
-    process.stdout.write(" Confirmed\n"); // Connect to the DB. When the connection is successful, log that it was successful.
+    process.stdout.write(" Connection Established\n"); // Connect to the DB. When the connection is successful, log that it was successful.
     log({
       header: "Connected to DB",
       type: "info",
+    });
+    process.on("SIGINT", () => {
+      // When the bot is shut down, close the connection to the DB.
+      mongoose.connection.close();
     });
 
     process.stdout.write("Setting up events..."); // Log that we are setting up the events.

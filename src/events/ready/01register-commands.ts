@@ -16,11 +16,11 @@ export default async (bot: Client) => {
 
     // loop through all local commands
     for (const localCommand of localCommands) {
-      const { name, description, options } = localCommand;
-
-      if (!name) {
+      if (localCommand.name === undefined || !localCommand.name) {
         continue;
       }
+
+      const { name, description, options } = localCommand;
 
       // check if command already exists and store in a variable
       const existingCommand = await applicationCommands.cache.find(
