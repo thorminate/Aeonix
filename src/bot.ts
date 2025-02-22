@@ -12,7 +12,7 @@ import { config } from "dotenv";
 config();
 
 // Define 'bot'
-const bot = new Client({
+export const bot = new Client({
   // Create the bot.
   intents: [
     // With all the intents.

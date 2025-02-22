@@ -1,8 +1,10 @@
-// exports the required exp to level up for a given level
-
-export default (level: number) => {
+/**
+ * Calculate the experience required for the next level.
+ */
+export default (currentLevel: number) => {
   // Export the function.
-  const output = level ** 2 || 1; // Calculate the output.
+  const nextLevel = currentLevel + 1;
+  const output = nextLevel ** 2 || 1; // Calculate the output.
 
   const roundedOutput = Math.round(output); // Round the output.
   return roundedOutput; // Return the rounded output.
