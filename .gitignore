@@ -1,5 +1,4 @@
 dist/
 logs/
 node_modules/
-src/models/content
 .env
