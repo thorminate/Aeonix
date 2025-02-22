@@ -8,7 +8,7 @@
   },
   "keywords": [],
   "author": "Thorminate",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "MIT",
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "dependencies": {
     "discord.js": "^14.16.2",
