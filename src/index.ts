@@ -92,21 +92,8 @@ config();
               console.log(
                 "'exit' to quit and turn off the bot",
                 "\n'help' for help",
-                "\n'clear' to clear the console",
-                "\n'echo <text>' to echo text",
-                "\n'restart' to restart the bot",
                 "\n'log <header> [options]' options are --payload and --folder"
               );
-              break;
-
-            case "clear": // Clear the console.
-              console.clear();
-              break;
-
-            case "echo": // Echo the rest of the line.
-              const echo = input.split(" ")[1];
-              if (!echo) console.log("Nothing to echo");
-              else console.log(echo);
               break;
 
             case "exit": // Exit the bot.
@@ -116,19 +103,7 @@ config();
               });
               await manager.broadcastEval((c) => c.destroy());
               console.clear();
-              process.exit();
-              break;
-
-            case "restart": // Restart the bot.
-              console.log("Restart command received, restarting...");
-              await manager.broadcastEval((c) => c.destroy());
-              setTimeout(() => {
-                spawn();
-                log({
-                  header: "Restarting shards",
-                  type: "Info",
-                });
-              }, 6 * 1000);
+              process.exit(0);
               break;
 
             case "log": // Log the inputs
@@ -137,7 +112,6 @@ config();
               const options: string[] = logArr.slice(2);
               let payload: string = "";
               let folder: string = "";
-              // get the --payload and --folder arguments and make it able to contain multiple words.
               for (let i = 0; i < options.length; i++) {
                 if (options[i] === "--payload") {
                   for (
@@ -165,12 +139,16 @@ config();
               break;
 
             default: // Invalid command handling.
-              console.error("Invalid command");
+              log({
+                header: "Invalid command",
+                type: "Warn",
+              });
               console.log(
                 "Use 'exit' to quit and turn off the bot, or 'help' for help"
               );
               break;
           }
+          rl.prompt();
         });
         setTimeout(() => {
           rl.prompt();
