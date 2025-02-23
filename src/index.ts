@@ -11,7 +11,12 @@ config();
 (async () => {
   if (!fs.existsSync("./.env")) {
     // If the .env file doesn't exist, we create it.
-    // If the .env file doesn't exist, we create it.
+
+    log({
+      header: ".env file not found, starting setup wizard",
+      type: "Warn",
+    });
+
     const rl = ReadLine.createInterface({
       input: process.stdin,
       output: process.stdout,
@@ -43,7 +48,10 @@ config();
 
     rl.close();
 
-    console.log("Created .env file successfully.\n\n\n");
+    log({
+      header: "Created .env file",
+      type: "Info",
+    });
   }
 
   setTimeout(() => {
@@ -56,13 +64,11 @@ config();
     function spawn() {
       // This function spawns the shards.
       manager.spawn().catch((error) => {
-        // Spawn the shards. Catch errors.
-        console.error("The shard failed to launch:"); // Log the error.
-        console.error(error); // Log the error.
         log({
           header: "Shard failed to launch",
           payload: error,
-          type: "fatal",
+          processName: "Shard Manager",
+          type: "Fatal",
         });
       });
     }
@@ -81,10 +87,8 @@ config();
 
         rl.on("line", async (input: string) => {
           // When a line is typed.
-          switch (
-            input.split(" ")[0] // Switch on the first word in the line.
-          ) {
-            case "help": // Give info on the CLI commands.
+          switch (input.split(" ")[0]) {
+            case "help":
               console.log(
                 "'exit' to quit and turn off the bot",
                 "\n'help' for help",
@@ -93,7 +97,7 @@ config();
                 "\n'restart' to restart the bot",
                 "\n'log <header> [options]' options are --payload and --folder"
               );
-              break; //
+              break;
 
             case "clear": // Clear the console.
               console.clear();
@@ -106,10 +110,9 @@ config();
               break;
 
             case "exit": // Exit the bot.
-              console.log("Exit command received, shutting down...");
               log({
-                header: "Shutting Down",
-                type: "warn",
+                header: "Shutting down",
+                type: "Warn",
               });
               await manager.broadcastEval((c) => c.destroy());
               console.clear();
@@ -123,7 +126,7 @@ config();
                 spawn();
                 log({
                   header: "Restarting shards",
-                  type: "info",
+                  type: "Info",
                 });
               }, 6 * 1000);
               break;

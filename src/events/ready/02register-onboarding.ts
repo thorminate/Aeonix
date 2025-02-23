@@ -12,6 +12,7 @@ import {
 } from "discord.js";
 import { config } from "dotenv";
 import buttonWrapper from "../../utils/buttonWrapper";
+import log from "../../utils/log";
 config();
 
 export default async (bot: Client) => {
@@ -20,7 +21,10 @@ export default async (bot: Client) => {
   const onboardingChannel = await bot.channels.fetch(onboardingChannelId);
 
   if (!onboardingChannel || !(onboardingChannel instanceof TextChannel)) {
-    console.log("Onboarding channel not found");
+    log({
+      header: "Onboarding channel not found",
+      type: "Error",
+    });
     return;
   }
 
@@ -29,7 +33,10 @@ export default async (bot: Client) => {
       // 50034 is cannot bulk delete messages older than 14 days.
       throw e;
     } else {
-      console.log("Onboarding channel needs to be emptied manually.");
+      log({
+        header: "Could not bulk delete messages, they are older than 14 days",
+        type: "Warn",
+      });
     }
   });
 

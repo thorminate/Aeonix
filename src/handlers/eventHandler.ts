@@ -6,7 +6,7 @@ import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
 import url from "url";
 import log from "../utils/log";
 
-export default (bot: Client) => {
+export default async (bot: Client) => {
   // Export the function.
   const eventFolders: Array<string> = getAllFiles(
     path.join(__dirname, "..", "events"),
@@ -29,11 +29,10 @@ export default (bot: Client) => {
         const eventFunction = await import(fileUrl.toString()); // Get the event function.
         // Run the event function. (the extra default is needed for some reason)
         await eventFunction.default.default(bot, arg).catch((err: any) => {
-          console.log(err);
           log({
             header: "Event Error, unable to process event",
             payload: `${err}`,
-            type: "error",
+            type: "Error",
           });
         });
       }

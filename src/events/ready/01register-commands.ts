@@ -32,7 +32,10 @@ export default async (bot: Client) => {
         if (localCommand.deleted) {
           // if it's set to be deleted, then delete it
           await applicationCommands.delete(existingCommand.id);
-          console.log(`Deleted command "${name}".`);
+          log({
+            header: `Deleted command, ${name}`,
+            type: "Info",
+          });
           continue;
         }
         // if commands are different, then update it.
@@ -43,14 +46,19 @@ export default async (bot: Client) => {
           });
 
           // log edited command
-          console.log(`Edited command "${name}".`);
+          log({
+            header: `Edited command, ${name}`,
+            type: "Info",
+          });
+          continue;
         }
       } else {
         // if command is set to be deleted, then skip registering it.
         if (localCommand.deleted) {
-          console.log(
-            `Skipping to register command "${name}" as its set to delete.`
-          );
+          log({
+            header: `Skipped registering command, ${name}, as it is set to be deleted`,
+            type: "Info",
+          });
           continue;
         }
         // register command
@@ -60,15 +68,17 @@ export default async (bot: Client) => {
           options,
         });
 
-        console.log(`Registered command "${name}".`);
+        log({
+          header: `Registered command, ${name}`,
+          type: "Info",
+        });
       }
     }
   } catch (error) {
-    console.log(`There was an error: ${error}`); // Log the error
     log({
       header: "Error registering commands",
       payload: `${error}`,
-      type: "error",
+      type: "Error",
     });
   }
 };

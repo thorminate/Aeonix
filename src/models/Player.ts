@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Saveable from "./utils/Saveable";
 import calculateLevelExp from "../utils/calculateLevelExp";
-import { TextChannel } from "discord.js";
+import { GuildMember, TextChannel } from "discord.js";
 
 interface IPlayer extends mongoose.Document {
   userId: string;
@@ -75,12 +75,17 @@ export default class Player extends Saveable<IPlayer> {
     this.giveXp(Math.floor(Math.random() * (max - min + 1)) + min);
   }
 
-  constructor(username: string, displayName: string, userId?: string) {
+  constructor(
+    username: string,
+    displayName: string,
+    member: GuildMember,
+    userId?: string
+  ) {
     super();
     // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
     this.username = username || "";
     this.displayName = displayName || "";
-    this.userId = userId ? userId : ;
+    this.userId = userId ? userId : member.user.id;
   }
 
   // All below is necessary for the Saveable class and may not be modified.

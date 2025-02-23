@@ -8,7 +8,6 @@ import {
   Client,
   Interaction,
   CommandInteraction,
-  GuildMember,
   PermissionsBitField,
   MessageComponentInteraction,
   TextInputBuilder,
@@ -539,11 +538,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(statsGiverModal);
                 } catch (error) {
-                  console.log("Error handling Stats Giver modal:", error);
                   log({
                     header: "Error handling Stats Giver modal",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -808,11 +806,10 @@ export default {
                     environmentModificationModal
                   );
                 } catch (error) {
-                  console.log(error);
                   log({
                     header: "Environment Modification Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -889,11 +886,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(createSkillModal);
                 } catch (error) {
-                  console.log("Error handling Create Skill modal:", error);
                   log({
                     header: "Create Skill Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -921,11 +917,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(deleteSkillModal);
                 } catch (error) {
-                  console.log("Error handling Delete Skill modal:", error);
                   log({
                     header: "Delete Skill Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -968,11 +963,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(grantSkillModal);
                 } catch (error) {
-                  console.log("Error handling Grant Skill modal:", error);
                   log({
                     header: "Grant Skill Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1015,11 +1009,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(revokeSkillModal);
                 } catch (error) {
-                  console.log("Error handling Revoke Skill modal:", error);
                   log({
                     header: "Revoke Skill Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1084,11 +1077,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(createItemModal);
                 } catch (error) {
-                  console.log("Error handling Create Item modal:", error);
                   log({
                     header: "Create Item Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1143,11 +1135,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(giveItemModal);
                 } catch (error) {
-                  console.log("Error handling Give Item modal:", error);
                   log({
                     header: "Give Item Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1190,11 +1181,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(revokeItemModal);
                 } catch (error) {
-                  console.log("Error handling Revoke Item modal:", error);
                   log({
                     header: "Revoke Item Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1223,11 +1213,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(deleteItemModal);
                 } catch (error) {
-                  console.log("Error handling Delete Item modal:", error);
                   log({
                     header: "Delete Item Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1293,14 +1282,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(createStatusEffectModal);
                 } catch (error) {
-                  console.log(
-                    "Error handling Create Status Effect modal:",
-                    error
-                  );
                   log({
                     header: "Create Status Effect Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1331,14 +1316,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(deleteStatusEffectModal);
                 } catch (error) {
-                  console.log(
-                    "Error handling Delete Status Effect modal:",
-                    error
-                  );
                   log({
                     header: "Delete Status Effect Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1381,14 +1362,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(grantStatusEffectModal);
                 } catch (error) {
-                  console.log(
-                    "Error handling Grant Status Effect modal:",
-                    error
-                  );
                   log({
                     header: "Grant Status Effect Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1431,14 +1408,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(revokeStatusEffectModal);
                 } catch (error) {
-                  console.log(
-                    "Error handling Revoke Status Effect modal:",
-                    error
-                  );
                   log({
                     header: "Revoke Status Effect Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1494,14 +1467,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(createEnvironmentModal);
                 } catch (error) {
-                  console.log(
-                    "Error handling Create Environment modal:",
-                    error
-                  );
                   log({
                     header: "Create Environment Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1581,14 +1550,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(deleteEnvironmentModal);
                 } catch (error) {
-                  console.log(
-                    "Error handling Delete Environment modal:",
-                    error
-                  );
                   log({
                     header: "Delete Environment Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1630,14 +1595,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(editEnvironmentNameModal);
                 } catch (error) {
-                  console.log(
-                    "Error handling Edit Environment Name modal:",
-                    error
-                  );
                   log({
                     header: "Edit Environment Name Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1690,14 +1651,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(editEnvironmentItemsModal);
                 } catch (error) {
-                  console.log(
-                    "Error handling Edit Environment Items modal:",
-                    error
-                  );
                   log({
                     header: "Edit Environment Items Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1739,14 +1696,10 @@ export default {
                     editEnvironmentChannelModal
                   );
                 } catch (error) {
-                  console.log(
-                    "Error handling Edit Environment Channel modal:",
-                    error
-                  );
                   log({
                     header: "Edit Environment Channel Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1801,14 +1754,10 @@ export default {
                     editEnvironmentAdjacentsModal
                   );
                 } catch (error) {
-                  console.log(
-                    "Error handling Edit Environment Adjacents modal:",
-                    error
-                  );
                   log({
                     header: "Edit Environment Adjacents Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1851,11 +1800,10 @@ export default {
                   // Show the modal
                   await buttonInteraction.showModal(sendMessageModal);
                 } catch (error) {
-                  console.log("Error handling Send Message modal:", error);
                   log({
                     header: "Send Message Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
 
@@ -1900,11 +1848,10 @@ export default {
 
                   await buttonInteraction.showModal(banUserModal);
                 } catch (error) {
-                  console.log("Error handling Ban User modal:", error);
                   log({
                     header: "Ban User Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -1947,11 +1894,10 @@ export default {
 
                   await buttonInteraction.showModal(kickUserModal);
                 } catch (error) {
-                  console.log("Error handling Kick User modal:", error);
                   log({
                     header: "Kick User Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -2006,11 +1952,10 @@ export default {
 
                   await buttonInteraction.showModal(timeoutUserModal);
                 } catch (error) {
-                  console.log("Error handling Timeout User modal:", error);
                   log({
                     header: "Timeout User Error",
                     payload: `${error}`,
-                    type: "error",
+                    type: "Error",
                   });
                 }
                 break;
@@ -2029,20 +1974,16 @@ export default {
       }
     } catch (error) {
       if (error instanceof HTTPError && error.status === 503) {
-        console.log(
-          `There was an error running status: The API did not respond in time. ${error.status}`
-        );
         log({
           header: "Status Error",
           payload: `The API did not respond in time. ${error.status}\n${error}`,
-          type: "error",
+          type: "Error",
         });
       }
-      console.log(`There was an error running status: ${error}`);
       log({
         header: "Status Error",
         payload: `${error}`,
-        type: "error",
+        type: "Error",
       });
     }
   },

@@ -3,13 +3,14 @@ import fs from "node:fs";
 
 interface Options {
   header: string;
+  processName?: string;
   folder?: string;
   payload?: string;
-  type?: "fatal" | "error" | "warn" | "info" | "verbose" | "debug" | "silly";
+  type?: "Fatal" | "Error" | "Warn" | "Info" | "Verbose" | "Debug" | "Silly";
 }
 
 export default (options: Options) => {
-  let { folder, payload, header, type } = options;
+  let { folder, payload, header, type, processName } = options;
 
   if (!header) return;
 
@@ -28,61 +29,35 @@ export default (options: Options) => {
     { flags: "a" }
   );
 
-  if (payload) {
-    const logContent = `${header} - ${date.toLocaleTimeString()}\n${payload}\n`;
-    switch (type) {
-      case "fatal":
-        logStream.write(`Fatal error: ${logContent}`);
-        break;
-      case "error":
-        logStream.write(`Error: ${logContent}`);
-        break;
-      case "warn":
-        logStream.write(`Warning: ${logContent}`);
-        break;
-      case "info":
-        logStream.write(`Info: ${logContent}`);
-        break;
-      case "verbose":
-        logStream.write(`Verbose: ${logContent}`);
-        break;
-      case "debug":
-        logStream.write(`Debug: ${logContent}`);
-        break;
-      case "silly":
-        logStream.write(`${logContent}`);
-        break;
-      default:
-        logStream.write(`${logContent}`);
-        break;
-    }
-  } else {
-    const logContent = `${header} - ${date.toLocaleTimeString()}\n`;
-    switch (type) {
-      case "fatal":
-        logStream.write(`Fatal error: ${logContent}`);
-        break;
-      case "error":
-        logStream.write(`Error: ${logContent}`);
-        break;
-      case "warn":
-        logStream.write(`Warning: ${logContent}`);
-        break;
-      case "info":
-        logStream.write(`Info: ${logContent}`);
-        break;
-      case "verbose":
-        logStream.write(`Verbose: ${logContent}`);
-        break;
-      case "debug":
-        logStream.write(`Debug: ${logContent}`);
-        break;
-      case "silly":
-        logStream.write(`${logContent}`);
-        break;
-      default:
-        logStream.write(`${logContent}`);
-        break;
-    }
+  const logPrefix = `${date.toLocaleTimeString()}`;
+  const logContent = payload ? `${header}\n${payload}` : `${header}`;
+  const logProcessName = processName ? `${processName}/` : "Main/";
+  const logType = type ? `${type}` : "Info";
+
+  const log = `[${logPrefix}] [${logProcessName}${logType}] ${logContent}`;
+
+  logStream.write(log + "\n");
+  switch (type) {
+    case "Fatal":
+    case "Error":
+      console.error(log);
+      break;
+    case "Warn":
+      console.warn(log);
+      break;
+    case "Info":
+      console.info(log);
+      break;
+    case "Verbose":
+      console.log(log);
+      break;
+    case "Debug":
+      console.debug(log);
+      break;
+    case "Silly":
+      console.log(log);
+      break;
+    default:
+      console.log(log);
   }
 };
