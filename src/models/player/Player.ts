@@ -14,7 +14,8 @@ export interface InventoryEntry {
 }
 
 export interface InventoryBlock {
-  name: string;
+  capacity: number;
+
   entries: InventoryEntry[];
 }
 
@@ -26,11 +27,33 @@ export interface StatBlock {
   cognition: number;
 }
 
+export class PlayerStatus implements StatBlock {
+  level: number;
+  xp: number;
+  strength: number;
+  will: number;
+  cognition: number;
+
+  constructor(
+    level: number = 1,
+    xp: number = 0,
+    strength: number = 0,
+    will: number = 0,
+    cognition: number = 0
+  ) {
+    this.level = level;
+    this.xp = xp;
+    this.strength = strength;
+    this.will = will;
+    this.cognition = cognition;
+  }
+}
+
 interface IPlayer extends Document {
   id: string;
   name: string;
   characterName: string;
-  status: StatBlock;
+  stats: StatBlock;
   inventory: InventoryBlock;
 }
 
@@ -48,8 +71,16 @@ export default class Player extends Saveable<IPlayer> {
   id: string;
   name: string;
   characterName: string;
-  status: StatBlock;
-  inventory: InventoryBlock;
+  private inventory: InventoryBlock;
+  private playerStatus: PlayerStatus;
+
+  public get status(): PlayerStatus {
+    return this.playerStatus;
+  }
+
+  public set status(status: StatBlock) {
+    this.playerStatus = status;
+  }
 
   /**
    * Level up the player by specified amount
@@ -126,18 +157,26 @@ export default class Player extends Saveable<IPlayer> {
 
   // All below is necessary for the Player class to function and may not be modified.
 
-  constructor(user: User, characterName: string) {
+  constructor(user: User | null = null, characterName: string | null = null) {
     super();
     // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
-    this.name = user.username;
+
+    this.name = user ? user.username : "";
     this.characterName = characterName || "";
-    this.id = user.id;
+    this.id = user ? user.id : "";
   }
 
-  protected getIdentifier(): { key: keyof IPlayer; value: string } {
+  protected getIdentifier(): {
+    key: keyof IPlayer;
+    value: string;
+    secondKey?: keyof IPlayer;
+    secondValue?: string;
+  } {
     return {
       key: "name",
       value: this.name,
+      secondKey: "id",
+      secondValue: this.id,
     };
   }
 

@@ -5,7 +5,7 @@ interface Options {
   header: string;
   processName?: string;
   folder?: string;
-  payload?: string;
+  payload?: any;
   type?: "Fatal" | "Error" | "Warn" | "Info" | "Verbose" | "Debug" | "Silly";
 }
 

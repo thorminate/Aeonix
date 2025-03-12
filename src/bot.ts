@@ -49,7 +49,7 @@ export const bot = new Client({
   ],
 });
 
-const MongoDBToken = process.env.MONGODB_URI + "aeonix"; // Get the MongoDB token and concatenate it with 'the_system'.
+const MongoDBToken = process.env.MONGODB_URI; // Get the MongoDB token and concatenate it with 'the_system'.
 const DiscordToken = process.env.TOKEN; // Get the Discord token.
 // Connect to DB and Discord.
 (async () => {

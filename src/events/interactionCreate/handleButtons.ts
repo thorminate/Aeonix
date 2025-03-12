@@ -1,14 +1,17 @@
 import {
+  ActionRowBuilder,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
-  Client,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } from "discord.js";
 import Player from "../../models/player/Player";
 import buttonWrapper from "../../utils/buttonWrapper";
-import { EventParam } from "../../handlers/eventHandler";
+import { Event } from "../../handlers/eventHandler";
 
-export default async (event: EventParam) => {
+export default async (event: Event) => {
   const { arg } = event;
   const buttonInteraction = arg as ButtonInteraction;
 
@@ -16,10 +19,45 @@ export default async (event: EventParam) => {
 
   switch (buttonInteraction.customId) {
     case "onboarding-start":
+      if (await Player.load(buttonInteraction.user.username)) {
+        await buttonInteraction.reply({
+          content:
+            "You have already initialized your persona. Do you wish to delete it?",
+          components: buttonWrapper([
+            new ButtonBuilder()
+              .setCustomId("delete-player")
+              .setLabel("Delete?")
+              .setStyle(ButtonStyle.Danger),
+          ]),
+          ephemeral: true,
+        });
+        return;
+      }
+      await buttonInteraction.showModal(
+        new ModalBuilder()
+          .setTitle("Set your display name")
+          .setCustomId("set-display-name")
+          .addComponents(
+            new ActionRowBuilder<TextInputBuilder>().addComponents(
+              new TextInputBuilder()
+                .setCustomId("display-name")
+                .setLabel("Display name/Character Name")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMaxLength(32)
+                .setMinLength(2)
+            )
+          )
+      );
       break;
+
     case "delete-player":
-      if (!Player.load(buttonInteraction.user.username)) {
-        await buttonInteraction.reply({ content: "You don't exist in the DB" });
+      if (!(await Player.load(buttonInteraction.user.username))) {
+        await buttonInteraction.reply({
+          content:
+            "You don't exist in the DB, therefore you cannot be deleted.",
+          ephemeral: true,
+        });
         return;
       }
 
@@ -30,16 +68,27 @@ export default async (event: EventParam) => {
           .setStyle(ButtonStyle.Danger),
       ]);
 
-      await buttonInteraction.editReply({
+      await buttonInteraction.reply({
         content: "Are you sure you want to delete your persona?",
         components: buttons,
+        ephemeral: true,
       });
 
       break;
     case "delete-player-confirmed":
+      if (!(await Player.load(buttonInteraction.user.username))) {
+        await buttonInteraction.reply({
+          content:
+            "You don't exist in the DB, therefore you cannot be deleted.",
+          ephemeral: true,
+        });
+        return;
+      }
+
       await Player.delete(buttonInteraction.user.username);
-      await buttonInteraction.editReply({
+      await buttonInteraction.reply({
         content: "Your persona has been deleted.",
+        ephemeral: true,
       });
   }
 };

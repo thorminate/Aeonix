@@ -17,10 +17,10 @@ export default {
   //botPermissions: [PermissionFlagsBits.Administrator],
   //options: [],
   //deleted: true,
-  callback: async (client: Client, interaction: CommandInteraction) => {
+  callback: async (interaction: CommandInteraction) => {
     await commandPrep(interaction);
 
-    if (Player.load(interaction.user.username)) {
+    if (await Player.load(interaction.user.username)) {
       const buttons = buttonWrapper([
         new ButtonBuilder()
           .setCustomId("delete-player")
@@ -35,8 +35,6 @@ export default {
       });
       return;
     }
-
-    const player = new Player(interaction.user, interaction.user.username);
 
     const buttons = buttonWrapper([
       new ButtonBuilder()

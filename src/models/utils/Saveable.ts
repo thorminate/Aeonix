@@ -1,4 +1,5 @@
 import { Document, FilterQuery, Model } from "mongoose";
+import log from "../../utils/log";
 
 // Define a specialized interface for the constructor
 export interface SaveableConstructor<T extends Document, TInstance> {
@@ -8,7 +9,12 @@ export interface SaveableConstructor<T extends Document, TInstance> {
 
 export default abstract class Saveable<T extends Document> {
   protected abstract getModel(): Model<T>;
-  protected abstract getIdentifier(): { key: keyof T; value: string };
+  protected abstract getIdentifier(): {
+    key: keyof T | string;
+    value: string;
+    secondKey?: keyof T | string;
+    secondValue?: string;
+  };
 
   async save(data?: Partial<T>): Promise<void> {
     const { key, value } = this.getIdentifier();
@@ -24,40 +30,32 @@ export default abstract class Saveable<T extends Document> {
   // Static load method with better type control
   static async load<T extends Document, TInstance extends Saveable<T>>(
     this: SaveableConstructor<T, TInstance>,
-    identifier: any
+    identifier: string
   ): Promise<TInstance | null> {
+    // First fetch the model, this links to a collection in the db (namely players)
     const model = this.getModel();
-    const doc = await model.findOne({
-      [this.prototype.getIdentifier().key]: identifier,
-    } as Record<string, any>);
 
+    /**
+     * Create a query to find the document
+     *
+     * Example:
+     * this.prototype.getIdentifier() = { key: 'name', value: 'username' }
+     * query = { name: 'username' }
+     *
+     * Summary:
+     * This creates a query object with the appropriate key and the identifier parameter
+     */
+    const query = {
+      [this.prototype.getIdentifier().key as string]: identifier,
+    };
+    // Fetch the document
+    let doc = await model.findOne(query as Record<string, any>);
     if (!doc) return null;
 
     // Create an instance and populate it
     const instance = new this() as TInstance;
     Object.assign(instance, doc.toObject());
     return instance;
-  }
-
-  static async loadOrCreate<T extends Document, TInstance extends Saveable<T>>(
-    this: SaveableConstructor<T, TInstance>,
-    identifier: any
-  ): Promise<TInstance> {
-    const model = this.getModel();
-    const doc = await model.findOne({
-      [this.prototype.getIdentifier().key]: identifier,
-    } as Record<string, any>);
-
-    if (doc) {
-      // Create an instance and populate it
-      const instance = new this() as TInstance;
-      Object.assign(instance, doc.toObject());
-      return instance;
-    } else {
-      const instance = new this(identifier) as TInstance;
-      await instance.save();
-      return instance;
-    }
   }
 
   static async delete<T extends Document>(

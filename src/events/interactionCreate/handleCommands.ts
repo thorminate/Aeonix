@@ -6,9 +6,9 @@
 import getLocalCommands from "../../utils/getLocalCommands";
 import { Client, CommandInteraction, PermissionsBitField } from "discord.js";
 import log from "../../utils/log";
-import { EventParam } from "../../handlers/eventHandler";
+import { Event } from "../../handlers/eventHandler";
 
-export default async (event: EventParam) => {
+export default async (event: Event) => {
   const { arg } = event;
   const commandInteraction = arg as CommandInteraction;
 
@@ -79,7 +79,7 @@ export default async (event: EventParam) => {
       }
     }
     // if all goes well, run the commands callback function.
-    await commandObject.callback(commandInteraction.client, commandInteraction);
+    await commandObject.callback(commandInteraction);
   } catch (error) {
     log({
       header: "Command Error",

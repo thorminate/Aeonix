@@ -13,15 +13,13 @@ import {
 import { config } from "dotenv";
 import buttonWrapper from "../../utils/buttonWrapper";
 import log from "../../utils/log";
-import { EventParam } from "../../handlers/eventHandler";
+import { Event } from "../../handlers/eventHandler";
 config();
 
-export default async (event: EventParam) => {
-  const { bot } = event;
-
+export default async (event: Event) => {
   const onboardingChannelId = process.env.ONBOARDING_CHANNEL;
 
-  const onboardingChannel = await bot.channels.fetch(onboardingChannelId);
+  const onboardingChannel = await event.bot.channels.fetch(onboardingChannelId);
 
   if (!onboardingChannel || !(onboardingChannel instanceof TextChannel)) {
     log({
@@ -73,26 +71,5 @@ export default async (event: EventParam) => {
 
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
-  });
-
-  collector.on("collect", async (interaction) => {
-    if (interaction.customId !== "onboarding-start") return;
-
-    await interaction.showModal(
-      new ModalBuilder()
-        .setTitle("Set your display name")
-        .setCustomId("set-display-name")
-        .addComponents(
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder()
-              .setCustomId("display-name")
-              .setLabel("Display name/Character Name")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(true)
-              .setMaxLength(32)
-              .setMinLength(2)
-          )
-        )
-    );
   });
 };

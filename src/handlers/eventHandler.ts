@@ -5,7 +5,7 @@ import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
 import url from "url";
 import log from "../utils/log";
-export class EventParam {
+export class Event {
   bot: Client;
   arg: any;
 
@@ -38,7 +38,7 @@ export default async (bot: Client) => {
         const eventFunction = await import(fileUrl.toString()); // Get the event function.
         // Run the event function. (the extra default is needed for some reason)
         await eventFunction.default
-          .default(new EventParam(bot, arg))
+          .default(new Event(bot, arg))
           .catch((err: any) => {
             log({
               header: "Event Error, unable to process event",

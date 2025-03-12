@@ -1,6 +1,6 @@
 // shows your status
 import { Client, CommandInteraction, HTTPError } from "discord.js";
-import Player from "../../models/player/Player";
+import Player, { PlayerStatus } from "../../models/player/Player";
 import log from "../../utils/log";
 import { config } from "dotenv";
 import commandPrep from "../../utils/commandPrep";
@@ -18,19 +18,23 @@ export default {
   //options: [],
   //deleted: true,
 
-  callback: async (bot: Client, interaction: CommandInteraction) => {
+  callback: async (cmdAct: CommandInteraction) => {
     try {
-      await commandPrep(interaction);
+      await commandPrep(cmdAct);
 
-      const player = await Player.load(interaction.user.username);
+      const player = await Player.load(cmdAct.user.username);
 
       if (!player) {
-        await interaction.editReply({
+        await cmdAct.editReply({
           content:
-            "Your player does not exist in the database, please head to onboarding channel.",
+            "Your player does not exist in the database, please head to onboarding channel. If you do not have access to it, use the /init command.",
         });
         return;
       }
+
+      await cmdAct.editReply({
+        content: `Your level is ${player.status.level}`,
+      });
     } catch (error) {
       if (error instanceof HTTPError && error.status === 503) {
         log({

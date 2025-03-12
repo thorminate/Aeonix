@@ -4,16 +4,14 @@ import areCommandsDifferent from "../../utils/areCommandsDifferent";
 import getApplicationCommands from "../../utils/getApplicationCommands";
 import getLocalCommands from "../../utils/getLocalCommands";
 import log from "../../utils/log";
-import { EventParam } from "../../handlers/eventHandler";
+import { Event } from "../../handlers/eventHandler";
 
-export default async (event: EventParam) => {
+export default async (event: Event) => {
   try {
-    const { bot } = event;
-
     // Define local commands and application commands
     const localCommands = await getLocalCommands();
     const applicationCommands = await getApplicationCommands(
-      bot,
+      event.bot,
       "1267928656877977670"
     );
 
