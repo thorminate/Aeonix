@@ -1,101 +1,27 @@
 import Saveable from "../utils/Saveable";
 import { GuildMember, TextChannel, User } from "discord.js";
 import { Document, Model, model, Schema } from "mongoose";
-
-export const calculateLevelExp = (currentLevel: number): number => {
-  const nextLevel = currentLevel + 1;
-  return Math.floor(1000 * Math.pow(1.1, nextLevel));
-};
-
-export interface InventoryEntry {
-  name: string;
-  quantity: number;
-  state: string;
-}
-
-export interface IStats {
-  level: number;
-  xp: number;
-  strength: number;
-  will: number;
-  cognition: number;
-}
-
-export interface IInventory {
-  capacity: number;
-  entries: InventoryEntry[];
-}
-
-export class Inventory implements IInventory {
-  capacity: number;
-  entries: InventoryEntry[];
-
-  add(entry: InventoryEntry): void {
-    this.entries.push(entry);
-  }
-
-  /**
-   *
-   * @param entry Takes in an InventoryEntry or a string, string searches and removes all entries with the same content as the string-
-   * @returns Returns an array of the removed entries
-   */
-  remove(entry: InventoryEntry | string): InventoryEntry[] {
-    if (typeof entry === "string") {
-      const appliedEntries = this.entries.filter(
-        (e: InventoryEntry) => e.name === entry
-      );
-
-      this.entries = this.entries.filter(
-        (e: InventoryEntry) => e.name !== entry
-      );
-      return appliedEntries;
-    }
-
-    this.entries = this.entries.filter((e: InventoryEntry) =>
-      e.name !== entry.name ? entry.name : entry
-    );
-  }
-}
-
-export class Stats implements IStats {
-  level: number;
-  xp: number;
-  strength: number;
-  will: number;
-  cognition: number;
-
-  constructor(
-    level: number = 1,
-    xp: number = 0,
-    strength: number = 0,
-    will: number = 0,
-    cognition: number = 0
-  ) {
-    this.level = level;
-    this.xp = xp;
-    this.strength = strength;
-    this.will = will;
-    this.cognition = cognition;
-  }
-}
+import Stats from "./status/status";
+import Inventory from "./inventory/inventory";
+import calculateXpRequirement from "./utils/calculateXpRequirement";
 
 interface IPlayer extends Document {
   id: string;
   name: string;
   characterName: string;
-  pStatus: Stats;
-  pInventory: Inventory;
+  _status: Stats;
+  _inventory: Inventory;
 }
 
 const playerSchema = new Schema({
   id: { type: String, required: true },
   name: { type: String, required: true, unique: true },
   characterName: { type: String, required: true },
-  pStatus: {
+  _status: {
     type: Object,
     default: { level: 1, xp: 0, strength: 0, will: 0, cognition: 0 },
   },
-  pInventory: { type: Object, default: { capacity: 0, entries: [] } },
+  _inventory: { type: Object, default: { capacity: 0, entries: [] } },
 });
 
 const PlayerModel = model<IPlayer>("Player", playerSchema);
@@ -104,23 +30,23 @@ export default class Player extends Saveable<IPlayer> {
   id: string;
   name: string;
   characterName: string;
-  private pInventory: Inventory;
-  private pStatus: Stats;
+  private _inventory: Inventory;
+  private _status: Stats;
 
   public get status(): Stats {
-    return this.pStatus;
+    return this._status;
   }
 
   public set status(status: Stats) {
-    this.pStatus = status;
+    this._status = status;
   }
 
   public get inventory(): Inventory {
-    return this.pInventory;
+    return this._inventory;
   }
 
   public set inventory(inventory: Inventory) {
-    this.pInventory = inventory;
+    this._inventory = inventory;
   }
 
   /**
@@ -166,9 +92,9 @@ export default class Player extends Saveable<IPlayer> {
     currentChannel?: TextChannel
   ) {
     this.status.xp += amount;
-    while (this.status.xp >= calculateLevelExp(this.status.level)) {
+    while (this.status.xp >= calculateXpRequirement(this.status.level)) {
       this.levelUp(member, 1, currentChannel, false, false);
-      this.status.xp -= calculateLevelExp(this.status.level - 1);
+      this.status.xp -= calculateXpRequirement(this.status.level - 1);
     }
 
     if (this.status.xp < 0) this.status.xp = 0;
@@ -197,7 +123,6 @@ export default class Player extends Saveable<IPlayer> {
   }
 
   // All below is necessary for the Player class to function and may not be modified.
-
   constructor(user?: User, characterName?: string) {
     super();
     // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
@@ -206,7 +131,6 @@ export default class Player extends Saveable<IPlayer> {
     this.characterName = characterName || "";
     this.id = user ? user.id : "";
   }
-
   protected getIdentifier(): {
     key: keyof IPlayer;
     value: string;
@@ -220,19 +144,16 @@ export default class Player extends Saveable<IPlayer> {
       secondValue: this.id,
     };
   }
-
   protected getModel(): Model<IPlayer> {
     return PlayerModel;
   }
-
-  // Static method implementation
   static getModel(): Model<IPlayer> {
     return PlayerModel;
   }
   protected getClassMap(): Record<string, any> {
     return {
-      pInventory: Inventory,
-      pStatus: Stats,
+      _inventory: Inventory,
+      _status: Stats,
     };
   }
 }

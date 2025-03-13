@@ -29,35 +29,29 @@ export default (options: Options) => {
     { flags: "a" }
   );
 
+  payload = payload ? "\n" + JSON.stringify(payload) : "";
   const logPrefix = `${date.toLocaleTimeString()}`;
-  const logContent = `${header}\n${payload}`;
+  const logContent = `${header}${payload}`;
   const logProcessName = processName ? `${processName}/` : "Main/";
   const logType = type ? `${type}` : "Info";
 
   const log = `[${logPrefix}] [${logProcessName}${logType}] ${logContent}`;
 
   logStream.write(log + "\n");
+
   switch (type) {
     case "Fatal":
     case "Error":
+    case "Warn":
       console.error(log);
       break;
-    case "Warn":
-      console.warn(log);
-      break;
-    case "Info":
-      console.info(log);
-      break;
+
     case "Verbose":
-      console.log(log);
-      break;
-    case "Debug":
-      console.debug(log);
-      break;
     case "Silly":
-      console.log(log);
-      break;
+    case "Debug":
+    case "Info":
     default:
       console.log(log);
+      break;
   }
 };

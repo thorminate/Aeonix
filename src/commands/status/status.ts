@@ -1,9 +1,10 @@
 // shows your status
 import { CommandInteraction, HTTPError } from "discord.js";
-import Player, { calculateLevelExp } from "../../models/player/Player";
+import Player from "../../models/player/Player";
 import log from "../../utils/log";
 import { config } from "dotenv";
 import commandPrep from "../../utils/commandPrep";
+import calculateXpRequirement from "../../models/player/utils/calculateXpRequirement";
 config({
   path: "../../../.env",
 });
@@ -35,7 +36,7 @@ export default {
       await cmdAct.editReply({
         content: `You are level ${player.status.level}. You have ${
           player.status.xp
-        }/${calculateLevelExp(player.status.level)} xp.`,
+        }/${calculateXpRequirement(player.status.level)} xp.`,
       });
     } catch (error) {
       if (error instanceof HTTPError && error.status === 503) {
