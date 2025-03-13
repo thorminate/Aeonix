@@ -1,14 +1,9 @@
 import {
-  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  Client,
   ComponentType,
   DiscordAPIError,
-  ModalBuilder,
   TextChannel,
-  TextInputBuilder,
-  TextInputStyle,
 } from "discord.js";
 import { config } from "dotenv";
 import buttonWrapper from "../../utils/buttonWrapper";
@@ -41,11 +36,13 @@ export default async (event: Event) => {
     }
   });
 
-  const onboardingButton = new ButtonBuilder()
-    .setCustomId("onboarding-start")
-    .setLabel("Begin")
-    .setStyle(ButtonStyle.Primary)
-    .setEmoji("👋");
+  const components = buttonWrapper([
+    new ButtonBuilder()
+      .setCustomId("onboarding-1")
+      .setLabel("Begin")
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji("👋"),
+  ]);
 
   await onboardingChannel.send({
     files: [
@@ -56,7 +53,7 @@ export default async (event: Event) => {
     ],
   });
 
-  const message = await onboardingChannel.send({
+  await onboardingChannel.send({
     content:
       "Hello, and welcome to Aeonix!" +
       " This server is primarily for testing my bot, although we have tons of RP mashed in too!" +
@@ -65,11 +62,7 @@ export default async (event: Event) => {
       " we will also go through the skill system and how other important stats work." +
       "\n\nWhen you have read through the information, please press the button below, and the bot will validate your persona's existence in the database," +
       " thereafter giving you the <@&1270791621289578607> role." +
-      "\n\nBy pressing 'Begin Onboarding', you agree to the [Terms of Service](<https://github.com/thorminate/The-System/wiki/Terms-of-Service>) and [Privacy Policy](<https://github.com/thorminate/The-System/wiki/Privacy-Policy>).",
-    components: buttonWrapper([onboardingButton]),
-  });
-
-  const collector = message.createMessageComponentCollector({
-    componentType: ComponentType.Button,
+      "\n\nBy pressing 'Begin', you agree to the [Terms of Service](<https://github.com/thorminate/The-System/wiki/Terms-of-Service>) and [Privacy Policy](<https://github.com/thorminate/The-System/wiki/Privacy-Policy>).",
+    components,
   });
 };

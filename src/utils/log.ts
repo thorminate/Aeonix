@@ -30,7 +30,7 @@ export default (options: Options) => {
   );
 
   const logPrefix = `${date.toLocaleTimeString()}`;
-  const logContent = payload ? `${header}\n${payload}` : `${header}`;
+  const logContent = `${header}\n${payload}`;
   const logProcessName = processName ? `${processName}/` : "Main/";
   const logType = type ? `${type}` : "Info";
 

@@ -1,5 +1,33 @@
-import { Document, FilterQuery, Model } from "mongoose";
+import { Document, Model } from "mongoose";
 import log from "../../utils/log";
+
+function deepInstantiate<T extends object>(
+  target: T,
+  source: any,
+  classMap: Record<string, any>
+): T {
+  for (const key of Object.keys(source)) {
+    if (
+      typeof source[key] === "object" &&
+      source[key] !== null &&
+      key in target // Ensure target has this property
+    ) {
+      const TargetClass = classMap[key]; // Check if there's a class associated with this key
+      if (classMap.hasOwnProperty(key)) {
+        // Instantiate the class with the source data
+        target[key] = deepInstantiate(new TargetClass(), source[key], classMap);
+      } else {
+        if (target[key])
+          target[key] = deepInstantiate(target[key], source[key], classMap); // Recursively assign
+      }
+    } else {
+      if (target[key]) {
+        target[key] = source[key]; // Assign primitives directly
+      }
+    }
+  }
+  return target;
+}
 
 // Define a specialized interface for the constructor
 export interface SaveableConstructor<T extends Document, TInstance> {
@@ -9,6 +37,7 @@ export interface SaveableConstructor<T extends Document, TInstance> {
 
 export default abstract class Saveable<T extends Document> {
   protected abstract getModel(): Model<T>;
+  protected abstract getClassMap(): Record<string, any>;
   protected abstract getIdentifier(): {
     key: keyof T | string;
     value: string;
@@ -16,30 +45,31 @@ export default abstract class Saveable<T extends Document> {
     secondValue?: string;
   };
 
-  async save(data?: Partial<T>): Promise<void> {
+  async save(): Promise<void> {
     const { key, value } = this.getIdentifier();
-    const updateData = data ? { ...data } : this;
 
     await this.getModel().findOneAndUpdate(
       { [key]: value } as Record<string, any>,
-      updateData,
+      this,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
   }
 
   // Static load method with better type control
   static async load<T extends Document, TInstance extends Saveable<T>>(
+    // Ensure that this has a valid constructor
     this: SaveableConstructor<T, TInstance>,
     identifier: string
   ): Promise<TInstance | null> {
     // First fetch the model, this links to a collection in the db (namely players)
     const model = this.getModel();
 
-    /**
+    /*
      * Create a query to find the document
      *
      * Example:
-     * this.prototype.getIdentifier() = { key: 'name', value: 'username' }
+     * this.prototype.getIdentifier() = { key: 'name' }
+     * identifier = 'username'
      * query = { name: 'username' }
      *
      * Summary:
@@ -54,7 +84,7 @@ export default abstract class Saveable<T extends Document> {
 
     // Create an instance and populate it
     const instance = new this() as TInstance;
-    Object.assign(instance, doc.toObject());
+    deepInstantiate(instance, doc.toObject(), this.prototype.getClassMap());
     return instance;
   }
 

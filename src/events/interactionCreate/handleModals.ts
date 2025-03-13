@@ -1,4 +1,10 @@
-import { ButtonBuilder, ButtonStyle, ModalSubmitInteraction } from "discord.js";
+import {
+  ButtonBuilder,
+  ButtonStyle,
+  GuildMemberRoleManager,
+  ModalSubmitInteraction,
+  RoleManager,
+} from "discord.js";
 import Player from "../../models/player/Player";
 import { Event } from "../../handlers/eventHandler";
 import buttonWrapper from "../../utils/buttonWrapper";
@@ -10,28 +16,11 @@ export default async (event: Event) => {
   if (!modalInteraction.isModalSubmit()) return;
 
   switch (modalInteraction.customId) {
-    case "set-display-name":
+    case "onboarding-display-name":
       const displayName =
         modalInteraction.fields.getTextInputValue("display-name");
 
-      log({
-        header: `Setting display name to ${displayName}`,
-        type: "Info",
-      });
-
-      const playerExists = await Player.load(modalInteraction.user.username);
-
-      log({
-        header: "Checking if player exists",
-        payload: playerExists,
-        type: "Info",
-      });
-
-      if (playerExists) {
-        log({
-          header: "Player already exists",
-          type: "Info",
-        });
+      if (await Player.load(modalInteraction.user.username)) {
         const buttons = buttonWrapper([
           new ButtonBuilder()
             .setCustomId("delete-player")
@@ -50,20 +39,14 @@ export default async (event: Event) => {
 
       const player = new Player(modalInteraction.user, displayName);
 
-      log({
-        header: "Saving player",
-        type: "Info",
-      });
-
       await player.save();
 
-      log({
-        header: "Saved player",
-        type: "Info",
-      });
+      await (modalInteraction.member.roles as GuildMemberRoleManager).add(
+        process.env.PLAYER_ROLE
+      );
 
       await modalInteraction.reply({
-        content: "Display name set",
+        content: "1/1 - Your persona has been created.",
         ephemeral: true,
       });
 

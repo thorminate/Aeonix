@@ -18,7 +18,7 @@ export default async (event: Event) => {
   if (!buttonInteraction.isButton()) return;
 
   switch (buttonInteraction.customId) {
-    case "onboarding-start":
+    case "onboarding-1":
       if (await Player.load(buttonInteraction.user.username)) {
         await buttonInteraction.reply({
           content:
@@ -35,13 +35,14 @@ export default async (event: Event) => {
       }
       await buttonInteraction.showModal(
         new ModalBuilder()
-          .setTitle("Set your display name")
-          .setCustomId("set-display-name")
+          .setTitle("Step 1/1 - Display Name")
+          .setCustomId("onboarding-display-name")
           .addComponents(
             new ActionRowBuilder<TextInputBuilder>().addComponents(
               new TextInputBuilder()
                 .setCustomId("display-name")
                 .setLabel("Display name/Character Name")
+                .setPlaceholder("Name of your character within this world.")
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true)
                 .setMaxLength(32)
@@ -86,6 +87,7 @@ export default async (event: Event) => {
       }
 
       await Player.delete(buttonInteraction.user.username);
+
       await buttonInteraction.reply({
         content: "Your persona has been deleted.",
         ephemeral: true,

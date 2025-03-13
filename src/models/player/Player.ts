@@ -13,13 +13,7 @@ export interface InventoryEntry {
   state: string;
 }
 
-export interface InventoryBlock {
-  capacity: number;
-
-  entries: InventoryEntry[];
-}
-
-export interface StatBlock {
+export interface IStats {
   level: number;
   xp: number;
   strength: number;
@@ -27,7 +21,43 @@ export interface StatBlock {
   cognition: number;
 }
 
-export class PlayerStatus implements StatBlock {
+export interface IInventory {
+  capacity: number;
+  entries: InventoryEntry[];
+}
+
+export class Inventory implements IInventory {
+  capacity: number;
+  entries: InventoryEntry[];
+
+  add(entry: InventoryEntry): void {
+    this.entries.push(entry);
+  }
+
+  /**
+   *
+   * @param entry Takes in an InventoryEntry or a string, string searches and removes all entries with the same content as the string-
+   * @returns Returns an array of the removed entries
+   */
+  remove(entry: InventoryEntry | string): InventoryEntry[] {
+    if (typeof entry === "string") {
+      const appliedEntries = this.entries.filter(
+        (e: InventoryEntry) => e.name === entry
+      );
+
+      this.entries = this.entries.filter(
+        (e: InventoryEntry) => e.name !== entry
+      );
+      return appliedEntries;
+    }
+
+    this.entries = this.entries.filter((e: InventoryEntry) =>
+      e.name !== entry.name ? entry.name : entry
+    );
+  }
+}
+
+export class Stats implements IStats {
   level: number;
   xp: number;
   strength: number;
@@ -53,16 +83,19 @@ interface IPlayer extends Document {
   id: string;
   name: string;
   characterName: string;
-  stats: StatBlock;
-  inventory: InventoryBlock;
+  pStatus: Stats;
+  pInventory: Inventory;
 }
 
 const playerSchema = new Schema({
   id: { type: String, required: true },
   name: { type: String, required: true, unique: true },
   characterName: { type: String, required: true },
-  status: { type: Object, default: { strength: 0, will: 0, cognition: 0 } },
-  inventory: { type: Object, default: [] },
+  pStatus: {
+    type: Object,
+    default: { level: 1, xp: 0, strength: 0, will: 0, cognition: 0 },
+  },
+  pInventory: { type: Object, default: { capacity: 0, entries: [] } },
 });
 
 const PlayerModel = model<IPlayer>("Player", playerSchema);
@@ -71,15 +104,23 @@ export default class Player extends Saveable<IPlayer> {
   id: string;
   name: string;
   characterName: string;
-  private inventory: InventoryBlock;
-  private playerStatus: PlayerStatus;
+  private pInventory: Inventory;
+  private pStatus: Stats;
 
-  public get status(): PlayerStatus {
-    return this.playerStatus;
+  public get status(): Stats {
+    return this.pStatus;
   }
 
-  public set status(status: StatBlock) {
-    this.playerStatus = status;
+  public set status(status: Stats) {
+    this.pStatus = status;
+  }
+
+  public get inventory(): Inventory {
+    return this.pInventory;
+  }
+
+  public set inventory(inventory: Inventory) {
+    this.pInventory = inventory;
   }
 
   /**
@@ -157,7 +198,7 @@ export default class Player extends Saveable<IPlayer> {
 
   // All below is necessary for the Player class to function and may not be modified.
 
-  constructor(user: User | null = null, characterName: string | null = null) {
+  constructor(user?: User, characterName?: string) {
     super();
     // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
 
@@ -187,5 +228,11 @@ export default class Player extends Saveable<IPlayer> {
   // Static method implementation
   static getModel(): Model<IPlayer> {
     return PlayerModel;
+  }
+  protected getClassMap(): Record<string, any> {
+    return {
+      pInventory: Inventory,
+      pStatus: Stats,
+    };
   }
 }
