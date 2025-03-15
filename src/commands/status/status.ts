@@ -1,44 +1,49 @@
 // shows your status
-import { CommandInteraction, HTTPError } from "discord.js";
+import {
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  EmbedBuilder,
+  HTTPError,
+  PermissionFlagsBits,
+  SlashCommandBuilder,
+} from "discord.js";
 import Player from "../../models/player/Player";
 import log from "../../utils/log";
 import { config } from "dotenv";
 import commandPrep from "../../utils/commandPrep";
-import calculateXpRequirement from "../../models/player/utils/calculateXpRequirement";
+import buttonWrapper from "../../utils/buttonWrapper";
+import Command from "../command";
 config({
   path: "../../../.env",
 });
 
-export default {
-  name: "status",
-  description: "Shows your personal menu",
-  //devOnly: Boolean,
-  //testOnly: true,
+export default <Command>{
+  data: new SlashCommandBuilder()
+    .setName("status")
+    .setDescription("Shows your personal menu"),
   //permissionsRequired: [PermissionFlagsBits.Administrator],
   //botPermissions: [PermissionFlagsBits.Administrator],
-  //options: [],
   //deleted: true,
 
-  callback: async (cmdAct: CommandInteraction) => {
+  callback: async (cmd: CommandInteraction) => {
     try {
-      await commandPrep(cmdAct);
+      await commandPrep(cmd);
 
-      const player = await Player.load(cmdAct.user.username);
+      const player = await Player.load(cmd.user.username);
 
       if (!player) {
-        await cmdAct.editReply({
+        await cmd.editReply({
           content:
-            "Your player does not exist in the database, please head to onboarding channel. If you do not have access to it, use the /init command.",
+            "You do not exist in the database, please use the /init command.",
         });
         return;
       }
 
-      await cmdAct.editReply({
-        content: `You are level ${player.status.level}. You have ${
-          player.status.xp
-        }/${calculateXpRequirement(player.status.level)} xp.`,
+      await cmd.editReply({
+        embeds: [await player.getStatusEmbed()],
       });
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof HTTPError && error.status === 503) {
         log({
           header: "Status Error, the API did not respond in time.",

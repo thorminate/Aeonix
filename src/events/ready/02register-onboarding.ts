@@ -1,7 +1,7 @@
 import {
+  AttachmentBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ComponentType,
   DiscordAPIError,
   TextChannel,
 } from "discord.js";
@@ -10,6 +10,18 @@ import buttonWrapper from "../../utils/buttonWrapper";
 import log from "../../utils/log";
 import { Event } from "../../handlers/eventHandler";
 config();
+
+// turn on word wrap to see the full message
+
+export const welcomeMessage = `Hello, and welcome to Aeonix! This server is primarily for testing my bot, although we have tons of RP mashed in too!
+  
+You are currently not able to see any channels other than a few for the onboarding process and the non-player-hangout area. These channels are for setting you up, (such as initializing your persona into the database, the persona being your digital presence with Aeonix) we will also go through the skill system and how other important stats work.
+  
+When you have read through the information, please press the button below, and the bot will validate your persona's existence in the database, thereafter giving you the <@&1270791621289578607> role.
+  
+By pressing 'Begin', you agree to the [Terms of Service](<https://github.com/thorminate/The-System/wiki/Terms-of-Service>) and [Privacy Policy](<https://github.com/thorminate/The-System/wiki/Privacy-Policy>).`;
+
+export const welcomeImage = new AttachmentBuilder("./assets/welcome.png");
 
 export default async (event: Event) => {
   const onboardingChannelId = process.env.ONBOARDING_CHANNEL;
@@ -45,24 +57,11 @@ export default async (event: Event) => {
   ]);
 
   await onboardingChannel.send({
-    files: [
-      {
-        attachment: "./assets/welcome.png",
-        name: "welcome.png",
-      },
-    ],
+    files: [welcomeImage],
   });
 
   await onboardingChannel.send({
-    content:
-      "Hello, and welcome to Aeonix!" +
-      " This server is primarily for testing my bot, although we have tons of RP mashed in too!" +
-      "\n\nYou are currently not able to see any channels other than a few for the onboarding process and the non-player-hangout area." +
-      " These channels are for setting you up, (such as initializing your persona into the database, the persona being your digital presence with Aeonix)" +
-      " we will also go through the skill system and how other important stats work." +
-      "\n\nWhen you have read through the information, please press the button below, and the bot will validate your persona's existence in the database," +
-      " thereafter giving you the <@&1270791621289578607> role." +
-      "\n\nBy pressing 'Begin', you agree to the [Terms of Service](<https://github.com/thorminate/The-System/wiki/Terms-of-Service>) and [Privacy Policy](<https://github.com/thorminate/The-System/wiki/Privacy-Policy>).",
+    content: welcomeMessage,
     components,
   });
 };

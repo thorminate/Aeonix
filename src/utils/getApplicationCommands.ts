@@ -4,7 +4,7 @@ import {
   GuildApplicationCommandManager,
 } from "discord.js"; // Get the discord.js library.
 
-export default async function (bot: Client, guildId: string | null) {
+export default async function (bot: Client, guildId?: string) {
   // Export the function.
   let applicationCommands:
     | ApplicationCommandManager

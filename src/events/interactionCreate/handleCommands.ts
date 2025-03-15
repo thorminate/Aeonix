@@ -1,25 +1,28 @@
 /**
  * Handles the slash commands.
- * @param {Client} bot The instantiating client.
- * @param {Interaction} interaction The interaction that ran the command.
+ * @param {Event} event The event object containing the interaction and client (bot)
  */
 import getLocalCommands from "../../utils/getLocalCommands";
-import { Client, CommandInteraction, PermissionsBitField } from "discord.js";
+import {
+  CommandInteraction,
+  PermissionFlagsBits,
+  PermissionsBitField,
+} from "discord.js";
 import log from "../../utils/log";
 import { Event } from "../../handlers/eventHandler";
+import Command from "../../commands/command";
 
 export default async (event: Event) => {
-  const { arg } = event;
-  const commandInteraction = arg as CommandInteraction;
+  const interaction = event.arg as CommandInteraction;
 
-  if (!commandInteraction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand()) return;
   // get already registered commands
   const localCommands = await getLocalCommands();
 
   try {
     // check if command name is in localCommands
-    const commandObject = localCommands.find(
-      (cmd) => cmd.name === commandInteraction.commandName
+    const commandObject: Command = localCommands.find(
+      (cmd: Command) => cmd.data.name === interaction.commandName
     );
 
     // if commandObject does not exist, return
@@ -28,11 +31,11 @@ export default async (event: Event) => {
     // if command is devOnly and user is not an admin, return
     if (commandObject.adminOnly) {
       if (
-        !(commandInteraction.member.permissions as PermissionsBitField).has(
-          PermissionsBitField.Flags.Administrator
+        !(interaction.member.permissions as PermissionsBitField).has(
+          PermissionFlagsBits.Administrator
         )
       ) {
-        commandInteraction.reply({
+        interaction.reply({
           content: "Only administrators can run this command",
           ephemeral: true,
         });
@@ -40,38 +43,16 @@ export default async (event: Event) => {
       }
     }
 
-    // if where the command is called was not in the main server, return
-    if (!(commandInteraction.guild.id === "1267928656877977670")) {
-      commandInteraction.reply({
-        content: "Nuh uh, wrong server.",
-        ephemeral: true,
-      });
-      return;
-    }
     // if command requires permissions and user does not have aforementioned permission, return
     if (commandObject.permissionsRequired?.length) {
       for (const permission of commandObject.permissionsRequired) {
         if (
-          !(commandInteraction.member.permissions as PermissionsBitField).has(
-            permission as PermissionsBitField
+          !(interaction.member.permissions as PermissionsBitField).has(
+            permission
           )
         ) {
-          commandInteraction.reply({
-            content: "Access Denied",
-            ephemeral: true,
-          });
-          return;
-        }
-      }
-    }
-    // if command requires bot permissions and bot does not have aforementioned permission, return
-    if (commandObject.botPermissions?.length) {
-      for (const permission of commandObject.botPermissions) {
-        const bot = commandInteraction.guild.members.me;
-
-        if (!bot.permissions.has(permission)) {
-          commandInteraction.reply({
-            content: "I don't have enough permissions.",
+          interaction.reply({
+            content: "You don't have permissions to run this command.",
             ephemeral: true,
           });
           return;
@@ -79,7 +60,7 @@ export default async (event: Event) => {
       }
     }
     // if all goes well, run the commands callback function.
-    await commandObject.callback(commandInteraction);
+    await commandObject.callback(interaction);
   } catch (error) {
     log({
       header: "Command Error",

@@ -18,6 +18,8 @@ export default async (event: Event) => {
   if (!buttonInteraction.isButton()) return;
 
   switch (buttonInteraction.customId) {
+    // #region onboarding
+
     case "onboarding-1":
       if (await Player.load(buttonInteraction.user.username)) {
         await buttonInteraction.reply({
@@ -76,6 +78,7 @@ export default async (event: Event) => {
       });
 
       break;
+
     case "delete-player-confirmed":
       if (!(await Player.load(buttonInteraction.user.username))) {
         await buttonInteraction.reply({
@@ -92,5 +95,9 @@ export default async (event: Event) => {
         content: "Your persona has been deleted.",
         ephemeral: true,
       });
+
+      break;
+
+    // #endregion
   }
 };

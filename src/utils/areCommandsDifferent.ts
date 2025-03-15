@@ -1,5 +1,11 @@
+import { ApplicationCommand } from "discord.js";
+import Command from "../commands/command";
+
 // checks if local command is different to existing command
-export default function (existingCommand: any, localCommand: any) {
+export default function (
+  existingCommand: ApplicationCommand,
+  localCommand: Command
+) {
   // Export the function.
   const areChoicesDifferent = (existingChoices: any, localChoices: any) => {
     // Define the areChoicesDifferent function.
@@ -58,9 +64,13 @@ export default function (existingCommand: any, localCommand: any) {
 
   if (
     // If the following conditions are true, return true.
-    existingCommand.description !== localCommand.description ||
-    existingCommand.options?.length !== (localCommand.options?.length || 0) ||
-    areOptionsDifferent(existingCommand.options, localCommand.options || [])
+    existingCommand.description !== localCommand.data.description ||
+    existingCommand.options?.length !==
+      (localCommand.data.options?.length || 0) ||
+    areOptionsDifferent(
+      existingCommand.options,
+      localCommand.data.options || []
+    )
   ) {
     return true;
   }

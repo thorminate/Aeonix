@@ -1,6 +1,6 @@
 // when an event is triggered, it runs all files in that event's folder
 
-import { ButtonInteraction, Client, CommandInteraction } from "discord.js"; // Get the discord.js library for setting the type of the bot parameter.
+import { Client } from "discord.js"; // Get the discord.js library for setting the type of the bot parameter.
 import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
 import url from "url";

@@ -3,12 +3,10 @@ import {
   ButtonStyle,
   GuildMemberRoleManager,
   ModalSubmitInteraction,
-  RoleManager,
 } from "discord.js";
 import Player from "../../models/player/Player";
 import { Event } from "../../handlers/eventHandler";
 import buttonWrapper from "../../utils/buttonWrapper";
-import log from "../../utils/log";
 
 export default async (event: Event) => {
   const modalInteraction = event.arg as ModalSubmitInteraction;

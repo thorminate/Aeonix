@@ -1,29 +1,39 @@
 import { Document, Model } from "mongoose";
 import log from "../../utils/log";
 
+/**
+ * Takes in a target object and a source object, and assigns the source values to the target object recursively.
+ * @param target The target object
+ * @param source
+ * @param classMap
+ * @returns
+ */
 function deepInstantiate<T extends object>(
   target: T,
   source: any,
   classMap: Record<string, any>
 ): T {
   for (const key of Object.keys(source)) {
-    if (
-      typeof source[key] === "object" &&
-      source[key] !== null &&
-      key in target // Ensure target has this property
-    ) {
-      const TargetClass = classMap[key]; // Check if there's a class associated with this key
-      if (classMap.hasOwnProperty(key)) {
+    const sourceIsObjectOrClass = typeof source[key] === "object";
+    const sourcePropertyIsNotNull = source[key] !== null;
+    const targetHasProperty = key in target;
+
+    if (sourceIsObjectOrClass && sourcePropertyIsNotNull && targetHasProperty) {
+      const ClassFromMap = classMap[key]; // Check if there's a class associated with this key
+
+      const classExistsInMap = ClassFromMap !== undefined;
+      if (classExistsInMap) {
         // Instantiate the class with the source data
-        target[key] = deepInstantiate(new TargetClass(), source[key], classMap);
+        target[key] = deepInstantiate(
+          new ClassFromMap(),
+          source[key],
+          classMap
+        );
       } else {
-        if (target[key])
-          target[key] = deepInstantiate(target[key], source[key], classMap); // Recursively assign
+        target[key] = deepInstantiate(target[key], source[key], classMap); // Recursively assign
       }
     } else {
-      if (target[key]) {
-        target[key] = source[key]; // Assign primitives directly
-      }
+      target[key] = source[key]; // Assign primitives directly
     }
   }
   return target;
@@ -83,9 +93,14 @@ export default abstract class Saveable<T extends Document> {
     if (!doc) return null;
 
     // Create an instance and populate it
-    const instance = new this() as TInstance;
-    deepInstantiate(instance, doc.toObject(), this.prototype.getClassMap());
-    return instance;
+    const emptyInstance = new this() as TInstance;
+
+    const initializedInstance = deepInstantiate(
+      emptyInstance,
+      doc.toObject(),
+      this.prototype.getClassMap()
+    );
+    return initializedInstance;
   }
 
   static async delete<T extends Document>(

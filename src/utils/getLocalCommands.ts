@@ -1,10 +1,11 @@
 import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
 import url from "url";
+import Command from "../commands/command";
 
 export default async (exceptions = []) => {
   // Export the function.
-  let localCommands = []; // define local commands as an array
+  let localCommands: Command[] = []; // define local commands as an array
 
   const commandCategories = getAllFiles(
     // get all command categories and store in an array
