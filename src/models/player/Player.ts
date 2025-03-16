@@ -1,18 +1,10 @@
-import Saveable from "../utils/Saveable";
-import {
-  APIEmbed,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  GuildMember,
-  TextChannel,
-  User,
-} from "discord.js";
+import Saveable from "../utils/Saveable.js";
+import { APIEmbed, EmbedBuilder, User } from "discord.js";
 import { Document, Model, model, Schema } from "mongoose";
-import Stats from "./status/status";
-import Inventory from "./inventory/inventory";
-import calculateXpRequirement from "./utils/calculateXpRequirement";
-import { bot } from "../../bot";
+import Stats from "./status/status.js";
+import Inventory from "./inventory/inventory.js";
+import calculateXpRequirement from "./utils/calculateXpRequirement.js";
+import { bot } from "../../bot.js";
 
 interface IPlayer extends Document {
   id: string;
@@ -39,15 +31,15 @@ export default class Player extends Saveable<IPlayer> {
   id: string;
   name: string;
   displayName: string;
-  private _inventory: Inventory = new Inventory();
-  private _status: Stats = new Stats();
+  private _inventory: Inventory;
+  private _status: Stats;
 
   public get status(): Stats {
-    return this._status;
+    return this._status as Stats;
   }
 
   public get inventory(): Inventory {
-    return this._inventory;
+    return this._inventory as Inventory;
   }
 
   async getUser(): Promise<User> {
@@ -126,6 +118,7 @@ export default class Player extends Saveable<IPlayer> {
     return {
       _inventory: Inventory,
       _status: Stats,
+      entries: Array,
     };
   }
 

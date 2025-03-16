@@ -2,11 +2,12 @@ import {
   ButtonBuilder,
   ButtonStyle,
   GuildMemberRoleManager,
+  MessageFlags,
   ModalSubmitInteraction,
 } from "discord.js";
-import Player from "../../models/player/Player";
-import { Event } from "../../handlers/eventHandler";
-import buttonWrapper from "../../utils/buttonWrapper";
+import Player from "../../models/player/Player.js";
+import { Event } from "../../handlers/eventHandler.js";
+import buttonWrapper from "../../utils/buttonWrapper.js";
 
 export default async (event: Event) => {
   const modalInteraction = event.arg as ModalSubmitInteraction;
@@ -30,7 +31,7 @@ export default async (event: Event) => {
           content:
             "You have already initialized your persona. Do you wish to delete it?",
           components: buttons,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -45,7 +46,7 @@ export default async (event: Event) => {
 
       await modalInteraction.reply({
         content: "1/1 - Your persona has been created.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       break;

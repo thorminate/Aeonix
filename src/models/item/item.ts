@@ -1,75 +1,45 @@
-import { Document, model, Model, Schema } from "mongoose";
-import Saveable from "../utils/Saveable";
+import Player from "../player/Player.js";
+import Registrable from "../utils/Registrable.js";
+import { InventoryEntry } from "../player/inventory/inventory.js";
 
-interface IItem extends Document {
-  name: string;
-  description: string;
-  weight: number;
-  value: number;
+export class ItemUsageContext {
+  player: Player;
 }
 
-const ItemSchema = new Schema<IItem>({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  weight: {
-    type: Number,
-    required: true,
-  },
-  value: {
-    type: Number,
-    required: true,
-  },
-});
+export default abstract class Item extends Registrable<typeof this> {
+  abstract name: string;
+  abstract description: string;
+  abstract weight: number;
+  abstract value: number;
+  abstract data: object;
+  abstract id: string;
 
-const ItemModel = model<IItem>("Item", ItemSchema);
+  abstract createData(): object;
 
-export default class Item extends Saveable<IItem> {
-  name: string;
-  description: string;
-  weight: number;
-  value: number;
-
-  constructor(
-    name: string,
-    description: string,
-    weight: number,
-    value: number
-  ) {
-    super();
-    this.name = name;
-    this.description = description;
-    this.weight = weight;
-    this.value = value;
+  async use(context: ItemUsageContext): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 
-  protected getIdentifier(): {
-    key: string;
-    value: string;
-    secondKey?: string;
-    secondValue?: string;
-  } {
+  toInventoryEntry(): InventoryEntry {
+    const entry = new InventoryEntry(this.name, null, this.weight, this.data);
+
+    entry.id = entry.constructor.name;
+
+    return entry;
+  }
+
+  getRegistryLocation(): string {
+    return "dist/models/content/items";
+  }
+
+  getIdentifier(): { key: string; value: string } {
     return {
       key: "name",
-      value: this.name,
+      value: this.id,
     };
   }
 
-  protected getClassMap(): Record<string, any> {
-    return {};
-  }
-
-  protected getModel(): Model<IItem> {
-    return ItemModel;
-  }
-
-  static getModel(): Model<IItem> {
-    return ItemModel;
+  constructor() {
+    super();
   }
 }

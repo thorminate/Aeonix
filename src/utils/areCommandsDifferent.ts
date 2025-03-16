@@ -1,5 +1,5 @@
 import { ApplicationCommand } from "discord.js";
-import Command from "../commands/command";
+import Command from "../commands/command.js";
 
 // checks if local command is different to existing command
 export default function (

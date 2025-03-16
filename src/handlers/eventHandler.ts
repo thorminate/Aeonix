@@ -2,9 +2,9 @@
 
 import { Client } from "discord.js"; // Get the discord.js library for setting the type of the bot parameter.
 import path from "path"; // Get the path library.
-import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
+import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
 import url from "url";
-import log from "../utils/log";
+import log from "../utils/log.js";
 export class Event {
   bot: Client;
   arg: any;
@@ -16,6 +16,8 @@ export class Event {
 }
 
 export default async (bot: Client) => {
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
   // Export the function.
   const eventFolders: Array<string> = getAllFiles(
     path.join(__dirname, "..", "events"),
@@ -37,15 +39,13 @@ export default async (bot: Client) => {
         const fileUrl = url.pathToFileURL(filePath); // Get the URL to the event file.
         const eventFunction = await import(fileUrl.toString()); // Get the event function.
         // Run the event function. (the extra default is needed for some reason)
-        await eventFunction.default
-          .default(new Event(bot, arg))
-          .catch((err: any) => {
-            log({
-              header: "Event Error, unable to process event",
-              payload: `${err}`,
-              type: "Error",
-            });
+        await eventFunction.default(new Event(bot, arg)).catch((err: any) => {
+          log({
+            header: "Event Error, unable to process event",
+            payload: `${err}`,
+            type: "Error",
           });
+        });
       }
     });
   }

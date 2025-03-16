@@ -1,5 +1,5 @@
 import { Document, Model } from "mongoose";
-import log from "../../utils/log";
+import log from "../../utils/log.js";
 
 /**
  * Takes in a target object and a source object, and assigns the source values to the target object recursively.
@@ -93,14 +93,12 @@ export default abstract class Saveable<T extends Document> {
     if (!doc) return null;
 
     // Create an instance and populate it
-    const emptyInstance = new this() as TInstance;
-
-    const initializedInstance = deepInstantiate(
-      emptyInstance,
+    const instance = deepInstantiate(
+      new this() as TInstance,
       doc.toObject(),
       this.prototype.getClassMap()
     );
-    return initializedInstance;
+    return instance;
   }
 
   static async delete<T extends Document>(

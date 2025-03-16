@@ -1,10 +1,10 @@
 // Register, edit and delete commands
-import areCommandsDifferent from "../../utils/areCommandsDifferent";
-import getApplicationCommands from "../../utils/getApplicationCommands";
-import getLocalCommands from "../../utils/getLocalCommands";
-import log from "../../utils/log";
-import { Event } from "../../handlers/eventHandler";
-import Command from "../../commands/command";
+import areCommandsDifferent from "../../utils/areCommandsDifferent.js";
+import getApplicationCommands from "../../utils/getApplicationCommands.js";
+import getLocalCommands from "../../utils/getLocalCommands.js";
+import log from "../../utils/log.js";
+import { Event } from "../../handlers/eventHandler.js";
+import Command from "../../commands/command.js";
 
 export default async (event: Event) => {
   try {

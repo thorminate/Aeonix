@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2023",
+    "target": "ES2022",
     "outDir": "./dist", // Specify the output folder for compiled JavaScript
     "allowJs": true,
     "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
     "module": "NodeNext",
     "resolveJsonModule": true
   },

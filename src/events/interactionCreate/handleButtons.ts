@@ -3,13 +3,15 @@ import {
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
+  MessageFlags,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import Player from "../../models/player/Player";
-import buttonWrapper from "../../utils/buttonWrapper";
-import { Event } from "../../handlers/eventHandler";
+import Player from "../../models/player/Player.js";
+import buttonWrapper from "../../utils/buttonWrapper.js";
+import { Event } from "../../handlers/eventHandler.js";
+import Item from "../../models/item/item.js";
 
 export default async (event: Event) => {
   const { arg } = event;
@@ -31,7 +33,7 @@ export default async (event: Event) => {
               .setLabel("Delete?")
               .setStyle(ButtonStyle.Danger),
           ]),
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -59,7 +61,7 @@ export default async (event: Event) => {
         await buttonInteraction.reply({
           content:
             "You don't exist in the DB, therefore you cannot be deleted.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -74,7 +76,7 @@ export default async (event: Event) => {
       await buttonInteraction.reply({
         content: "Are you sure you want to delete your persona?",
         components: buttons,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       break;
@@ -84,7 +86,7 @@ export default async (event: Event) => {
         await buttonInteraction.reply({
           content:
             "You don't exist in the DB, therefore you cannot be deleted.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -93,7 +95,7 @@ export default async (event: Event) => {
 
       await buttonInteraction.reply({
         content: "Your persona has been deleted.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       break;

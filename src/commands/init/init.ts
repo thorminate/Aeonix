@@ -1,18 +1,18 @@
 import {
   ButtonBuilder,
   ButtonStyle,
-  Client,
   CommandInteraction,
+  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import commandPrep from "../../utils/commandPrep";
-import Player from "../../models/player/Player";
-import buttonWrapper from "../../utils/buttonWrapper";
-import Command from "../command";
+import commandPrep from "../../utils/commandPrep.js";
+import Player from "../../models/player/Player.js";
+import buttonWrapper from "../../utils/buttonWrapper.js";
+import Command from "../command.js";
 import {
   welcomeImage,
   welcomeMessage,
-} from "../../events/ready/02register-onboarding";
+} from "../../events/ready/02register-onboarding.js";
 
 export default <Command>{
   data: new SlashCommandBuilder()
@@ -52,7 +52,7 @@ export default <Command>{
     await cmdAct.followUp({
       content: welcomeMessage,
       components,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

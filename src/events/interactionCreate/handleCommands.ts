@@ -2,15 +2,16 @@
  * Handles the slash commands.
  * @param {Event} event The event object containing the interaction and client (bot)
  */
-import getLocalCommands from "../../utils/getLocalCommands";
+import getLocalCommands from "../../utils/getLocalCommands.js";
 import {
   CommandInteraction,
+  MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
-import log from "../../utils/log";
-import { Event } from "../../handlers/eventHandler";
-import Command from "../../commands/command";
+import log from "../../utils/log.js";
+import { Event } from "../../handlers/eventHandler.js";
+import Command from "../../commands/command.js";
 
 export default async (event: Event) => {
   const interaction = event.arg as CommandInteraction;
@@ -37,7 +38,7 @@ export default async (event: Event) => {
       ) {
         interaction.reply({
           content: "Only administrators can run this command",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -53,7 +54,7 @@ export default async (event: Event) => {
         ) {
           interaction.reply({
             content: "You don't have permissions to run this command.",
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           return;
         }

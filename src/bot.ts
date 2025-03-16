@@ -6,8 +6,8 @@
  */
 import { Client, IntentsBitField, Partials } from "discord.js"; // Get the discord.js library.
 import mongoose from "mongoose"; // Get the mongoose library.
-import eventHandler from "./handlers/eventHandler"; // Get the event handler.
-import log from "./utils/log";
+import eventHandler from "./handlers/eventHandler.js"; // Get the event handler.
+import log from "./utils/log.js";
 import { config } from "dotenv";
 config();
 

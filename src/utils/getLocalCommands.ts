@@ -1,11 +1,13 @@
 import path from "path"; // Get the path library.
-import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
+import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
 import url from "url";
-import Command from "../commands/command";
+import Command from "../commands/command.js";
 
 export default async (exceptions = []) => {
   // Export the function.
   let localCommands: Command[] = []; // define local commands as an array
+
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const commandCategories = getAllFiles(
     // get all command categories and store in an array
@@ -20,7 +22,7 @@ export default async (exceptions = []) => {
       // loop through all files in the command category
       const filePath = path.resolve(commandFile); // get the path to the file
       const fileUrl = url.pathToFileURL(filePath); // get the url to the file
-      const commandObject = (await import(fileUrl.toString())).default.default; // import the file
+      const commandObject = (await import(fileUrl.toString())).default; // import the file
 
       if (exceptions.includes(commandObject.name)) {
         // if the command name is in the exceptions array

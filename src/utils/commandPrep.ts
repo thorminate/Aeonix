@@ -1,22 +1,21 @@
-import { CommandInteraction } from "discord.js";
+import { CommandInteraction, MessageFlags } from "discord.js";
 
 interface Options {
   ephemeral: boolean;
 }
 
-export default async (interaction: CommandInteraction, Options?: Options) => {
-  if (!Options) {
-    Options = {
-      ephemeral: true,
-    };
+export default async (
+  interaction: CommandInteraction,
+  Options: Options = {
+    ephemeral: true,
   }
-
+) => {
   const { ephemeral } = Options;
 
   if (!interaction.isChatInputCommand() || !interaction.inGuild()) {
     await interaction.reply({
       content: "Invalid command.",
-      ephemeral,
+      flags: ephemeral ? MessageFlags.Ephemeral : undefined,
     });
     return;
   }

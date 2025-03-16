@@ -4,7 +4,7 @@ import fs from "node:fs";
 import ReadLine from "node:readline"; // Then we import the readline module, this is used later for the CLI.
 import { promisify } from "node:util";
 import { ShardingManager } from "discord.js"; // First, we import the ShardingManager.
-import log from "./utils/log";
+import log from "./utils/log.js";
 import { config } from "dotenv";
 config();
 

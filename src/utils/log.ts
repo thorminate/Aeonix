@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
+import url from "node:url";
 
 interface Options {
   header: string;
@@ -15,6 +16,8 @@ export default (options: Options) => {
   if (!header) return;
 
   const date = new Date();
+
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   if (!fs.existsSync(path.join(__dirname, "..", "..", "logs"))) {
     fs.mkdirSync(path.join(__dirname, "..", "..", "logs"), {

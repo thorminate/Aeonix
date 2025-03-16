@@ -3,17 +3,15 @@ import {
   ButtonBuilder,
   ButtonStyle,
   CommandInteraction,
-  EmbedBuilder,
   HTTPError,
-  PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
-import Player from "../../models/player/Player";
-import log from "../../utils/log";
+import Player from "../../models/player/Player.js";
+import log from "../../utils/log.js";
 import { config } from "dotenv";
-import commandPrep from "../../utils/commandPrep";
-import buttonWrapper from "../../utils/buttonWrapper";
-import Command from "../command";
+import commandPrep from "../../utils/commandPrep.js";
+import buttonWrapper from "../../utils/buttonWrapper.js";
+import Command from "../command.js";
 config({
   path: "../../../.env",
 });

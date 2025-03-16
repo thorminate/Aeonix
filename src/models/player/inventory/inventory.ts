@@ -1,7 +1,32 @@
-export interface InventoryEntry {
+import Item from "../../item/item.js";
+
+export interface IInventoryEntry {
   name: string;
+  id: string;
   quantity: number;
-  state: string;
+  data: object;
+}
+
+export class InventoryEntry implements IInventoryEntry {
+  name: string;
+  id: string;
+  quantity: number;
+  data: object;
+
+  constructor(name: string, id: string, quantity: number, data: object) {
+    this.name = name;
+    this.id = id;
+    this.quantity = quantity;
+    this.data = data;
+  }
+
+  static fromPOJO(pojo: IInventoryEntry): InventoryEntry {
+    return new InventoryEntry(pojo.name, pojo.id, pojo.quantity, pojo.data);
+  }
+
+  async toItem(): Promise<Item> {
+    return await Item.find(this.id);
+  }
 }
 
 export interface IInventory {
@@ -11,7 +36,17 @@ export interface IInventory {
 
 export default class Inventory implements IInventory {
   capacity: number;
-  entries: InventoryEntry[];
+  private _entries: InventoryEntry[];
+
+  public get entries(): InventoryEntry[] {
+    return this._entries.map((entry: IInventoryEntry) => {
+      return InventoryEntry.fromPOJO(entry);
+    });
+  }
+
+  public set entries(entries: InventoryEntry[]) {
+    this._entries = entries;
+  }
 
   add(entry: InventoryEntry): void {
     this.entries.push(entry);
@@ -22,16 +57,13 @@ export default class Inventory implements IInventory {
    * @param entry Takes in an InventoryEntry or a string, string searches and removes all entries with the same content as the string-
    * @returns Returns an array of the removed entries
    */
-  remove(entry: InventoryEntry | string): InventoryEntry[] {
+  remove(entry: InventoryEntry | string): void {
     if (typeof entry === "string") {
-      const appliedEntries = this.entries.filter(
-        (e: InventoryEntry) => e.name === entry
-      );
-
       this.entries = this.entries.filter(
         (e: InventoryEntry) => e.name !== entry
       );
-      return appliedEntries;
+
+      return;
     }
 
     this.entries = this.entries.filter((e: InventoryEntry) =>
