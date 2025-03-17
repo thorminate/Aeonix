@@ -1,4 +1,4 @@
-import Item, { ItemUsageContext } from "../../item/item.js";
+import Item, { ItemUsageContext, ItemUsageResult } from "../../item/item.js";
 
 interface IWeaponData {
   damage: number;
@@ -12,6 +12,7 @@ export default class WeaponItem extends Item {
   weight: number;
   value: number;
   data: IWeaponData;
+  useType: string;
 
   createData(damage: number = 10, range: number = 5): IWeaponData {
     return {
@@ -30,5 +31,7 @@ export default class WeaponItem extends Item {
     this.data = this.createData();
   }
 
-  async use(context: ItemUsageContext): Promise<void> {}
+  async use(context: ItemUsageContext): Promise<ItemUsageResult> {
+    return new ItemUsageResult("", true);
+  }
 }

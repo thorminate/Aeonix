@@ -1,7 +1,6 @@
 import path from "path";
 import getAllFiles from "../../utils/getAllFiles.js";
-import { fileURLToPath, pathToFileURL } from "url";
-import log from "../../utils/log.js";
+import { pathToFileURL } from "url";
 
 export interface RegistrableConstructor<TInstance> {
   new (...args: any[]): TInstance;
@@ -24,7 +23,9 @@ export default abstract class Registrable<T extends Registrable<T>> {
     );
   }
 
-  static async find<T extends Registrable<T>>(identifier: string): Promise<T> {
+  static async find<T extends Registrable<T>>(
+    identifier: string
+  ): Promise<any> {
     const registeredItems = await this.findAll<T>();
     return registeredItems.find(
       (i: T) => i.getIdentifier().value === identifier

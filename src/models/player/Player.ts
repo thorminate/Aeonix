@@ -118,7 +118,6 @@ export default class Player extends Saveable<IPlayer> {
     return {
       _inventory: Inventory,
       _status: Stats,
-      entries: Array,
     };
   }
 

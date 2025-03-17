@@ -40,6 +40,12 @@ export default <Command>{
 
       await cmd.editReply({
         embeds: [await player.getStatusEmbed()],
+        components: buttonWrapper([
+          new ButtonBuilder()
+            .setCustomId("test")
+            .setLabel("Test")
+            .setStyle(ButtonStyle.Primary),
+        ]),
       });
     } catch (error: unknown) {
       if (error instanceof HTTPError && error.status === 503) {

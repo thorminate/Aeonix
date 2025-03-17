@@ -1,4 +1,4 @@
-import Item, { ItemUsageContext } from "../../item/item.js";
+import Item, { ItemUsageContext, ItemUsageResult } from "../../item/item.js";
 import { InventoryEntry } from "../../player/inventory/inventory.js";
 
 interface IBackpackData {
@@ -13,6 +13,7 @@ export default class BackpackItem extends Item {
   weight: number;
   value: number;
   data: IBackpackData;
+  useType: string;
 
   createData(
     capacity: number = 20,
@@ -34,5 +35,7 @@ export default class BackpackItem extends Item {
     this.data = this.createData();
   }
 
-  async use(context: ItemUsageContext): Promise<void> {}
+  async use(context: ItemUsageContext): Promise<ItemUsageResult> {
+    return new ItemUsageResult("", true);
+  }
 }

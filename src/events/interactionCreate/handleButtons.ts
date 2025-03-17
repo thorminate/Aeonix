@@ -101,5 +101,34 @@ export default async (event: Event) => {
       break;
 
     // #endregion
+
+    case "test":
+      const player = await Player.load(buttonInteraction.user.username);
+
+      if (!player) {
+        await buttonInteraction.reply({
+          content:
+            "You don't exist in the DB, therefore you cannot be deleted.",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+
+      const inventoryEntry = (
+        await Item.find("BackpackItem")
+      ).toInventoryEntry();
+
+      player.inventory.add(inventoryEntry);
+
+      player.save();
+      await buttonInteraction.reply({
+        content:
+          "inventory updated" +
+          JSON.stringify(player.inventory) +
+          "\n\n" +
+          JSON.stringify(inventoryEntry),
+        flags: MessageFlags.Ephemeral,
+      });
+      break;
   }
 };

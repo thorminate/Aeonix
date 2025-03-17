@@ -21,6 +21,6 @@ export default async (
   }
 
   await interaction.deferReply({
-    ephemeral,
+    flags: ephemeral ? MessageFlags.Ephemeral : undefined,
   });
 };

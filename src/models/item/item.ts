@@ -6,6 +6,17 @@ export class ItemUsageContext {
   player: Player;
 }
 
+export class ItemUsageResult {
+  message: string;
+  success: boolean;
+  data;
+
+  constructor(message: string, success: boolean) {
+    this.message = message;
+    this.success = success;
+  }
+}
+
 export default abstract class Item extends Registrable<typeof this> {
   abstract name: string;
   abstract description: string;
@@ -13,19 +24,14 @@ export default abstract class Item extends Registrable<typeof this> {
   abstract value: number;
   abstract data: object;
   abstract id: string;
+  abstract useType: string;
 
   abstract createData(): object;
 
-  async use(context: ItemUsageContext): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
+  abstract use(context: ItemUsageContext): Promise<ItemUsageResult>;
 
-  toInventoryEntry(): InventoryEntry {
-    const entry = new InventoryEntry(this.name, null, this.weight, this.data);
-
-    entry.id = entry.constructor.name;
-
-    return entry;
+  toInventoryEntry<T extends Item>(this: T): InventoryEntry {
+    return new InventoryEntry(this.name, this.id, this.weight, this.data);
   }
 
   getRegistryLocation(): string {

@@ -8,8 +8,8 @@
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "keywords": [],
   "scripts": {
-    "start": "node ./scripts/sanitize.js && tsc && node ./dist/index.js",
-    "reset": "rm -rf ./dist && rm -rf ./logs && rm -rf ./node_modules && rm -rf ./package-lock.json && npm i && npm i -g typescript && npm cache clean --force"
+    "start": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/index.js",
+    "reset": "node ./scripts/reset.js"
   },
   "dependencies": {
     "discord.js": "^14.18.0",

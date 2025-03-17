@@ -1,5 +1,4 @@
 import { Document, Model } from "mongoose";
-import log from "../../utils/log.js";
 
 /**
  * Takes in a target object and a source object, and assigns the source values to the target object recursively.
@@ -30,7 +29,15 @@ function deepInstantiate<T extends object>(
           classMap
         );
       } else {
-        target[key] = deepInstantiate(target[key], source[key], classMap); // Recursively assign
+        target[key] = deepInstantiate(
+          target[key] !== undefined
+            ? target[key]
+            : Array.isArray(source[key])
+            ? []
+            : {},
+          source[key],
+          classMap
+        ); // Recursively assign
       }
     } else {
       target[key] = source[key]; // Assign primitives directly
@@ -71,28 +78,14 @@ export default abstract class Saveable<T extends Document> {
     this: SaveableConstructor<T, TInstance>,
     identifier: string
   ): Promise<TInstance | null> {
-    // First fetch the model, this links to a collection in the db (namely players)
     const model = this.getModel();
 
-    /*
-     * Create a query to find the document
-     *
-     * Example:
-     * this.prototype.getIdentifier() = { key: 'name' }
-     * identifier = 'username'
-     * query = { name: 'username' }
-     *
-     * Summary:
-     * This creates a query object with the appropriate key and the identifier parameter
-     */
     const query = {
       [this.prototype.getIdentifier().key as string]: identifier,
     };
-    // Fetch the document
     let doc = await model.findOne(query as Record<string, any>);
     if (!doc) return null;
 
-    // Create an instance and populate it
     const instance = deepInstantiate(
       new this() as TInstance,
       doc.toObject(),
