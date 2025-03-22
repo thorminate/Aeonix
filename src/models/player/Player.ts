@@ -1,5 +1,5 @@
-import Saveable from "../misc/Saveable.js";
-import deepInstantiate from "../misc/deepInstantiate.js";
+import Saveable from "../Saveable.js";
+import deepInstantiate from "../../utils/deepInstantiate.js";
 import { APIEmbed, EmbedBuilder, User } from "discord.js";
 import { Document, Model, model, Schema } from "mongoose";
 import Stats from "./status/status.js";
@@ -46,11 +46,7 @@ export default class Player extends Saveable<IPlayer> {
   public get inventory(): Inventory {
     if (this._inventory instanceof Inventory) return this._inventory;
 
-    this._inventory = deepInstantiate(
-      new Inventory(),
-      this._inventory,
-      {}
-    ) as Inventory;
+    this._inventory = deepInstantiate(new Inventory(), this._inventory, {});
 
     return this._inventory;
   }

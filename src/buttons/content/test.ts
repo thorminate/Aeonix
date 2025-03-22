@@ -1,9 +1,9 @@
 import { ButtonInteraction, MessageFlags } from "discord.js";
-import Player from "../../../models/player/Player.js";
-import { Button } from "../../button.js";
-import Item from "../../../models/item/item.js";
-import log from "../../../utils/log.js";
-import { IWeaponData } from "../../../models/content/items/WeaponItem.js";
+import Player from "../../models/player/Player.js";
+import Button from "../button.js";
+import Item from "../../models/item/item.js";
+import log from "../../utils/log.js";
+import { IWeaponData } from "../../models/item/content/WeaponItem.js";
 
 export default <Button>{
   customId: "test",
@@ -65,7 +65,7 @@ export default <Button>{
     }
 
     await buttonContext.reply({
-      content: "all lines below should say true\n" + test,
+      content: test ? "Test passed" : "Test failed, check logs",
       flags: MessageFlags.Ephemeral,
     });
   },

@@ -1,4 +1,4 @@
-import Item, { ItemUsageContext, ItemUsageResult } from "../../item/item.js";
+import Item, { ItemUsageContext, ItemUsageResult } from "../item.js";
 
 export interface IWeaponData {
   damage: number;

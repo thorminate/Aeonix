@@ -8,7 +8,7 @@ import Player from "../../models/player/Player.js";
 import { Event } from "../../handlers/eventHandler.js";
 import getLocalButtons from "../../buttons/getLocalButtons.js";
 import log from "../../utils/log.js";
-import { Button } from "../../buttons/button.js";
+import Button from "../../buttons/button.js";
 
 export default async (event: Event) => {
   const buttonContext = event.arg as ButtonInteraction;

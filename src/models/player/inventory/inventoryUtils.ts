@@ -1,5 +1,5 @@
 import Item from "../../item/item.js";
-import deepInstantiate from "../../misc/deepInstantiate.js";
+import deepInstantiate from "../../../utils/deepInstantiate.js";
 
 export interface IInventoryEntry {
   name: string;

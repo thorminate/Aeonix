@@ -1,5 +1,5 @@
 import { Document, Model } from "mongoose";
-import deepInstantiate from "./deepInstantiate.js";
+import deepInstantiate from "../utils/deepInstantiate.js";
 
 /**
  * Takes in a target object and a source object, and assigns the source values to the target object recursively.

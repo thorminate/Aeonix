@@ -65,7 +65,7 @@ export default async (event: Event) => {
       }
     }
 
-    let player: Player = undefined;
+    let player: Player;
 
     if (commandObject.passPlayer) {
       player = await Player.load(interaction.user.username);

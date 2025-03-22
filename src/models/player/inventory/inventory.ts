@@ -6,54 +6,52 @@ import {
 } from "./inventoryUtils.js";
 
 export default class Inventory implements IInventory {
-  private _capacity: number = 10;
-  private _entries: InventoryEntry[] = [];
+  private rawCapacity: number = 10;
+  private rawEntries: InventoryEntry[] = [];
 
   public get capacity(): number {
-    if (!this._capacity) {
-      this._capacity = 20;
+    if (!this.rawCapacity) {
+      this.rawCapacity = 20;
     }
-    return this._capacity;
+    return this.rawCapacity;
   }
 
   public set capacity(capacity: number) {
-    this._capacity = capacity;
+    this.rawCapacity = capacity;
   }
 
   public get entries(): InventoryEntry[] {
-    if (!Array.isArray(this._entries)) {
-      this._entries = [];
+    if (!Array.isArray(this.rawEntries)) {
+      this.rawEntries = [];
     }
 
-    this._entries.forEach((entry: IInventoryEntry) => {
+    this.rawEntries.forEach((entry: IInventoryEntry) => {
       if (!(entry instanceof InventoryEntry))
-        Object.assign(entry, InventoryEntry.fromPOJO(entry));
+        entry = InventoryEntry.fromPOJO(entry);
     });
 
-    return this._entries;
+    return this.rawEntries;
   }
 
   public set entries(entries: InventoryEntry[]) {
-    this._entries = entries;
+    this.rawEntries = entries;
   }
 
   add(entry: InventoryEntry): void {
-    this.entries.push(entry);
+    this.rawEntries.push(entry);
   }
 
   remove(entry: InventoryEntry | string): void {
-    this.clear();
-
     if (typeof entry === "string") {
-      this._entries = this.entries.filter(
-        (e: IInventoryEntry) => e.name !== entry
+      this.rawEntries = this.entries.filter(
+        (e: InventoryEntry) => e.name !== entry
       );
 
       return;
     }
 
-    this._entries = this.entries.filter((e: IInventoryEntry) =>
-      e.name !== entry.name ? entry.name : entry
+    this.rawEntries = this.entries.filter(
+      (e: InventoryEntry) => e.name != entry.name
     );
   }
 
@@ -66,16 +64,18 @@ export default class Inventory implements IInventory {
   }
 
   findItems(query: EntryQuery): InventoryEntry[] | [] {
+    if (!query.key) query.key = "name";
+
     return this.entries.filter(
       (e: InventoryEntry) => e[query.key] === query.value
     );
   }
 
   clear(): void {
-    this.entries = [];
+    this.rawEntries = [];
   }
 
   constructor(capacity: number = 20) {
-    this._capacity = capacity;
+    this.rawCapacity = capacity;
   }
 }

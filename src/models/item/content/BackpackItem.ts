@@ -1,4 +1,4 @@
-import Item, { ItemUsageContext, ItemUsageResult } from "../../item/item.js";
+import Item, { ItemUsageContext, ItemUsageResult } from "../item.js";
 import { InventoryEntry } from "../../player/inventory/inventoryUtils.js";
 
 export interface IBackpackData {

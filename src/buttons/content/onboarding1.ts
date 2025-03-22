@@ -8,9 +8,9 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { Button } from "../../button.js";
-import Player from "../../../models/player/Player.js";
-import buttonWrapper from "../../buttonWrapper.js";
+import Button from "../button.js";
+import Player from "../../models/player/Player.js";
+import buttonWrapper from "../buttonWrapper.js";
 
 export default <Button>{
   customId: "onboarding-1",

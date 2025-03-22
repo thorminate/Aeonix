@@ -1,6 +1,6 @@
 import { MessageFlags } from "discord.js";
-import Player from "../../../models/player/Player.js";
-import { Button } from "../../button.js";
+import Player from "../../models/player/Player.js";
+import Button from "../button.js";
 
 export default <Button>{
   customId: "delete-player-confirmed",

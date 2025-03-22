@@ -1,7 +1,7 @@
 export default function deepInstantiate<T extends object>(
   target: T,
   source: any,
-  classMap: Record<string, any>
+  classMap: Record<string, any> = {}
 ): T {
   for (const key of Object.keys(source)) {
     const sourceIsObjectOrClass = typeof source[key] === "object";

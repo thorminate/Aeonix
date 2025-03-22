@@ -4,9 +4,9 @@ import {
   ButtonStyle,
   MessageFlags,
 } from "discord.js";
-import { Button } from "../../button.js";
-import Player from "../../../models/player/Player.js";
-import buttonWrapper from "../../buttonWrapper.js";
+import Button from "../button.js";
+import Player from "../../models/player/Player.js";
+import buttonWrapper from "../buttonWrapper.js";
 
 export default <Button>{
   customId: "delete-player",

@@ -2,7 +2,7 @@ import Player from "../player/Player.js";
 import getAllFiles from "../../utils/getAllFiles.js";
 import path from "path";
 import url from "url";
-import deepInstantiate from "../misc/deepInstantiate.js";
+import deepInstantiate from "../../utils/deepInstantiate.js";
 import { InventoryEntry } from "../player/inventory/inventoryUtils.js";
 
 export class ItemUsageContext {
@@ -34,13 +34,11 @@ export default abstract class Item {
   protected async createInstance<T extends Item>(itemType: string): Promise<T> {
     switch (itemType) {
       case "BackpackItem":
-        const backpackItemModule = await import(
-          "../content/items/BackpackItem.js"
-        );
+        const backpackItemModule = await import("./content/BackpackItem.js");
         const BackpackItem = backpackItemModule.default;
         return new BackpackItem() as T;
       case "WeaponItem":
-        const WeaponItemModule = await import("../content/items/WeaponItem.js");
+        const WeaponItemModule = await import("./content/WeaponItem.js");
         const WeaponItem = WeaponItemModule.default;
         return new WeaponItem() as T;
       default:
@@ -66,7 +64,7 @@ export default abstract class Item {
   }
 
   static async findAll(this: typeof Item): Promise<Item[]> {
-    const files = getAllFiles("dist/models/content/items");
+    const files = getAllFiles("dist/models/item/content");
 
     return await Promise.all(
       files.map(async (file) => {

@@ -6,11 +6,11 @@ import {
   HTTPError,
   SlashCommandBuilder,
 } from "discord.js";
-import Player from "../../../models/player/Player.js";
-import log from "../../../utils/log.js";
+import Player from "../../models/player/Player.js";
+import log from "../../utils/log.js";
 import { config } from "dotenv";
-import buttonWrapper from "../../../buttons/buttonWrapper.js";
-import Command from "../../command.js";
+import buttonWrapper from "../../buttons/buttonWrapper.js";
+import Command from "../command.js";
 config({
   path: "../../../.env",
 });
