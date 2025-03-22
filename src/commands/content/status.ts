@@ -38,14 +38,14 @@ export default new Command({
     if (error instanceof HTTPError && error.status === 503) {
       log({
         header: "Status Error, the API did not respond in time.",
-        payload: `${error}`,
+        payload: error,
         type: "Error",
       });
       return;
     }
     log({
       header: "Status Error",
-      payload: `${error}`,
+      payload: error,
       type: "Error",
     });
   },

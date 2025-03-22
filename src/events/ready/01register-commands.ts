@@ -74,7 +74,7 @@ export default async (event: Event) => {
   } catch (error) {
     log({
       header: "Error registering commands",
-      payload: `${error}`,
+      payload: error,
       type: "Error",
     });
   }

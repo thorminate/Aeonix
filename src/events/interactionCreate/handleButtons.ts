@@ -79,7 +79,7 @@ export default async (event: Event) => {
   } catch (error) {
     log({
       header: "Button Error",
-      payload: `${error}`,
+      payload: error,
       type: "Error",
     });
   }

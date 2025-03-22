@@ -1,29 +1,24 @@
 import Button from "./button.js";
-import path from "path"; // Get the path library.
-import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
+import path from "path";
+import getAllFiles from "../utils/getAllFiles.js";
 import url from "url";
 
 export default async (exceptions: string[] = []) => {
-  // Export the function.
-  let localButtons: Button[] = []; // define local commands as an array
-
+  let localButtons: Button[] = [];
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  // loop through all command categories.
-  const buttonFiles = getAllFiles(path.join(__dirname, "content")); // get all files in the command category
+  const buttonFiles = getAllFiles(path.join(__dirname, "content"));
   for (const buttonFile of buttonFiles) {
-    // loop through all files in the command category
-    const filePath = path.resolve(buttonFile); // get the path to the file
-    const fileUrl = url.pathToFileURL(filePath); // get the url to the file
-    const commandObject: Button = (await import(fileUrl.toString())).default; // import the file
+    const filePath = path.resolve(buttonFile);
+    const fileUrl = url.pathToFileURL(filePath);
+    const buttonObject: Button = (await import(fileUrl.toString())).default;
 
-    if (exceptions.includes(commandObject.customId)) {
-      // if the command name is in the exceptions array
-      continue; // skip the command
+    if (exceptions.includes(buttonObject.customId)) {
+      continue;
     }
 
-    localButtons.push(commandObject); // add the command to the local commands array
+    localButtons.push(buttonObject);
   }
 
-  return localButtons; // return the array of local commands
+  return localButtons;
 };

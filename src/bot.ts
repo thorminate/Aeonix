@@ -97,7 +97,7 @@ const DiscordToken = process.env.TOKEN; // Get the Discord token.
   } catch (error) {
     log({
       header: "Index error",
-      payload: `${error}`,
+      payload: error,
       type: "Error",
     });
   }

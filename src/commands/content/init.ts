@@ -58,7 +58,7 @@ export default new Command({
   onError(error: Error) {
     log({
       header: "Error with init command",
-      payload: `${error}`,
+      payload: error,
       type: "Error",
     });
   },

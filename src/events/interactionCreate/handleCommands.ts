@@ -86,7 +86,7 @@ export default async (event: Event) => {
   } catch (error) {
     log({
       header: "Command Error",
-      payload: `${error}`,
+      payload: error,
       type: "Error",
     });
   }

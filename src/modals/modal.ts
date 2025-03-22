@@ -1,33 +1,33 @@
-import { ButtonInteraction } from "discord.js";
+import { ButtonInteraction, ModalSubmitInteraction } from "discord.js";
 import Player from "../models/player/Player.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
 
-export interface IButton {
+export interface IModal {
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
   deleted?: boolean;
   passPlayer?: boolean;
   callback: (
-    buttonContext: ButtonInteraction,
+    buttonContext: ModalSubmitInteraction,
     player?: Player
   ) => Promise<void>;
   onError: (error: Error) => Promise<void>;
 }
 
-export default class Button implements IButton {
+export default class Modal implements IModal {
   customId: string;
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
   deleted?: boolean = false;
   passPlayer?: boolean = false;
   callback: (
-    buttonContext: ButtonInteraction,
+    buttonContext: ModalSubmitInteraction,
     player?: Player
   ) => Promise<void>;
   onError: (error: Error) => Promise<void>;
 
-  constructor(buttonObject: IButton) {
-    return deepInstantiate(this, buttonObject);
+  constructor(modalObject: IModal) {
+    return deepInstantiate(this, modalObject);
   }
 }
