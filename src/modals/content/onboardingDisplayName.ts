@@ -10,14 +10,14 @@ import log from "../../utils/log.js";
 import Modal from "../modal.js";
 
 export default <Modal>{
-  customId: "onboarding-display-name",
+  customId: "onboardingDisplayName",
   callback: async (modalContext) => {
     const displayName = modalContext.fields.getTextInputValue("display-name");
 
     if (await Player.load(modalContext.user.username)) {
       const buttons = buttonWrapper([
         new ButtonBuilder()
-          .setCustomId("delete-player")
+          .setCustomId("deletePlayer")
           .setLabel("Delete?")
           .setStyle(ButtonStyle.Danger),
       ]);

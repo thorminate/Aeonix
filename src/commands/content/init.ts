@@ -11,7 +11,7 @@ import Command from "../command.js";
 import {
   welcomeImage,
   welcomeMessage,
-} from "../../events/ready/02register-onboarding.js";
+} from "../../events/ready/02registerOnboarding.js";
 import log from "../../utils/log.js";
 
 export default new Command({
@@ -23,7 +23,7 @@ export default new Command({
     if (await Player.load(context.user.username)) {
       const buttons = buttonWrapper([
         new ButtonBuilder()
-          .setCustomId("delete-player")
+          .setCustomId("deletePlayer")
           .setLabel("Delete?")
           .setStyle(ButtonStyle.Danger),
       ]);
@@ -38,7 +38,7 @@ export default new Command({
 
     const components = buttonWrapper([
       new ButtonBuilder()
-        .setCustomId("onboarding-1")
+        .setCustomId("onboarding1")
         .setLabel("Begin")
         .setStyle(ButtonStyle.Primary)
         .setEmoji("👋"),

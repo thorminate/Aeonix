@@ -9,7 +9,7 @@ import Player from "../../models/player/Player.js";
 import buttonWrapper from "../buttonWrapper.js";
 
 export default <Button>{
-  customId: "delete-player",
+  customId: "deletePlayer",
   callback: async (buttonContext: ButtonInteraction) => {
     if (!(await Player.load(buttonContext.user.username))) {
       await buttonContext.reply({
@@ -21,7 +21,7 @@ export default <Button>{
 
     const buttons = buttonWrapper([
       new ButtonBuilder()
-        .setCustomId("delete-player-confirmed")
+        .setCustomId("deletePlayerConfirmed")
         .setLabel("Yes")
         .setStyle(ButtonStyle.Danger),
     ]);

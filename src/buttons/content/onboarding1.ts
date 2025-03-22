@@ -13,7 +13,7 @@ import Player from "../../models/player/Player.js";
 import buttonWrapper from "../buttonWrapper.js";
 
 export default <Button>{
-  customId: "onboarding-1",
+  customId: "onboarding1",
   callback: async (buttonContext: ButtonInteraction) => {
     if (await Player.load(buttonContext.user.username)) {
       await buttonContext.reply({
@@ -21,7 +21,7 @@ export default <Button>{
           "You have already initialized your persona. Do you wish to delete it?",
         components: buttonWrapper([
           new ButtonBuilder()
-            .setCustomId("delete-player")
+            .setCustomId("deletePlayer")
             .setLabel("Delete?")
             .setStyle(ButtonStyle.Danger),
         ]),
@@ -32,7 +32,7 @@ export default <Button>{
     await buttonContext.showModal(
       new ModalBuilder()
         .setTitle("Step 1/1 - Display Name")
-        .setCustomId("onboarding-display-name")
+        .setCustomId("onboardingDisplayName")
         .addComponents(
           new ActionRowBuilder<TextInputBuilder>().addComponents(
             new TextInputBuilder()

@@ -3,7 +3,7 @@ import Player from "../../models/player/Player.js";
 import Button from "../button.js";
 
 export default <Button>{
-  customId: "delete-player-confirmed",
+  customId: "deletePlayerConfirmed",
   callback: async (buttonContext) => {
     if (!(await Player.load(buttonContext.user.username))) {
       await buttonContext.reply({

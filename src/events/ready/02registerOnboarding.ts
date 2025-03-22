@@ -50,7 +50,7 @@ export default async (event: Event) => {
 
   const components = buttonWrapper([
     new ButtonBuilder()
-      .setCustomId("onboarding-1")
+      .setCustomId("onboarding1")
       .setLabel("Begin")
       .setStyle(ButtonStyle.Primary)
       .setEmoji("👋"),

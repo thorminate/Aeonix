@@ -11,7 +11,7 @@
   "exclude": ["./node_modules/**/*", "./dist/**/*", "./config.json"],
   "include": [
     "./src/**/*",
-    "src/events/ready/01register-commands.ts",
+    "src/events/ready/01registerCommands.ts",
     "src/events/ready/02playerOnboarding.ts"
   ] // Specify the path to your TypeScript files
 }
