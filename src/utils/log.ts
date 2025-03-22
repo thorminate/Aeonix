@@ -1,12 +1,13 @@
 import path from "node:path";
 import fs from "node:fs";
 import url from "node:url";
+import { inspect } from "node:util";
 
 interface Options {
   header: string;
   processName?: string;
   folder?: string;
-  payload?: any;
+  payload?: any[] | any;
   type?: "Fatal" | "Error" | "Warn" | "Info" | "Verbose" | "Debug" | "Silly";
 }
 
@@ -32,9 +33,26 @@ export default (options: Options) => {
     { flags: "a" }
   );
 
-  payload = payload ? "\n" + JSON.stringify(payload) : "";
+  if (!Array.isArray(payload)) {
+    payload = [payload];
+  }
+
+  const fPayload: string = payload
+    .map((p: any) => {
+      const stringified =
+        typeof p === "string"
+          ? p
+          : inspect(p, { depth: Infinity, colors: false, sorted: true });
+
+      if (!stringified || stringified === "" || stringified === "undefined")
+        return "";
+
+      return "\n" + stringified;
+    })
+    .join(" ");
+
   const logPrefix = `${date.toLocaleTimeString()}`;
-  const logContent = `${header}${payload}`;
+  const logContent = `${header}${fPayload}`;
   const logProcessName = processName ? `${processName}/` : "Main/";
   const logType = type ? `${type}` : "Info";
 

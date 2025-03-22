@@ -1,4 +1,5 @@
 import { Document, Model } from "mongoose";
+import deepInstantiate from "./deepInstantiate.js";
 
 /**
  * Takes in a target object and a source object, and assigns the source values to the target object recursively.
@@ -7,44 +8,6 @@ import { Document, Model } from "mongoose";
  * @param classMap
  * @returns
  */
-function deepInstantiate<T extends object>(
-  target: T,
-  source: any,
-  classMap: Record<string, any>
-): T {
-  for (const key of Object.keys(source)) {
-    const sourceIsObjectOrClass = typeof source[key] === "object";
-    const sourcePropertyIsNotNull = source[key] !== null;
-    const targetHasProperty = key in target;
-
-    if (sourceIsObjectOrClass && sourcePropertyIsNotNull && targetHasProperty) {
-      const ClassFromMap = classMap[key]; // Check if there's a class associated with this key
-
-      const classExistsInMap = ClassFromMap !== undefined;
-      if (classExistsInMap) {
-        // Instantiate the class with the source data
-        target[key] = deepInstantiate(
-          new ClassFromMap(),
-          source[key],
-          classMap
-        );
-      } else {
-        target[key] = deepInstantiate(
-          target[key] !== undefined
-            ? target[key]
-            : Array.isArray(source[key])
-            ? []
-            : {},
-          source[key],
-          classMap
-        ); // Recursively assign
-      }
-    } else {
-      target[key] = source[key]; // Assign primitives directly
-    }
-  }
-  return target;
-}
 
 // Define a specialized interface for the constructor
 export interface SaveableConstructor<T extends Document, TInstance> {
@@ -58,8 +21,6 @@ export default abstract class Saveable<T extends Document> {
   protected abstract getIdentifier(): {
     key: keyof T | string;
     value: string;
-    secondKey?: keyof T | string;
-    secondValue?: string;
   };
 
   async save(): Promise<void> {

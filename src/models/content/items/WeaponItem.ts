@@ -1,18 +1,18 @@
 import Item, { ItemUsageContext, ItemUsageResult } from "../../item/item.js";
 
-interface IWeaponData {
+export interface IWeaponData {
   damage: number;
   range: number;
 }
 
 export default class WeaponItem extends Item {
-  name: string;
-  id: string;
-  description: string;
-  weight: number;
-  value: number;
-  data: IWeaponData;
-  useType: string;
+  name: string = "Weapon";
+  id: string = "WeaponItem";
+  description: string = "A weapon.";
+  weight: number = 10;
+  value: number = 0;
+  data: IWeaponData = this.createData();
+  useType: string = "Swing";
 
   createData(damage: number = 10, range: number = 5): IWeaponData {
     return {

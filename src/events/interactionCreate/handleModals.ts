@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import Player from "../../models/player/Player.js";
 import { Event } from "../../handlers/eventHandler.js";
-import buttonWrapper from "../../utils/buttonWrapper.js";
+import buttonWrapper from "../../buttons/buttonWrapper.js";
 
 export default async (event: Event) => {
   const modalInteraction = event.arg as ModalSubmitInteraction;

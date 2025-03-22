@@ -3,7 +3,7 @@
 import path from "path"; // Get the path library.
 import fs from "fs"; // Get the file system library.
 
-export default (directory: string, foldersOnly = false) => {
+export default (directory: string, foldersOnly = false): string[] => {
   //export the function
   let fileNames = []; // define fileNames as an array
 

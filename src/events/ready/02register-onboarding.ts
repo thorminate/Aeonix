@@ -6,7 +6,7 @@ import {
   TextChannel,
 } from "discord.js";
 import { config } from "dotenv";
-import buttonWrapper from "../../utils/buttonWrapper.js";
+import buttonWrapper from "../../buttons/buttonWrapper.js";
 import log from "../../utils/log.js";
 import { Event } from "../../handlers/eventHandler.js";
 config();

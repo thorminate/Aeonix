@@ -5,23 +5,22 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import commandPrep from "../../utils/commandPrep.js";
-import Player from "../../models/player/Player.js";
-import buttonWrapper from "../../utils/buttonWrapper.js";
-import Command from "../command.js";
+import Player from "../../../models/player/Player.js";
+import buttonWrapper from "../../../buttons/buttonWrapper.js";
+import Command from "../../command.js";
 import {
   welcomeImage,
   welcomeMessage,
-} from "../../events/ready/02register-onboarding.js";
+} from "../../../events/ready/02register-onboarding.js";
+import log from "../../../utils/log.js";
 
-export default <Command>{
+export default new Command({
   data: new SlashCommandBuilder()
     .setName("init")
     .setDescription("Initializes your persona"),
-  callback: async (cmdAct: CommandInteraction) => {
-    await commandPrep(cmdAct);
 
-    if (await Player.load(cmdAct.user.username)) {
+  callback: async (context: CommandInteraction) => {
+    if (await Player.load(context.user.username)) {
       const buttons = buttonWrapper([
         new ButtonBuilder()
           .setCustomId("delete-player")
@@ -29,7 +28,7 @@ export default <Command>{
           .setStyle(ButtonStyle.Danger),
       ]);
 
-      await cmdAct.editReply({
+      await context.editReply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",
         components: buttons,
@@ -45,14 +44,22 @@ export default <Command>{
         .setEmoji("👋"),
     ]);
 
-    await cmdAct.editReply({
+    await context.editReply({
       files: [welcomeImage],
     });
 
-    await cmdAct.followUp({
+    await context.followUp({
       content: welcomeMessage,
       components,
       flags: MessageFlags.Ephemeral,
     });
   },
-};
+
+  onError(error: Error) {
+    log({
+      header: "Error with init command",
+      payload: `${error}`,
+      type: "Error",
+    });
+  },
+});

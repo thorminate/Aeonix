@@ -1,4 +1,5 @@
-import Saveable from "../utils/Saveable.js";
+import Saveable from "../misc/Saveable.js";
+import deepInstantiate from "../misc/deepInstantiate.js";
 import { APIEmbed, EmbedBuilder, User } from "discord.js";
 import { Document, Model, model, Schema } from "mongoose";
 import Stats from "./status/status.js";
@@ -35,11 +36,27 @@ export default class Player extends Saveable<IPlayer> {
   private _status: Stats;
 
   public get status(): Stats {
-    return this._status as Stats;
+    return deepInstantiate(new Stats(), this._status, {}) as Stats;
+  }
+
+  public set status(value: Stats) {
+    this._status = value;
   }
 
   public get inventory(): Inventory {
-    return this._inventory as Inventory;
+    if (this._inventory instanceof Inventory) return this._inventory;
+
+    this._inventory = deepInstantiate(
+      new Inventory(),
+      this._inventory,
+      {}
+    ) as Inventory;
+
+    return this._inventory;
+  }
+
+  public set inventory(value: Inventory) {
+    this._inventory = value;
   }
 
   async getUser(): Promise<User> {
@@ -101,8 +118,6 @@ export default class Player extends Saveable<IPlayer> {
     return {
       key: "name",
       value: this.name,
-      secondKey: "id",
-      secondValue: this.id,
     };
   }
 

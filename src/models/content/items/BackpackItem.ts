@@ -1,19 +1,19 @@
 import Item, { ItemUsageContext, ItemUsageResult } from "../../item/item.js";
-import { InventoryEntry } from "../../player/inventory/inventory.js";
+import { InventoryEntry } from "../../player/inventory/inventoryUtils.js";
 
-interface IBackpackData {
+export interface IBackpackData {
   capacity: number;
-  entries: any[];
+  entries: InventoryEntry[];
 }
 
 export default class BackpackItem extends Item {
-  name: string;
-  id: string;
-  description: string;
-  weight: number;
-  value: number;
-  data: IBackpackData;
-  useType: string;
+  name: string = "Backpack";
+  id: string = "BackpackItem";
+  description: string = "A backpack.";
+  weight: number = 10;
+  value: number = 0;
+  data: IBackpackData = this.createData();
+  useType: string = "Open";
 
   createData(
     capacity: number = 20,
@@ -23,16 +23,6 @@ export default class BackpackItem extends Item {
       capacity,
       entries,
     };
-  }
-
-  constructor() {
-    super();
-    this.name = "Backpack";
-    this.id = this.constructor.name;
-    this.description = "A backpack.";
-    this.weight = 10;
-    this.value = 0;
-    this.data = this.createData();
   }
 
   async use(context: ItemUsageContext): Promise<ItemUsageResult> {
