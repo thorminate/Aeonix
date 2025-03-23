@@ -139,5 +139,8 @@ export default class Player extends Saveable<IPlayer> {
     this.name = user ? user.username : "";
     this.displayName = displayName || "";
     this.id = user ? user.id : "";
+
+    this._status = new Stats();
+    this._inventory = new Inventory();
   }
 }

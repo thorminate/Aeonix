@@ -63,10 +63,10 @@ export default abstract class Item {
     );
   }
 
-  static async findAll(this: typeof Item): Promise<Item[]> {
+  static async findAll<T extends Item>(this: typeof Item): Promise<T[]> {
     const files = getAllFiles("dist/models/item/content");
 
-    return await Promise.all(
+    return (await Promise.all(
       files.map(async (file) => {
         const filePath = path.resolve(file);
         const fileUrl = url.pathToFileURL(filePath);
@@ -80,13 +80,13 @@ export default abstract class Item {
 
         return item;
       })
-    );
+    )) as T[];
   }
 
-  static async find(id: string): Promise<Item> {
+  static async find<T extends Item>(id: string): Promise<T> {
     const items = await this.findAll();
 
-    const result = items.find((item) => item.id === id);
+    const result = items.find((item) => item.id === id) as T;
 
     if (!result) return Promise.reject("Item not found");
     else return result;

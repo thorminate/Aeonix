@@ -6,51 +6,51 @@ import {
 } from "./inventoryUtils.js";
 
 export default class Inventory implements IInventory {
-  private rawCapacity: number = 10;
-  private rawEntries: InventoryEntry[] = [];
+  private _capacity: number = 10;
+  private _entries: InventoryEntry[] = [];
 
   public get capacity(): number {
-    if (!this.rawCapacity) {
-      this.rawCapacity = 20;
+    if (!this._capacity) {
+      this._capacity = 20;
     }
-    return this.rawCapacity;
+    return this._capacity;
   }
 
   public set capacity(capacity: number) {
-    this.rawCapacity = capacity;
+    this._capacity = capacity;
   }
 
   public get entries(): InventoryEntry[] {
-    if (!Array.isArray(this.rawEntries)) {
-      this.rawEntries = [];
+    if (!Array.isArray(this._entries)) {
+      this._entries = [];
     }
 
-    this.rawEntries.forEach((entry: IInventoryEntry) => {
+    this._entries.forEach((entry: IInventoryEntry) => {
       if (!(entry instanceof InventoryEntry))
         entry = InventoryEntry.fromPOJO(entry);
     });
 
-    return this.rawEntries;
+    return this._entries;
   }
 
   public set entries(entries: InventoryEntry[]) {
-    this.rawEntries = entries;
+    this._entries = entries;
   }
 
   add(entry: InventoryEntry): void {
-    this.rawEntries.push(entry);
+    this._entries.push(entry);
   }
 
   remove(entry: InventoryEntry | string): void {
     if (typeof entry === "string") {
-      this.rawEntries = this.entries.filter(
+      this._entries = this.entries.filter(
         (e: InventoryEntry) => e.name !== entry
       );
 
       return;
     }
 
-    this.rawEntries = this.entries.filter(
+    this._entries = this.entries.filter(
       (e: InventoryEntry) => e.name != entry.name
     );
   }
@@ -72,10 +72,10 @@ export default class Inventory implements IInventory {
   }
 
   clear(): void {
-    this.rawEntries = [];
+    this._entries = [];
   }
 
   constructor(capacity: number = 20) {
-    this.rawCapacity = capacity;
+    this._capacity = capacity;
   }
 }

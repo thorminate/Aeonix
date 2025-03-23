@@ -73,7 +73,7 @@ export class InventoryEntry implements IInventoryEntry {
     );
   }
 
-  async toItem(): Promise<Item> {
+  async toItem<T extends Item>(): Promise<T> {
     const itemStructure = await Item.find(this.id);
 
     return deepInstantiate(
@@ -83,6 +83,6 @@ export class InventoryEntry implements IInventoryEntry {
         data: this.data,
       },
       {}
-    );
+    ) as T;
   }
 }
