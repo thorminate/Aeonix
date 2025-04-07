@@ -5,7 +5,7 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Player from "../../models/Game/player/Player.js";
+import Player from "../../models/Game/Player/Player.js";
 import Command from "../command.js";
 import {
   welcomeImage,
@@ -20,7 +20,7 @@ export default new Command({
     .setDescription("Initializes your persona"),
 
   callback: async (context: CommandInteraction) => {
-    if (await Player.load(context.user.username)) {
+    if (await Player.find(context.user.username)) {
       const buttons = buttonWrapper([
         new ButtonBuilder()
           .setCustomId("deletePlayer")

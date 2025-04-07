@@ -7,7 +7,7 @@ import {
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
-import Player from "../../models/Game/player/Player.js";
+import Player from "../../models/Game/Player/Player.js";
 import getLocalModals from "../../modals/getLocalModals.js";
 import Modal from "../../modals/modal.js";
 import log from "../../utils/log.js";
@@ -63,7 +63,7 @@ export default new Event({
     let player: Player;
 
     if (modal.passPlayer) {
-      player = await Player.load(modalContext.user.username);
+      player = await Player.find(modalContext.user.username);
 
       if (!player) {
         modalContext.reply({

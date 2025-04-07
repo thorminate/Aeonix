@@ -4,7 +4,7 @@ import {
   GuildMemberRoleManager,
   MessageFlags,
 } from "discord.js";
-import Player from "../../models/Game/player/Player.js";
+import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
 import Modal from "../modal.js";
 import buttonWrapper from "../../buttons/buttonWrapper.js";
@@ -14,7 +14,7 @@ export default <Modal>{
   callback: async (modalContext) => {
     const displayName = modalContext.fields.getTextInputValue("display-name");
 
-    if (await Player.load(modalContext.user.username)) {
+    if (await Player.find(modalContext.user.username)) {
       const buttons = buttonWrapper([
         new ButtonBuilder()
           .setCustomId("deletePlayer")

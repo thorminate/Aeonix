@@ -103,7 +103,7 @@ export default async (
   session._id = message.id;
   session.save();
 
-  await message.edit({
+  await context.editReply({
     components: [paginationRow(1, Math.ceil(pages.length / 4), message.id)],
   });
 
@@ -115,7 +115,7 @@ export default async (
     const [action, sessionId] = context.customId.split("-");
     if (!action || !sessionId) return;
 
-    const session = await PaginationSession.load(sessionId);
+    const session = await PaginationSession.find(sessionId);
 
     switch (action) {
       case "fp":

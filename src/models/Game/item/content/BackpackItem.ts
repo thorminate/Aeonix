@@ -1,5 +1,5 @@
 import Item, { ItemUsageContext, ItemUsageResult } from "../item.js";
-import { InventoryEntry } from "../../player/inventory/inventoryUtils.js";
+import { InventoryEntry } from "../../Inventory/inventoryUtils.js";
 
 export interface IBackpackData {
   capacity: number;

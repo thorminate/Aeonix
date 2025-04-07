@@ -1,9 +1,9 @@
-import Player from "../player/Player.js";
+import Player from "../Player/Player.js";
 import getAllFiles from "../../../utils/getAllFiles.js";
 import path from "path";
 import url from "url";
 import deepInstantiate from "../../../utils/deepInstantiate.js";
-import { InventoryEntry } from "../player/inventory/inventoryUtils.js";
+import { InventoryEntry } from "../Inventory/inventoryUtils.js";
 
 export class ItemUsageContext {
   player: Player;

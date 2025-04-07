@@ -1,9 +1,9 @@
 import Event, { EventParams } from "../../models/Core/Event.js";
 import WeaponItem, {
   IWeaponData,
-} from "../../models/Game/item/content/WeaponItem.js";
-import Item from "../../models/Game/item/item.js";
-import Player from "../../models/Game/player/Player.js";
+} from "../../models/Game/Item/content/WeaponItem.js";
+import Item from "../../models/Game/Item/item.js";
+import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
 
 export default new Event({
@@ -68,7 +68,7 @@ export default new Event({
       test = false;
     }
 
-    const thor = await Player.load("thorminate");
+    const thor = await Player.find("thorminate");
 
     thor.inventory.clear();
     thor.inventory.add(item.toInventoryEntry());

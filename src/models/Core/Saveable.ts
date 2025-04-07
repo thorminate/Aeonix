@@ -34,7 +34,7 @@ export default abstract class Saveable<T extends Document> {
   }
 
   // Static load method with better type control
-  static async load<T extends Document, TInstance extends Saveable<T>>(
+  static async find<T extends Document, TInstance extends Saveable<T>>(
     // Ensure that this has a valid constructor
     this: SaveableConstructor<T, TInstance>,
     identifier: string

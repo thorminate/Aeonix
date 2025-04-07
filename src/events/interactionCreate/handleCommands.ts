@@ -7,7 +7,7 @@ import {
 import log from "../../utils/log.js";
 import Command from "../../commands/command.js";
 import commandPrep from "../../commands/commandPrep.js";
-import Player from "../../models/Game/player/Player.js";
+import Player from "../../models/Game/Player/Player.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 
 export default new Event({
@@ -64,7 +64,7 @@ export default new Event({
     let player: Player;
 
     if (commandObject.passPlayer) {
-      player = await Player.load(interaction.user.username);
+      player = await Player.find(interaction.user.username);
 
       if (!player) {
         interaction.editReply({

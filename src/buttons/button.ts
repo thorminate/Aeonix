@@ -1,5 +1,5 @@
 import { ButtonInteraction } from "discord.js";
-import Player from "../models/Game/player/Player.js";
+import Player from "../models/Game/Player/Player.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
 
 export interface IButton {

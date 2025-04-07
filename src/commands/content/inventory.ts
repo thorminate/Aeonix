@@ -5,9 +5,9 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import Command from "../command.js";
-import Player from "../../models/Game/player/Player.js";
+import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
-import { InventoryEntry } from "../../models/Game/player/inventory/inventoryUtils.js";
+import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";
 import messageWrapper from "../paginator.js";
 
 export default new Command({

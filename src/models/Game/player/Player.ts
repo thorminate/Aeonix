@@ -2,9 +2,9 @@ import Saveable from "../../Core/Saveable.js";
 import deepInstantiate from "../../../utils/deepInstantiate.js";
 import { APIEmbed, EmbedBuilder, User } from "discord.js";
 import { Document, Model, model, Schema } from "mongoose";
-import Stats from "./status/status.js";
-import Inventory from "./inventory/inventory.js";
-import calculateXpRequirement from "./utils/calculateXpRequirement.js";
+import Stats from "../Status/status.js";
+import Inventory from "../Inventory/inventory.js";
+import calculateXpRequirement from "../Status/utils/calculateXpRequirement.js";
 import aeonix from "../../../aeonix.js";
 
 interface IPlayer extends Document {

@@ -4,7 +4,7 @@ import {
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
-import Player from "../../models/Game/player/Player.js";
+import Player from "../../models/Game/Player/Player.js";
 import getLocalButtons from "../../buttons/getLocalButtons.js";
 import log from "../../utils/log.js";
 import Button from "../../buttons/button.js";
@@ -61,7 +61,7 @@ export default new Event({
     let player: Player;
 
     if (button.passPlayer) {
-      player = await Player.load(buttonContext.user.username);
+      player = await Player.find(buttonContext.user.username);
 
       if (!player) {
         buttonContext.reply({

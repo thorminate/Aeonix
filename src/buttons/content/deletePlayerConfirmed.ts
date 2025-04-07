@@ -1,11 +1,11 @@
 import { MessageFlags } from "discord.js";
-import Player from "../../models/Game/player/Player.js";
+import Player from "../../models/Game/Player/Player.js";
 import Button from "../button.js";
 
 export default <Button>{
   customId: "deletePlayerConfirmed",
   callback: async (buttonContext) => {
-    if (!(await Player.load(buttonContext.user.username))) {
+    if (!(await Player.find(buttonContext.user.username))) {
       await buttonContext.reply({
         content: "You don't exist in the DB, therefore you cannot be deleted.",
         flags: MessageFlags.Ephemeral,
