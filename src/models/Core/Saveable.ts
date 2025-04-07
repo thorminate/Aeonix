@@ -1,5 +1,5 @@
 import { Document, Model } from "mongoose";
-import deepInstantiate from "../utils/deepInstantiate.js";
+import deepInstantiate from "../../utils/deepInstantiate.js";
 
 /**
  * Takes in a target object and a source object, and assigns the source values to the target object recursively.
@@ -19,15 +19,15 @@ export default abstract class Saveable<T extends Document> {
   protected abstract getModel(): Model<T>;
   protected abstract getClassMap(): Record<string, any>;
   protected abstract getIdentifier(): {
-    key: keyof T | string;
-    value: string;
+    key: Array<keyof T | string>;
+    value: Array<string>;
   };
 
   async save(): Promise<void> {
     const { key, value } = this.getIdentifier();
 
     await this.getModel().findOneAndUpdate(
-      { [key]: value } as Record<string, any>,
+      { [key[0]]: value[0] } as Record<string, any>,
       this,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
@@ -42,10 +42,10 @@ export default abstract class Saveable<T extends Document> {
     const model = this.getModel();
 
     const query = {
-      [this.prototype.getIdentifier().key as string]: identifier,
+      [this.prototype.getIdentifier().key[0]]: identifier,
     };
     let doc = await model.findOne(query as Record<string, any>);
-    if (!doc) return null;
+    if (!doc) return undefined;
 
     const instance = deepInstantiate(
       new this() as TInstance,
@@ -61,7 +61,7 @@ export default abstract class Saveable<T extends Document> {
   ): Promise<void> {
     const model = this.getModel();
     await model.findOneAndDelete({
-      [this.prototype.getIdentifier().key]: identifier,
+      [this.prototype.getIdentifier().key[0]]: identifier,
     } as Record<string, any>);
   }
 }

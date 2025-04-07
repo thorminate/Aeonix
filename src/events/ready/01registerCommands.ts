@@ -3,19 +3,17 @@ import areCommandsDifferent from "../../commands/areCommandsDifferent.js";
 import getApplicationCommands from "../../commands/getApplicationCommands.js";
 import getLocalCommands from "../../commands/getLocalCommands.js";
 import log from "../../utils/log.js";
-import { Event } from "../../handlers/eventHandler.js";
 import Command from "../../commands/command.js";
+import Event, { EventParams } from "../../models/Core/Event.js";
 
-export default async (event: Event) => {
-  try {
-    // Define local commands and application commands
+export default new Event({
+  callback: async (event: EventParams) => {
     const localCommands: Command[] = await getLocalCommands();
     const applicationCommands = await getApplicationCommands(
-      event.bot,
+      event.aeonix,
       "1267928656877977670"
     );
 
-    // loop through all local commands
     for (const localCommand of localCommands) {
       if (localCommand.data.name === undefined || !localCommand.data.name) {
         continue;
@@ -23,42 +21,37 @@ export default async (event: Event) => {
 
       const { name, description, options } = localCommand.data.toJSON();
 
-      // check if command already exists and store in a variable
       const existingCommand = applicationCommands.cache.find(
         (cmd: any) => cmd.name === name
       );
 
-      // if command exists, check if it's set to be deleted
       if (existingCommand) {
         if (localCommand.deleted) {
-          // if it's set to be deleted, then delete it
           await applicationCommands.delete(existingCommand.id);
           log({
             header: `Deleted command, ${name}`,
+            processName: "CommandRegistrant",
             type: "Info",
           });
           continue;
         }
-        // if commands are different, then update it.
         if (areCommandsDifferent(existingCommand, localCommand)) {
           await applicationCommands.edit(existingCommand.id, {
             description,
             options,
           });
 
-          // log edited command
           log({
             header: `Edited command, ${name}`,
+            processName: "CommandRegistrant",
             type: "Info",
           });
           continue;
         }
       } else {
-        // if command is set to be deleted, then skip registering it.
         if (localCommand.deleted) {
           continue;
         }
-        // register command
         await applicationCommands.create({
           name,
           description,
@@ -67,15 +60,23 @@ export default async (event: Event) => {
 
         log({
           header: `Registered command, ${name}`,
+          processName: "CommandRegistrant",
           type: "Info",
         });
       }
     }
-  } catch (error) {
+    log({
+      header: "Commands A-OK",
+      processName: "CommandRegistrant",
+      type: "Info",
+    });
+  },
+  onError: async (e) => {
     log({
       header: "Error registering commands",
-      payload: error,
+      processName: "CommandRegistrant",
+      payload: e,
       type: "Error",
     });
-  }
-};
+  },
+});

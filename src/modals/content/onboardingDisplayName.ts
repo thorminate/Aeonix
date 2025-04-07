@@ -4,10 +4,10 @@ import {
   GuildMemberRoleManager,
   MessageFlags,
 } from "discord.js";
-import buttonWrapper from "../../buttons/buttonWrapper.js";
-import Player from "../../models/player/Player.js";
+import Player from "../../models/Game/player/Player.js";
 import log from "../../utils/log.js";
 import Modal from "../modal.js";
+import buttonWrapper from "../../buttons/buttonWrapper.js";
 
 export default <Modal>{
   customId: "onboardingDisplayName",
@@ -48,6 +48,7 @@ export default <Modal>{
   onError: async (error) => {
     log({
       header: "Modal Error",
+      processName: "OnboardingDisplayNameModal",
       payload: error,
       type: "Error",
     });

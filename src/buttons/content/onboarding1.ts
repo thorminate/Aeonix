@@ -9,7 +9,7 @@ import {
   TextInputStyle,
 } from "discord.js";
 import Button from "../button.js";
-import Player from "../../models/player/Player.js";
+import Player from "../../models/Game/player/Player.js";
 import buttonWrapper from "../buttonWrapper.js";
 
 export default <Button>{

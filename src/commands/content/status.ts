@@ -1,12 +1,8 @@
 // shows your status
 import { CommandInteraction, HTTPError, SlashCommandBuilder } from "discord.js";
-import Player from "../../models/player/Player.js";
+import Player from "../../models/Game/player/Player.js";
 import log from "../../utils/log.js";
-import { config } from "dotenv";
 import Command from "../command.js";
-config({
-  path: "../../../.env",
-});
 
 export default new Command({
   data: new SlashCommandBuilder()
@@ -19,10 +15,11 @@ export default new Command({
     });
   },
 
-  onError(error: Error) {
+  onError(error: Error): void {
     if (error instanceof HTTPError && error.status === 503) {
       log({
         header: "Status Error, the API did not respond in time.",
+        processName: "StatusCommand",
         payload: error,
         type: "Error",
       });
@@ -30,6 +27,7 @@ export default new Command({
     }
     log({
       header: "Status Error",
+      processName: "StatusCommand",
       payload: error,
       type: "Error",
     });

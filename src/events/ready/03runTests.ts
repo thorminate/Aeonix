@@ -1,22 +1,16 @@
-import { Event } from "../../handlers/eventHandler.js";
+import Event, { EventParams } from "../../models/Core/Event.js";
 import WeaponItem, {
   IWeaponData,
-} from "../../models/item/content/WeaponItem.js";
-import Item from "../../models/item/item.js";
-import Player from "../../models/player/Player.js";
+} from "../../models/Game/item/content/WeaponItem.js";
+import Item from "../../models/Game/item/item.js";
+import Player from "../../models/Game/player/Player.js";
 import log from "../../utils/log.js";
 
-export default async (event: Event) => {
-  try {
-    log({
-      header: "Running tests",
-      type: "Info",
-    });
-
-    const player = new Player(event.bot.user, event.bot.user.username);
+export default new Event({
+  callback: async (event: EventParams) => {
+    const player = new Player(event.aeonix.user, event.aeonix.user.username);
 
     const item: WeaponItem = await Item.find("WeaponItem");
-
     const item2: WeaponItem = await item.toInventoryEntry().toItem();
 
     let test = true;
@@ -26,6 +20,7 @@ export default async (event: Event) => {
     if (item.name !== item2.name) {
       log({
         header: "Test Error, name should be the same",
+        processName: "TestRunner",
         payload: `${item.name} !== ${item2.name}`,
         type: "Error",
       });
@@ -35,6 +30,7 @@ export default async (event: Event) => {
     if (item.data.damage !== item2.data.damage) {
       log({
         header: "Test Error, capacity should be the same",
+        processName: "TestRunner",
         payload: `${item.data.damage} !== ${item2.data.damage}`,
         type: "Error",
       });
@@ -42,6 +38,7 @@ export default async (event: Event) => {
     } else if (item.id !== item2.id) {
       log({
         header: "Test Error, id should be the same",
+        processName: "TestRunner",
         payload: `${item.id} !== ${item2.id}`,
         type: "Error",
       });
@@ -56,6 +53,7 @@ export default async (event: Event) => {
     if (player.inventory.entries.length !== 1) {
       log({
         header: "Test Error, inventory should have 1 item",
+        processName: "TestRunner",
         payload: player.inventory,
         type: "Error",
       });
@@ -63,20 +61,31 @@ export default async (event: Event) => {
     } else if (player.inventory.entries[0]?.quantity !== 1) {
       log({
         header: "Test Error, quantity should be 1",
+        processName: "TestRunner",
         payload: `${player.inventory.entries[0].quantity} !== 1`,
         type: "Error",
       });
       test = false;
     }
 
+    const thor = await Player.load("thorminate");
+
+    thor.inventory.clear();
+    thor.inventory.add(item.toInventoryEntry());
+    thor.save();
+
     log({
       header: test ? "Tests passed" : "A test failed, check logs",
+      processName: "TestRunner",
+      type: test ? "Info" : "Error",
     });
-  } catch (error) {
+  },
+  onError: async (e: any) => {
     log({
-      header: "Test Error",
-      payload: error,
+      header: "Error running tests",
+      processName: "TestRunner",
+      payload: e,
       type: "Error",
     });
-  }
-};
+  },
+});

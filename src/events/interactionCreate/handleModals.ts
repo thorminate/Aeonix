@@ -7,21 +7,19 @@ import {
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
-import Player from "../../models/player/Player.js";
-import { Event } from "../../handlers/eventHandler.js";
-import buttonWrapper from "../../buttons/buttonWrapper.js";
+import Player from "../../models/Game/player/Player.js";
 import getLocalModals from "../../modals/getLocalModals.js";
 import Modal from "../../modals/modal.js";
 import log from "../../utils/log.js";
+import Event, { EventParams } from "../../models/Core/Event.js";
 
-export default async (event: Event) => {
-  const modalContext = event.arg as ModalSubmitInteraction;
+export default new Event({
+  callback: async (event: EventParams) => {
+    const modalContext = event.context as ModalSubmitInteraction;
 
-  if (!modalContext.isModalSubmit()) return;
+    if (!modalContext.isModalSubmit()) return;
 
-  const localModals = await getLocalModals();
-
-  try {
+    const localModals = await getLocalModals();
     // check if command name is in localCommands
     const modal: Modal = localModals.find(
       (modal: Modal) => modal.customId === modalContext.customId
@@ -80,11 +78,13 @@ export default async (event: Event) => {
     await modal
       .callback(modalContext, player)
       .catch((e: Error) => modal.onError(e));
-  } catch (error) {
+  },
+  onError: async (e: any) => {
     log({
-      header: "Button Error",
-      payload: error,
+      header: "A modal could not be handled correctly",
+      processName: "ModalHandler",
+      payload: e,
       type: "Error",
     });
-  }
-};
+  },
+});

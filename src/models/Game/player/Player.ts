@@ -1,14 +1,14 @@
-import Saveable from "../Saveable.js";
-import deepInstantiate from "../../utils/deepInstantiate.js";
+import Saveable from "../../Core/Saveable.js";
+import deepInstantiate from "../../../utils/deepInstantiate.js";
 import { APIEmbed, EmbedBuilder, User } from "discord.js";
 import { Document, Model, model, Schema } from "mongoose";
 import Stats from "./status/status.js";
 import Inventory from "./inventory/inventory.js";
 import calculateXpRequirement from "./utils/calculateXpRequirement.js";
-import { bot } from "../../bot.js";
+import aeonix from "../../../aeonix.js";
 
 interface IPlayer extends Document {
-  id: string;
+  _id: string;
   name: string;
   displayName: string;
   _status: Stats;
@@ -16,7 +16,7 @@ interface IPlayer extends Document {
 }
 
 const PlayerSchema = new Schema<IPlayer>({
-  id: { type: String, required: true },
+  _id: { type: String, required: true },
   name: { type: String, required: true, unique: true },
   displayName: { type: String, required: true },
   _status: {
@@ -29,7 +29,7 @@ const PlayerSchema = new Schema<IPlayer>({
 const PlayerModel = model<IPlayer>("Player", PlayerSchema);
 
 export default class Player extends Saveable<IPlayer> {
-  id: string;
+  _id: string;
   name: string;
   displayName: string;
   private _inventory: Inventory;
@@ -56,7 +56,7 @@ export default class Player extends Saveable<IPlayer> {
   }
 
   async getUser(): Promise<User> {
-    return await bot.users.fetch(this.id);
+    return await aeonix.users.fetch(this._id);
   }
 
   async levelUp(amount: number = 1, resetXp: boolean = true) {
@@ -112,8 +112,8 @@ export default class Player extends Saveable<IPlayer> {
 
   protected getIdentifier() {
     return {
-      key: "name",
-      value: this.name,
+      key: ["name", "_id"],
+      value: [this.name, this._id],
     };
   }
 
@@ -138,7 +138,7 @@ export default class Player extends Saveable<IPlayer> {
 
     this.name = user ? user.username : "";
     this.displayName = displayName || "";
-    this.id = user ? user.id : "";
+    this._id = user ? user.id : "";
 
     this._status = new Stats();
     this._inventory = new Inventory();

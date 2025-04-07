@@ -1,5 +1,5 @@
 import { MessageFlags } from "discord.js";
-import Player from "../../models/player/Player.js";
+import Player from "../../models/Game/player/Player.js";
 import Button from "../button.js";
 
 export default <Button>{

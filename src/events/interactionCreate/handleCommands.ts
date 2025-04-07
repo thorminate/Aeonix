@@ -1,7 +1,3 @@
-/**
- * Handles the slash commands.
- * @param {Event} event The event object containing the interaction and client (bot)
- */
 import getLocalCommands from "../../commands/getLocalCommands.js";
 import {
   CommandInteraction,
@@ -9,15 +5,15 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import log from "../../utils/log.js";
-import { Event } from "../../handlers/eventHandler.js";
 import Command from "../../commands/command.js";
 import commandPrep from "../../commands/commandPrep.js";
-import Player from "../../models/player/Player.js";
+import Player from "../../models/Game/player/Player.js";
+import Event, { EventParams } from "../../models/Core/Event.js";
 
-export default async (event: Event) => {
-  const interaction = event.arg as CommandInteraction;
+export default new Event({
+  callback: async (event: EventParams) => {
+    const interaction = event.context as CommandInteraction;
 
-  try {
     if (!interaction.isChatInputCommand()) return;
 
     // get already registered commands
@@ -83,11 +79,13 @@ export default async (event: Event) => {
     await commandObject
       .callback(interaction, player)
       .catch((e: Error) => commandObject.onError(e));
-  } catch (error) {
+  },
+  onError: async (e: any) => {
     log({
-      header: "Command Error",
-      payload: error,
+      header: "A command could not be handled correctly",
+      processName: "CommandHandler",
+      payload: e,
       type: "Error",
     });
-  }
-};
+  },
+});

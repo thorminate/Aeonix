@@ -5,11 +5,9 @@ import {
   DiscordAPIError,
   TextChannel,
 } from "discord.js";
-import { config } from "dotenv";
-import buttonWrapper from "../../buttons/buttonWrapper.js";
 import log from "../../utils/log.js";
-import { Event } from "../../handlers/eventHandler.js";
-config();
+import buttonWrapper from "../../buttons/buttonWrapper.js";
+import Event, { EventParams } from "../../models/Core/Event.js";
 
 // turn on word wrap to see the full message
 
@@ -17,51 +15,72 @@ export const welcomeMessage = `Hello, and welcome to Aeonix! This server is prim
   
 You are currently not able to see any channels other than a few for the onboarding process and the non-player-hangout area. These channels are for setting you up, (such as initializing your persona into the database, the persona being your digital presence with Aeonix) we will also go through the skill system and how other important stats work.
   
-When you have read through the information, please press the button below, and the bot will validate your persona's existence in the database, thereafter giving you the <@&1270791621289578607> role.
+When you have read through the information, please press the button below, and Aeonix will validate your persona's existence in the database, thereafter giving you the <@&1270791621289578607> role.
   
 By pressing 'Begin', you agree to the [Terms of Service](<https://github.com/thorminate/Aeonix/wiki/Terms-of-Service>) and [Privacy Policy](<https://github.com/thorminate/Aeonix/wiki/Privacy-Policy>).`;
 
 export const welcomeImage = new AttachmentBuilder("./assets/welcome.png");
 
-export default async (event: Event) => {
-  const onboardingChannelId = process.env.ONBOARDING_CHANNEL;
+export default new Event({
+  callback: async (event: EventParams) => {
+    const onboardingChannelId = process.env.ONBOARDING_CHANNEL;
 
-  const onboardingChannel = await event.bot.channels.fetch(onboardingChannelId);
+    const onboardingChannel = await event.aeonix.channels.fetch(
+      onboardingChannelId
+    );
 
-  if (!onboardingChannel || !(onboardingChannel instanceof TextChannel)) {
+    if (!onboardingChannel || !(onboardingChannel instanceof TextChannel)) {
+      log({
+        header: "Onboarding channel not found",
+        processName: "OnboardingSupervisor",
+        type: "Error",
+      });
+      return;
+    }
+
+    await onboardingChannel.bulkDelete(100).catch((e) => {
+      if (!(e instanceof DiscordAPIError && !(e.code === 50034))) {
+        // 50034 is cannot bulk delete messages older than 14 days.
+        throw e;
+      } else {
+        log({
+          header: "Could not bulk delete messages, they are older than 14 days",
+          processName: "OnboardingSupervisor",
+          payload: e,
+          type: "Warn",
+        });
+      }
+    });
+
+    const components = buttonWrapper([
+      new ButtonBuilder()
+        .setCustomId("onboarding1")
+        .setLabel("Begin")
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji("👋"),
+    ]);
+
+    await onboardingChannel.send({
+      files: [welcomeImage],
+    });
+
+    await onboardingChannel.send({
+      content: welcomeMessage,
+      components,
+    });
+
     log({
-      header: "Onboarding channel not found",
+      header: "Sent onboarding messages.",
+      processName: "OnboardingSupervisor",
+      type: "Info",
+    });
+  },
+  onError: async (e: any) => {
+    log({
+      header: "Error sending onboarding message",
+      processName: "OnboardingSupervisor",
+      payload: e,
       type: "Error",
     });
-    return;
-  }
-
-  await onboardingChannel.bulkDelete(100).catch((e) => {
-    if (!(e instanceof DiscordAPIError && !(e.code === 50034))) {
-      // 50034 is cannot bulk delete messages older than 14 days.
-      throw e;
-    } else {
-      log({
-        header: "Could not bulk delete messages, they are older than 14 days",
-        type: "Warn",
-      });
-    }
-  });
-
-  const components = buttonWrapper([
-    new ButtonBuilder()
-      .setCustomId("onboarding1")
-      .setLabel("Begin")
-      .setStyle(ButtonStyle.Primary)
-      .setEmoji("👋"),
-  ]);
-
-  await onboardingChannel.send({
-    files: [welcomeImage],
-  });
-
-  await onboardingChannel.send({
-    content: welcomeMessage,
-    components,
-  });
-};
+  },
+});

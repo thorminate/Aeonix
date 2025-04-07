@@ -1,5 +1,5 @@
 import Item from "../../item/item.js";
-import deepInstantiate from "../../../utils/deepInstantiate.js";
+import deepInstantiate from "../../../../utils/deepInstantiate.js";
 
 export interface IInventoryEntry {
   name: string;
@@ -74,7 +74,7 @@ export class InventoryEntry implements IInventoryEntry {
   }
 
   async toItem<T extends Item>(): Promise<T> {
-    const itemStructure = await Item.find(this.id);
+    const itemStructure: T = await Item.find(this.id);
 
     return deepInstantiate(
       itemStructure,
@@ -83,6 +83,6 @@ export class InventoryEntry implements IInventoryEntry {
         data: this.data,
       },
       {}
-    ) as T;
+    );
   }
 }

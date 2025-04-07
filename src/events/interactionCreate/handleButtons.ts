@@ -4,20 +4,20 @@ import {
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
-import Player from "../../models/player/Player.js";
-import { Event } from "../../handlers/eventHandler.js";
+import Player from "../../models/Game/player/Player.js";
 import getLocalButtons from "../../buttons/getLocalButtons.js";
 import log from "../../utils/log.js";
 import Button from "../../buttons/button.js";
+import Event, { EventParams } from "../../models/Core/Event.js";
 
-export default async (event: Event) => {
-  const buttonContext = event.arg as ButtonInteraction;
+export default new Event({
+  callback: async (event: EventParams) => {
+    const buttonContext = event.context as ButtonInteraction;
 
-  if (!buttonContext.isButton()) return;
+    if (!buttonContext.isButton()) return;
 
-  const localButtons = await getLocalButtons();
+    const localButtons = await getLocalButtons();
 
-  try {
     // check if command name is in localCommands
     const button: Button = localButtons.find(
       (button: Button) => button.customId === buttonContext.customId
@@ -76,11 +76,12 @@ export default async (event: Event) => {
     await button
       .callback(buttonContext, player)
       .catch((e: Error) => button.onError(e));
-  } catch (error) {
+  },
+  onError: async (e: any) =>
     log({
-      header: "Button Error",
-      payload: error,
+      header: "A button could not be handled correctly",
+      processName: "ButtonHandler",
+      payload: e,
       type: "Error",
-    });
-  }
-};
+    }),
+});
