@@ -8,7 +8,7 @@ import Command from "../command.js";
 import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
 import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";
-import messageWrapper from "../paginator.js";
+import paginator from "../paginator.js";
 
 export default new Command({
   data: new SlashCommandBuilder()
@@ -32,7 +32,7 @@ export default new Command({
       return;
     }
 
-    await messageWrapper(
+    await paginator(
       context,
       {
         content: `**Inventory:**\n${inventoryContent}`,

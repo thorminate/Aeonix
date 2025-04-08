@@ -4,35 +4,44 @@ export default function deepInstantiate<T extends object>(
   classMap: Record<string, any> = {}
 ): T {
   for (const key of Object.keys(source)) {
-    const sourceIsObjectOrClass = typeof source[key] === "object";
-    const sourcePropertyIsNotNull = source[key] !== null;
+    const sourceValue = source[key];
     const targetHasProperty = key in target;
+    const classExistsInMap = key in classMap;
+    const ClassFromMap = classMap[key];
 
-    if (sourceIsObjectOrClass && sourcePropertyIsNotNull && targetHasProperty) {
-      const ClassFromMap = classMap[key]; // Check if there's a class associated with this key
-
-      const classExistsInMap = ClassFromMap !== undefined;
+    if (Array.isArray(sourceValue) && classExistsInMap) {
+      // If it's an array and a class is mapped, instantiate each element
+      target[key] = sourceValue.map((item: any) =>
+        typeof item === "object" && item !== null
+          ? deepInstantiate(new ClassFromMap(), item, classMap)
+          : item
+      );
+    } else if (
+      typeof sourceValue === "object" &&
+      sourceValue !== null &&
+      targetHasProperty
+    ) {
       if (classExistsInMap) {
-        // Instantiate the class with the source data
         target[key] = deepInstantiate(
           new ClassFromMap(),
-          source[key],
+          sourceValue,
           classMap
         );
       } else {
         target[key] = deepInstantiate(
           target[key] !== undefined
             ? target[key]
-            : Array.isArray(source[key])
+            : Array.isArray(sourceValue)
             ? []
             : {},
-          source[key],
+          sourceValue,
           classMap
-        ); // Recursively assign
+        );
       }
     } else {
-      target[key] = source[key]; // Assign primitives directly
+      target[key] = sourceValue; // Assign primitives directly
     }
   }
+
   return target;
 }

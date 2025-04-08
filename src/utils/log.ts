@@ -5,6 +5,7 @@ import { inspect } from "node:util";
 import readline from "node:readline";
 import { cyan, gray, red, redBright, yellow } from "ansis";
 import { Aeonix } from "../aeonix.js";
+import { actualPrimitives } from "mongoose";
 
 interface Options {
   header: string;
@@ -48,13 +49,13 @@ export default (options: Options) => {
   }
 
   const fPayload: string = payload
-    .map((p: any) => {
+    .map((p: object | actualPrimitives) => {
       const stringified =
         typeof p === "string"
           ? p
           : inspect(p, { depth: Infinity, colors: true, sorted: true });
 
-      if (!stringified || stringified.includes("undefined")) return "";
+      if (!stringified || stringified === "[90mundefined[39m") return "";
 
       return "\n" + stringified;
     })
