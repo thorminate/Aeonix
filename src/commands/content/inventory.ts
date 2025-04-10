@@ -62,6 +62,30 @@ export default new Command({
           .setCustomId("random6")
           .setLabel("Random6")
           .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("random7")
+          .setLabel("Random7")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("random8")
+          .setLabel("Random8")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("random9")
+          .setLabel("Random9")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("random10")
+          .setLabel("Random10")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("random11")
+          .setLabel("Random11")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("random12")
+          .setLabel("Random12")
+          .setStyle(ButtonStyle.Primary),
       ]
     );
   },
