@@ -3,14 +3,9 @@ import mongoose from "mongoose";
 import eventHandler from "./handlers/eventHandler.js";
 import log from "./utils/log.js";
 import readline from "readline/promises";
-import { appendFileSync, existsSync, Stats, writeFileSync } from "fs";
+import { appendFileSync, existsSync, writeFileSync } from "fs";
 import { config } from "@dotenvx/dotenvx";
 import { green, magenta } from "ansis";
-import Player from "./models/Game/Player/Player.js";
-import Saveable from "./models/Core/Saveable.js";
-import Inventory from "./models/Game/Inventory/inventory.js";
-import Item from "./models/Game/Item/item.js";
-import PaginationSession from "./models/Misc/PaginationSession.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -60,29 +55,10 @@ config();
 // Define Aeonix
 export class Aeonix extends Client {
   rl: readline.Interface;
-  managers = {
-    game: {
-      players: Player,
-      inventory: Inventory,
-      status: Stats,
-      items: {
-        baseItem: Item,
-        getAllItems: () => Item.findAll(),
-      },
-    },
-
-    core: {
-      event: Event,
-      saveable: Saveable,
-    },
-
-    misc: {
-      paginationSession: PaginationSession,
-    },
-  };
 
   constructor() {
     // Initialise variables
+
     const activities = [
       "Reading through the archives",
       "Manipulating physical forces",

@@ -7,7 +7,6 @@ import {
   ButtonStyle,
   CommandInteraction,
   ComponentType,
-  InteractionCollector,
   InteractionEditReplyOptions,
   InteractionResponse,
   Message,
@@ -16,92 +15,113 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import PaginationSession from "../models/Misc/PaginationSession.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
 import log from "../utils/log.js";
 
+type Page = ActionRowBuilder<ButtonBuilder>;
+
 async function paginate(
   context: ButtonInteraction,
-  session: PaginationSession
+  pages: Page[],
+  currentPage: number,
+  isSearch = false
 ): Promise<InteractionResponse> {
-  const currentPage = deepInstantiate(
+  const newPage = deepInstantiate(
     new ActionRowBuilder<ButtonBuilder>(),
-    session.pages[session.currentPage],
+    pages[currentPage],
     { components: ButtonBuilder }
   );
   const response = await context.update({
     components: [
-      currentPage,
-      paginationRow(session.currentPage, session.pages.length - 1),
+      newPage,
+      paginationRow(currentPage, pages.length - 1, isSearch),
     ],
   });
 
   return response;
 }
 
-function paginationRow(
-  row: number,
-  max: number
-): ActionRowBuilder<ButtonBuilder> {
+function paginationRow(row: number, max: number, isSearch = false): Page {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setCustomId(`fp`)
+      .setCustomId(isSearch ? `sf` : `fp`)
       .setEmoji("⏪")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(row <= 0),
 
     new ButtonBuilder()
-      .setCustomId(`pr`)
+      .setCustomId(isSearch ? `sp` : `pr`)
       .setEmoji("◀️")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(row <= 0),
 
     new ButtonBuilder()
-      .setCustomId(`sh`)
-      .setEmoji("🔎")
+      .setCustomId(isSearch ? `sx` : `sh`)
+      .setEmoji(isSearch ? "✖️" : "🔎")
       .setStyle(ButtonStyle.Primary),
 
     new ButtonBuilder()
-      .setCustomId(`nx`)
+      .setCustomId(isSearch ? `sn` : `nx`)
       .setEmoji("▶️")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(row >= max),
 
     new ButtonBuilder()
-      .setCustomId(`lp`)
+      .setCustomId(isSearch ? `sl` : `lp`)
       .setEmoji("⏩")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(row >= max)
   );
 }
 
-function searchRow(row: number, max: number): ActionRowBuilder<ButtonBuilder> {
-  const rows = paginationRow(row, max);
+function searchRow(row: number, max: number): Page {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`sf`)
+      .setEmoji("⏪")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(row <= 0),
 
-  rows.components[2] = new ButtonBuilder()
-    .setCustomId(`xs`)
-    .setLabel("🗙")
-    .setStyle(ButtonStyle.Danger);
+    new ButtonBuilder()
+      .setCustomId(`sp`)
+      .setEmoji("◀️")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(row <= 0),
 
-  return rows;
+    new ButtonBuilder()
+      .setCustomId(`sx`)
+      .setEmoji("✖️")
+      .setStyle(ButtonStyle.Primary),
+
+    new ButtonBuilder()
+      .setCustomId(`sn`)
+      .setEmoji("▶️")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(row >= max),
+
+    new ButtonBuilder()
+      .setCustomId(`sl`)
+      .setEmoji("⏩")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(row >= max)
+  );
 }
 
 function createCollectors(
   message: Message,
-  session: PaginationSession,
+  pages: Page[],
   buttons: ButtonBuilder[],
-  pages: ActionRowBuilder<ButtonBuilder>[],
-  context: CommandInteraction
+  getContent: (currentPage: Page) => string
 ): void {
+  let currentPage = 0;
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    filter: (interaction) => interaction.user.id === context.user.id,
   });
   collector.on("collect", async (buttonContext: ButtonInteraction) => {
     try {
       switch (buttonContext.customId) {
         case "fp":
-          if (session.currentPage <= 0) {
+          if (currentPage <= 0) {
             buttonContext.reply({
               content:
                 "You are already on the first page. (Hey! you shouldn't be able to do that!)",
@@ -109,11 +129,11 @@ function createCollectors(
             });
             return;
           }
-          session.currentPage = 0;
-          paginate(buttonContext, session);
+          currentPage = 0;
+          paginate(buttonContext, pages, currentPage);
           break;
         case "pr":
-          if (session.currentPage <= 0) {
+          if (currentPage <= 0) {
             buttonContext.reply({
               content:
                 "You are on the first page. (Hey! you shouldn't be able to do that!)",
@@ -121,8 +141,8 @@ function createCollectors(
             });
             return;
           }
-          session.currentPage--;
-          paginate(buttonContext, session);
+          currentPage--;
+          paginate(buttonContext, pages, currentPage);
           break;
         case "sh":
           const modal = new ModalBuilder()
@@ -173,34 +193,15 @@ function createCollectors(
             return new ActionRowBuilder<ButtonBuilder>().addComponents(chunk);
           });
 
-          const newSession = session;
+          if (!search.isFromMessage()) return;
 
-          newSession.currentPage = 0;
-          newSession.pages = pages2;
-
-          // acknowledge the interaction
-
-          await search.deferUpdate();
-
-          const messageReply = await context.editReply({
-            components: [pages2[0], searchRow(0, pages2.length - 1)],
+          currentPage = 0;
+          await search.update({
+            components: [pages2[0], paginationRow(0, pages2.length - 1, true)],
           });
-
-          createCollectors(
-            messageReply,
-            newSession,
-            filteredButtons,
-            pages2,
-            context
-          );
           break;
         case "nx":
-          log({
-            header: "Paginator collector",
-            payload: session,
-            type: "Info",
-          });
-          if (session.currentPage >= pages.length - 1) {
+          if (currentPage >= pages.length - 1) {
             await buttonContext.reply({
               content:
                 "You are already on the last page. (Hey! you shouldn't be able to do that!)",
@@ -208,11 +209,11 @@ function createCollectors(
             });
             return;
           }
-          session.currentPage++;
-          await paginate(buttonContext, session);
+          currentPage++;
+          await paginate(buttonContext, pages, currentPage);
           break;
         case "lp":
-          if (session.currentPage >= pages.length - 1) {
+          if (currentPage >= pages.length - 1) {
             await buttonContext.reply({
               content:
                 "You are already on the last page. (Hey! you shouldn't be able to do that!)",
@@ -220,15 +221,70 @@ function createCollectors(
             });
             return;
           }
-          session.currentPage = pages.length - 1;
-          await paginate(buttonContext, session);
+          currentPage = pages.length - 1;
+          await paginate(buttonContext, pages, currentPage);
           break;
-        case "xs":
-          await buttonContext
-            .update({
-              components: [pages[0], paginationRow(0, pages.length - 1)],
-            })
-            .catch((e) => {});
+
+        // Search-only buttons
+
+        case "sf":
+          if (currentPage <= 0) {
+            buttonContext.reply({
+              content:
+                "You are already on the first page. (Hey! you shouldn't be able to do that!)",
+              flags: MessageFlags.Ephemeral,
+            });
+            return;
+          }
+          currentPage = 0;
+          paginate(buttonContext, pages, currentPage, true);
+          break;
+
+        case "sp":
+          if (currentPage <= 0) {
+            buttonContext.reply({
+              content:
+                "You are on the first page. (Hey! you shouldn't be able to do that!)",
+              flags: MessageFlags.Ephemeral,
+            });
+            return;
+          }
+          currentPage--;
+          paginate(buttonContext, pages, currentPage, true);
+          break;
+
+        case "sx":
+          await buttonContext.update({
+            components: [pages[0], paginationRow(0, pages.length - 1)],
+          });
+          currentPage = 0;
+          break;
+
+        case "sn":
+          if (currentPage >= pages.length - 1) {
+            await buttonContext.reply({
+              content:
+                "You are already on the last page. (Hey! you shouldn't be able to do that!)",
+              flags: MessageFlags.Ephemeral,
+            });
+            return;
+          }
+          currentPage++;
+          await paginate(buttonContext, pages, currentPage, true);
+          break;
+
+        case "sl":
+          if (currentPage >= pages.length - 1) {
+            await buttonContext.reply({
+              content:
+                "You are already on the last page. (Hey! you shouldn't be able to do that!)",
+              flags: MessageFlags.Ephemeral,
+            });
+            return;
+          }
+          currentPage = pages.length - 1;
+          await paginate(buttonContext, pages, currentPage, true);
+          break;
       }
     } catch (e: any) {
       log({
@@ -241,6 +297,19 @@ function createCollectors(
   });
 }
 
+function splitIntoPages(buttons: ButtonBuilder[]): Page[] {
+  let chunks: Page[] = [];
+  for (let i = 0; i < buttons.length; i += 4) {
+    chunks.push(
+      new ActionRowBuilder<ButtonBuilder>().setComponents(
+        buttons.slice(i, i + 4)
+      )
+    );
+  }
+
+  return chunks;
+}
+
 /**
  * Creates a paginated message, with buttons. Only allows 5 buttons per row.
  * @returns {Message}
@@ -248,44 +317,24 @@ function createCollectors(
 export default async (
   context: CommandInteraction,
   messageData: InteractionEditReplyOptions,
-  buttons: ButtonBuilder[]
+  buttons: ButtonBuilder[],
+  getContent: (currentPage: Page) => string
 ): Promise<Message> => {
-  // First we split the buttons into chunks of 5
-  const chunks = [];
-  for (let i = 0; i < buttons.length; i += 4) {
-    chunks.push(buttons.slice(i, i + 4));
+  const pages = splitIntoPages(buttons);
+
+  if (pages.length === 1) {
+    return context.editReply({
+      ...messageData,
+      components: [pages[0]],
+    });
   }
-
-  // Then we create an action row for each chunk
-  const pages = chunks.map((chunk) => {
-    return new ActionRowBuilder<ButtonBuilder>().addComponents(chunk);
-  });
-
-  const session = new PaginationSession(
-    "",
-    context.guildId,
-    context.channelId,
-    pages,
-    0
-  );
-
-  log({
-    header: "Paginator",
-    processName: "Paginator",
-    payload: [session, context],
-    type: "Debug",
-  });
 
   const message = await context.editReply({
     ...messageData,
     components: [pages[0], paginationRow(0, pages.length - 1)],
   });
 
-  session.id = message.id;
-
-  const collector = message.createMessageComponentCollector();
-
-  createCollectors(message, session, buttons, pages, context);
+  createCollectors(message, pages, buttons, getContent);
 
   return message;
 };
