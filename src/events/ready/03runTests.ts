@@ -1,7 +1,5 @@
 import Event, { EventParams } from "../../models/Core/Event.js";
-import WeaponItem, {
-  IWeaponData,
-} from "../../models/Game/Item/content/WeaponItem.js";
+import WeaponItem from "../../models/Game/Item/content/WeaponItem.js";
 import Item from "../../models/Game/Item/item.js";
 import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";

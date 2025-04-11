@@ -64,7 +64,7 @@ export default abstract class Item {
   }
 
   static async findAll<T extends Item>(this: typeof Item): Promise<T[]> {
-    const files = getAllFiles("dist/models/item/content");
+    const files = getAllFiles("dist/models/Game/Item/content");
 
     return (await Promise.all(
       files.map(async (file) => {
