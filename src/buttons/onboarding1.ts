@@ -8,12 +8,14 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import Button from "../button.js";
-import Player from "../../models/Game/Player/Player.js";
-import buttonWrapper from "../buttonWrapper.js";
+import Button from "../utils/button.js";
+import Player from "../models/Game/Player/Player.js";
+import buttonWrapper from "../utils/buttonWrapper.js";
+import log from "../utils/log.js";
 
-export default <Button>{
+export default new Button({
   customId: "onboarding1",
+
   callback: async (buttonContext: ButtonInteraction) => {
     if (await Player.find(buttonContext.user.username)) {
       await buttonContext.reply({
@@ -47,4 +49,13 @@ export default <Button>{
         )
     );
   },
-};
+
+  onError(error) {
+    log({
+      header: "Button Error",
+      processName: "Onboarding1Button",
+      payload: error,
+      type: "Error",
+    });
+  },
+});

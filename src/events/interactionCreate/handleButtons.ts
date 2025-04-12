@@ -5,9 +5,9 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
-import getLocalButtons from "../../buttons/getLocalButtons.js";
+import getLocalButtons from "../../utils/getLocalButtons.js";
 import log from "../../utils/log.js";
-import Button from "../../buttons/button.js";
+import Button from "../../utils/button.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 
 export default new Event({

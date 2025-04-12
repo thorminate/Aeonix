@@ -1,13 +1,13 @@
 import Button from "./button.js";
 import path from "path";
-import getAllFiles from "../utils/getAllFiles.js";
+import getAllFiles from "./getAllFiles.js";
 import url from "url";
 
 export default async (exceptions: string[] = []) => {
   let localButtons: Button[] = [];
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const buttonFiles = getAllFiles(path.join(__dirname, "content"));
+  const buttonFiles = getAllFiles(path.join(__dirname, "..", "buttons"));
   for (const buttonFile of buttonFiles) {
     const filePath = path.resolve(buttonFile);
     const fileUrl = url.pathToFileURL(filePath);

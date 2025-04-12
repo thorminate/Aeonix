@@ -1,5 +1,5 @@
 import { ApplicationCommand } from "discord.js";
-import Command from "../commands/command.js";
+import Command from "./command.js";
 
 export default (existingCommand: ApplicationCommand, localCommand: Command) => {
   const areChoicesDifferent = (existingChoices: any[], localChoices: any[]) => {
@@ -39,7 +39,7 @@ export default (existingCommand: ApplicationCommand, localCommand: Command) => {
         localOption.type !== existingOption.type || // If the localOption type is different from the existingOption type, return true.
         (localOption.required || false) !== existingOption.required || // If the localOption required is different from the existingOption required, return true.
         (localOption.choices?.length || 0) !==
-        (existingOption.choices?.length || 0) || // If the localOption choices length is different from the existingOption choices length, return true.
+          (existingOption.choices?.length || 0) || // If the localOption choices length is different from the existingOption choices length, return true.
         areChoicesDifferent(
           // If the areChoicesDifferent function returns true, return true.
           localOption.choices || [],
@@ -56,7 +56,7 @@ export default (existingCommand: ApplicationCommand, localCommand: Command) => {
     // If the following conditions are true, return true.
     existingCommand.description !== localCommand.data.description ||
     existingCommand.options?.length !==
-    (localCommand.data.options?.length || 0) ||
+      (localCommand.data.options?.length || 0) ||
     areOptionsDifferent(
       existingCommand.options,
       localCommand.data.options || []

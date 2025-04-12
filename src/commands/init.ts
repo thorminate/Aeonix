@@ -5,14 +5,14 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Player from "../../models/Game/Player/Player.js";
-import Command from "../command.js";
+import Player from "../models/Game/Player/Player.js";
+import Command from "../utils/command.js";
 import {
   welcomeImage,
   welcomeMessage,
-} from "../../events/ready/02registerOnboarding.js";
-import log from "../../utils/log.js";
-import buttonWrapper from "../../buttons/buttonWrapper.js";
+} from "../events/ready/02registerOnboarding.js";
+import log from "../utils/log.js";
+import buttonWrapper from "../utils/buttonWrapper.js";
 
 export default new Command({
   data: new SlashCommandBuilder()

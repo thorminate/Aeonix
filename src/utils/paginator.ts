@@ -15,15 +15,26 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import deepInstantiate from "../utils/deepInstantiate.js";
-import log from "../utils/log.js";
+import deepInstantiate from "./deepInstantiate.js";
+import log from "./log.js";
 
 type Page = ActionRowBuilder<ButtonBuilder>;
+type GetterOrLiteral = string | ((currentPage: Page) => string);
+
+function toLiteral(
+  value: GetterOrLiteral,
+  currentPage: Page
+): string | undefined {
+  if (typeof value === "string") return value;
+  else if (typeof value === "function") return value(currentPage);
+  else return undefined;
+}
 
 async function paginate(
   context: ButtonInteraction,
   pages: Page[],
   currentPage: number,
+  getContent: GetterOrLiteral,
   isSearch = false
 ): Promise<InteractionResponse> {
   const newPage = deepInstantiate(
@@ -32,6 +43,7 @@ async function paginate(
     { components: ButtonBuilder }
   );
   const response = await context.update({
+    content: toLiteral(getContent, pages[currentPage]),
     components: [
       newPage,
       paginationRow(currentPage, pages.length - 1, isSearch),
@@ -74,51 +86,21 @@ function paginationRow(row: number, max: number, isSearch = false): Page {
   );
 }
 
-function searchRow(row: number, max: number): Page {
-  return new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`sf`)
-      .setEmoji("⏪")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(row <= 0),
-
-    new ButtonBuilder()
-      .setCustomId(`sp`)
-      .setEmoji("◀️")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(row <= 0),
-
-    new ButtonBuilder()
-      .setCustomId(`sx`)
-      .setEmoji("✖️")
-      .setStyle(ButtonStyle.Primary),
-
-    new ButtonBuilder()
-      .setCustomId(`sn`)
-      .setEmoji("▶️")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(row >= max),
-
-    new ButtonBuilder()
-      .setCustomId(`sl`)
-      .setEmoji("⏩")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(row >= max)
-  );
-}
-
 function createCollectors(
   message: Message,
   pages: Page[],
   buttons: ButtonBuilder[],
-  getContent: (currentPage: Page) => string
-): void {
+  getContent: GetterOrLiteral
+): Message {
   let currentPage = 0;
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
+    time: 5 * 60 * 1000,
   });
   collector.on("collect", async (buttonContext: ButtonInteraction) => {
     try {
+      collector.resetTimer();
+
       switch (buttonContext.customId) {
         case "fp":
           if (currentPage <= 0) {
@@ -130,7 +112,7 @@ function createCollectors(
             return;
           }
           currentPage = 0;
-          paginate(buttonContext, pages, currentPage);
+          paginate(buttonContext, pages, currentPage, getContent);
           break;
         case "pr":
           if (currentPage <= 0) {
@@ -142,7 +124,7 @@ function createCollectors(
             return;
           }
           currentPage--;
-          paginate(buttonContext, pages, currentPage);
+          paginate(buttonContext, pages, currentPage, getContent);
           break;
         case "sh":
           const modal = new ModalBuilder()
@@ -210,7 +192,7 @@ function createCollectors(
             return;
           }
           currentPage++;
-          await paginate(buttonContext, pages, currentPage);
+          await paginate(buttonContext, pages, currentPage, getContent);
           break;
         case "lp":
           if (currentPage >= pages.length - 1) {
@@ -222,7 +204,7 @@ function createCollectors(
             return;
           }
           currentPage = pages.length - 1;
-          await paginate(buttonContext, pages, currentPage);
+          await paginate(buttonContext, pages, currentPage, getContent);
           break;
 
         // Search-only buttons
@@ -237,7 +219,7 @@ function createCollectors(
             return;
           }
           currentPage = 0;
-          paginate(buttonContext, pages, currentPage, true);
+          paginate(buttonContext, pages, currentPage, getContent, true);
           break;
 
         case "sp":
@@ -250,7 +232,7 @@ function createCollectors(
             return;
           }
           currentPage--;
-          paginate(buttonContext, pages, currentPage, true);
+          paginate(buttonContext, pages, currentPage, getContent, true);
           break;
 
         case "sx":
@@ -270,7 +252,7 @@ function createCollectors(
             return;
           }
           currentPage++;
-          await paginate(buttonContext, pages, currentPage, true);
+          await paginate(buttonContext, pages, currentPage, getContent, true);
           break;
 
         case "sl":
@@ -283,7 +265,7 @@ function createCollectors(
             return;
           }
           currentPage = pages.length - 1;
-          await paginate(buttonContext, pages, currentPage, true);
+          await paginate(buttonContext, pages, currentPage, getContent, true);
           break;
       }
     } catch (e: any) {
@@ -295,6 +277,12 @@ function createCollectors(
       });
     }
   });
+
+  collector.on("end", async () => {
+    collector.removeAllListeners();
+  });
+
+  return message;
 }
 
 function splitIntoPages(buttons: ButtonBuilder[]): Page[] {
@@ -316,25 +304,73 @@ function splitIntoPages(buttons: ButtonBuilder[]): Page[] {
  */
 export default async (
   context: CommandInteraction,
-  messageData: InteractionEditReplyOptions,
   buttons: ButtonBuilder[],
-  getContent: (currentPage: Page) => string
+  getContent?: GetterOrLiteral
 ): Promise<Message> => {
-  const pages = splitIntoPages(buttons);
+  try {
+    const pages = splitIntoPages(buttons);
 
-  if (pages.length === 1) {
-    return context.editReply({
-      ...messageData,
-      components: [pages[0]],
+    if (!getContent) getContent = "";
+
+    if (pages.length === 1) {
+      return context.editReply({
+        content: toLiteral(getContent, pages[0]),
+        components: [pages[0]],
+      });
+    }
+
+    return createCollectors(
+      await context.editReply({
+        content: toLiteral(getContent, pages[0]),
+        components: [pages[0], paginationRow(0, pages.length - 1)],
+      }),
+      pages,
+      buttons,
+      getContent
+    );
+  } catch (e: any) {
+    log({
+      header: "Error in setting up paginator",
+      processName: "Paginator",
+      payload: e,
+      type: "Error",
     });
   }
-
-  const message = await context.editReply({
-    ...messageData,
-    components: [pages[0], paginationRow(0, pages.length - 1)],
-  });
-
-  createCollectors(message, pages, buttons, getContent);
-
-  return message;
 };
+
+export async function paginateFromButton(
+  context: ButtonInteraction,
+  buttons: ButtonBuilder[],
+  getContent: GetterOrLiteral
+) {
+  try {
+    const pages = splitIntoPages(buttons);
+
+    if (!getContent) getContent = "";
+
+    if (pages.length === 1) {
+      return context.update({
+        content: toLiteral(getContent, pages[0]),
+        components: [pages[0]],
+      });
+    }
+    await context.update({
+      content: toLiteral(getContent, pages[0]),
+      components: [pages[0], paginationRow(0, pages.length - 1)],
+    });
+
+    return createCollectors(
+      await context.fetchReply(),
+      pages,
+      buttons,
+      getContent
+    );
+  } catch (e: any) {
+    log({
+      header: "Error in setting up paginator",
+      processName: "Paginator",
+      payload: e,
+      type: "Error",
+    });
+  }
+}

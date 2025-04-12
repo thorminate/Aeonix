@@ -1,12 +1,12 @@
-import getLocalCommands from "../../commands/getLocalCommands.js";
+import getLocalCommands from "../../utils/getLocalCommands.js";
 import {
   CommandInteraction,
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
 import log from "../../utils/log.js";
-import Command from "../../commands/command.js";
-import commandPrep from "../../commands/commandPrep.js";
+import Command from "../../utils/command.js";
+import commandPrep from "../../utils/commandPrep.js";
 import Player from "../../models/Game/Player/Player.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 

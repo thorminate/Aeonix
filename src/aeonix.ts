@@ -55,6 +55,7 @@ config();
 // Define Aeonix
 export class Aeonix extends Client {
   rl: readline.Interface;
+  logger: typeof log;
 
   constructor() {
     // Initialise variables
@@ -331,6 +332,7 @@ export class Aeonix extends Client {
       ],
     });
 
+    this.logger = log;
     // We already have an rl instance, so we don't need to create a new one.
     this.rl = rl;
 

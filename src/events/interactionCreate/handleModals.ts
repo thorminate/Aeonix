@@ -8,8 +8,8 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
-import getLocalModals from "../../modals/getLocalModals.js";
-import Modal from "../../modals/modal.js";
+import getLocalModals from "../../utils/getLocalModals.js";
+import Modal from "../../utils/modal.js";
 import log from "../../utils/log.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 

@@ -4,13 +4,14 @@ import {
   GuildMemberRoleManager,
   MessageFlags,
 } from "discord.js";
-import Player from "../../models/Game/Player/Player.js";
-import log from "../../utils/log.js";
-import Modal from "../modal.js";
-import buttonWrapper from "../../buttons/buttonWrapper.js";
+import Player from "../models/Game/Player/Player.js";
+import log from "../utils/log.js";
+import Modal from "../utils/modal.js";
+import buttonWrapper from "../utils/buttonWrapper.js";
 
-export default <Modal>{
+export default new Modal({
   customId: "onboardingDisplayName",
+
   callback: async (modalContext) => {
     const displayName = modalContext.fields.getTextInputValue("display-name");
 
@@ -53,4 +54,4 @@ export default <Modal>{
       type: "Error",
     });
   },
-};
+});

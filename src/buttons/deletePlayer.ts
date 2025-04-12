@@ -4,12 +4,14 @@ import {
   ButtonStyle,
   MessageFlags,
 } from "discord.js";
-import Button from "../button.js";
-import Player from "../../models/Game/Player/Player.js";
-import buttonWrapper from "../buttonWrapper.js";
+import Button from "../utils/button.js";
+import Player from "../models/Game/Player/Player.js";
+import buttonWrapper from "../utils/buttonWrapper.js";
+import log from "../utils/log.js";
 
-export default <Button>{
+export default new Button({
   customId: "deletePlayer",
+
   callback: async (buttonContext: ButtonInteraction) => {
     if (!(await Player.find(buttonContext.user.username))) {
       await buttonContext.reply({
@@ -32,4 +34,13 @@ export default <Button>{
       flags: MessageFlags.Ephemeral,
     });
   },
-};
+
+  onError(error) {
+    log({
+      header: "Button Error",
+      processName: "DeletePlayerButton",
+      payload: error,
+      type: "Error",
+    });
+  },
+});

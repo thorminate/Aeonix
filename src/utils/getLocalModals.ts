@@ -1,6 +1,6 @@
 import Modal from "./modal.js";
 import path from "path";
-import getAllFiles from "../utils/getAllFiles.js";
+import getAllFiles from "./getAllFiles.js";
 import url from "url";
 
 export default async (exceptions: string[] = []) => {
@@ -8,7 +8,7 @@ export default async (exceptions: string[] = []) => {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const modalFiles = getAllFiles(path.join(__dirname, "content"));
+  const modalFiles = getAllFiles(path.join(__dirname, "..", "modals"));
   for (const modalFile of modalFiles) {
     const filePath = path.resolve(modalFile);
     const fileUrl = url.pathToFileURL(filePath);

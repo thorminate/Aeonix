@@ -1,9 +1,11 @@
 import { MessageFlags } from "discord.js";
-import Player from "../../models/Game/Player/Player.js";
-import Button from "../button.js";
+import Player from "../models/Game/Player/Player.js";
+import Button from "../utils/button.js";
+import log from "../utils/log.js";
 
-export default <Button>{
+export default new Button({
   customId: "deletePlayerConfirmed",
+
   callback: async (buttonContext) => {
     if (!(await Player.find(buttonContext.user.username))) {
       await buttonContext.reply({
@@ -20,4 +22,13 @@ export default <Button>{
       flags: MessageFlags.Ephemeral,
     });
   },
-};
+
+  onError(error) {
+    log({
+      header: "Button Error",
+      processName: "DeletePlayerConfirmedButton",
+      payload: error,
+      type: "Error",
+    });
+  },
+});

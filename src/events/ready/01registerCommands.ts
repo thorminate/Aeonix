@@ -1,9 +1,9 @@
 // Register, edit and delete commands
-import areCommandsDifferent from "../../commands/areCommandsDifferent.js";
-import getApplicationCommands from "../../commands/getApplicationCommands.js";
-import getLocalCommands from "../../commands/getLocalCommands.js";
+import areCommandsDifferent from "../../utils/areCommandsDifferent.js";
+import getApplicationCommands from "../../utils/getApplicationCommands.js";
+import getLocalCommands from "../../utils/getLocalCommands.js";
 import log from "../../utils/log.js";
-import Command from "../../commands/command.js";
+import Command from "../../utils/command.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 
 export default new Event({

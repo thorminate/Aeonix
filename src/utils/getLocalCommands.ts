@@ -1,14 +1,16 @@
 import path from "path";
-import getAllFiles from "../utils/getAllFiles.js";
+import getAllFiles from "./getAllFiles.js";
 import url from "url";
 import Command from "./command.js";
+import log from "./log.js";
 
 export default async (exceptions = []) => {
   let localCommands: Command[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const commandFiles = getAllFiles(path.join(__dirname, "content"));
+  const commandFiles = getAllFiles(path.join(__dirname, "..", "commands"));
+
   for (const commandFile of commandFiles) {
     const filePath = path.resolve(commandFile);
     const fileUrl = url.pathToFileURL(filePath);
