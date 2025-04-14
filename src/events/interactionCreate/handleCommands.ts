@@ -1,4 +1,3 @@
-import getLocalCommands from "../../utils/getLocalCommands.js";
 import {
   CommandInteraction,
   PermissionFlagsBits,
@@ -9,6 +8,7 @@ import Command from "../../utils/command.js";
 import commandPrep from "../../utils/commandPrep.js";
 import Player from "../../models/Game/Player/Player.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
+import { findLocalCommands } from "../ready/01registerCommands.js";
 
 export default new Event({
   callback: async (event: EventParams) => {
@@ -16,8 +16,7 @@ export default new Event({
 
     if (!interaction.isChatInputCommand()) return;
 
-    // get already registered commands
-    const localCommands = await getLocalCommands();
+    const localCommands = await findLocalCommands();
 
     // check if command name is in localCommands
     const commandObject: Command = localCommands.find(

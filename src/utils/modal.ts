@@ -1,4 +1,4 @@
-import { ButtonInteraction, ModalSubmitInteraction } from "discord.js";
+import { ModalSubmitInteraction } from "discord.js";
 import Player from "../models/Game/Player/Player.js";
 import deepInstantiate from "./deepInstantiate.js";
 

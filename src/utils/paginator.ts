@@ -42,6 +42,14 @@ async function paginate(
     pages[currentPage],
     { components: ButtonBuilder }
   );
+
+  if (!pages[currentPage]) {
+    return context.reply({
+      content: "You have reached the end of the search results.",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   const response = await context.update({
     content: toLiteral(getContent, pages[currentPage]),
     components: [
@@ -153,9 +161,11 @@ function createCollectors(
           const searchQuery = search.fields.getTextInputValue("kw");
 
           const filteredButtons = buttons.filter((button) => {
-            return (button.data as ButtonComponent).label
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase());
+            return (
+              (button.data as ButtonComponent)?.label
+                ?.toLowerCase()
+                .includes(searchQuery.toLowerCase()) ?? false
+            );
           });
 
           if (filteredButtons.length === 0) {

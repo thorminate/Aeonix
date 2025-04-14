@@ -1,17 +1,18 @@
 {
   "compilerOptions": {
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "sourceMap": true,
     "target": "ES2022",
     "outDir": "./dist", // Specify the output folder for compiled JavaScript
-    "allowJs": true,
-    "moduleResolution": "NodeNext",
+    "allowJs": false,
+    "moduleResolution": "node",
     "esModuleInterop": true,
-    "module": "NodeNext",
+    "module": "ESNext",
     "resolveJsonModule": true
   },
   "exclude": ["./node_modules/**/*", "./dist/**/*", "./config.json"],
-  "include": [
-    "./src/**/*",
-    "src/events/ready/01registerCommands.ts",
-    "src/events/ready/02playerOnboarding.ts"
-  ] // Specify the path to your TypeScript files
+  "include": ["./src/**/*"] // Specify the path to your TypeScript files
 }

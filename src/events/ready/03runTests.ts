@@ -69,7 +69,7 @@ export default new Event({
     const thor = await Player.find("thorminate");
 
     thor.inventory.clear();
-    thor.inventory.add(item.toInventoryEntry());
+    thor.inventory.add(item.toInventoryEntry(), item2.toInventoryEntry());
     thor.save();
 
     log({

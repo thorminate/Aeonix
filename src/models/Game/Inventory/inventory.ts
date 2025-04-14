@@ -37,8 +37,8 @@ export default class Inventory implements IInventory {
     this._entries = entries;
   }
 
-  add(entry: InventoryEntry): void {
-    this._entries.push(entry);
+  add(...entries: InventoryEntry[]): void {
+    this._entries.push(...entries);
   }
 
   remove(entry: InventoryEntry | string): void {
@@ -63,7 +63,7 @@ export default class Inventory implements IInventory {
     );
   }
 
-  findItems(query: EntryQuery): InventoryEntry[] | [] {
+  findItems(query: EntryQuery): InventoryEntry[] {
     if (!query.key) query.key = "name";
 
     return this.entries.filter(

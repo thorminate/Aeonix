@@ -13,6 +13,8 @@ export default (directory: string, foldersOnly = false): string[] => {
     // loop through all files/folders
     const filePath = path.join(directory, file.name); // get file/folder path
 
+    if (path.extname(filePath) === ".map") continue; // skip files with .map extension
+
     if (foldersOnly) {
       // if foldersOnly is true, only push folders to fileNames
       if (file.isDirectory()) {

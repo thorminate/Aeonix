@@ -5,7 +5,9 @@
   "author": "Thorminate",
   "license": "MIT",
   "type": "module",
+  "homepage": "https://github.com/thorminate/Aeonix#readme",
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
+  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971",
   "keywords": [],
   "scripts": {
     "start": "tsc && node --trace-warnings ./dist/aeonix.js",
@@ -15,19 +17,14 @@
     "@dotenvx/dotenvx": "^1.39.1",
     "ansis": "^3.17.0",
     "discord.js": "^14.18.0",
-    "mongodb": "^6.14.2",
     "mongoose": "^8.12.1",
     "typescript": "^5.8.2"
   },
-  "devDependencies": {
-    "@types/ms": "^0.7.34"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thorminate/Aeonix"
+    "url": "https://github.com/thorminate/Aeonix.git"
   },
   "bugs": {
     "url": "https://github.com/thorminate/Aeonix/issues"
-  },
-  "homepage": "https://github.com/thorminate/Aeonix#readme"
+  }
 }

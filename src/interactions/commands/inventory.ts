@@ -1,5 +1,6 @@
 import {
   ActionRowBuilder,
+  APIButtonComponent,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -7,12 +8,12 @@ import {
   ComponentType,
   SlashCommandBuilder,
 } from "discord.js";
-import Command from "../utils/command.js";
-import Player from "../models/Game/Player/Player.js";
-import log from "../utils/log.js";
-import { InventoryEntry } from "../models/Game/Inventory/inventoryUtils.js";
-import paginator, { paginateFromButton } from "../utils/paginator.js";
-import buttonWrapper from "../utils/buttonWrapper.js";
+import Command from "../../utils/command.js";
+import Player from "../../models/Game/Player/Player.js";
+import log from "../../utils/log.js";
+import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";
+import paginator, { paginateFromButton } from "../../utils/paginator.js";
+import buttonWrapper from "../../utils/buttonWrapper.js";
 
 export default new Command({
   data: new SlashCommandBuilder()
@@ -25,7 +26,9 @@ export default new Command({
     context: CommandInteraction,
     player: Player
   ): Promise<void> => {
-    const buttons: ButtonBuilder[] = player.inventory.entries.map(
+    let buttons: ButtonBuilder[];
+
+    buttons = player.inventory.entries.map(
       (entry: InventoryEntry): ButtonBuilder => {
         return new ButtonBuilder()
           .setCustomId(entry.name)
@@ -38,6 +41,8 @@ export default new Command({
       await context.reply("You have no items in your inventory.");
       return;
     }
+
+    // TODO: Make sure the buttons customId's are always different
 
     const message = await paginator(
       context,
@@ -61,7 +66,7 @@ export default new Command({
 
           default:
             const activeEntry = player.inventory.entries.find(
-              (entry: InventoryEntry) => entry.name === buttonContext.customId
+              (entry: InventoryEntry) => entry.id === buttonContext.customId
             );
 
             if (!activeEntry) return;

@@ -1,17 +1,36 @@
 import {
-  ButtonBuilder,
-  ButtonStyle,
-  GuildMemberRoleManager,
   MessageFlags,
   ModalSubmitInteraction,
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
-import getLocalModals from "../../utils/getLocalModals.js";
 import Modal from "../../utils/modal.js";
 import log from "../../utils/log.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
+import path from "path";
+import url from "url";
+import getAllFiles from "../../utils/getAllFiles.js";
+
+async function findLocalModals() {
+  let localCommands: Modal[] = [];
+
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+  const commandFiles = getAllFiles(
+    path.join(__dirname, "..", "..", "interactions", "modals")
+  );
+
+  for (const commandFile of commandFiles) {
+    const filePath = path.resolve(commandFile);
+    const fileUrl = url.pathToFileURL(filePath);
+    const commandObject: Modal = (await import(fileUrl.toString())).default;
+
+    localCommands.push(commandObject);
+  }
+
+  return localCommands;
+}
 
 export default new Event({
   callback: async (event: EventParams) => {
@@ -19,7 +38,7 @@ export default new Event({
 
     if (!modalContext.isModalSubmit()) return;
 
-    const localModals = await getLocalModals();
+    const localModals = await findLocalModals();
     // check if command name is in localCommands
     const modal: Modal = localModals.find(
       (modal: Modal) => modal.customId === modalContext.customId

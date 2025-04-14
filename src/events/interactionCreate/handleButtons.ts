@@ -5,10 +5,32 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
-import getLocalButtons from "../../utils/getLocalButtons.js";
 import log from "../../utils/log.js";
 import Button from "../../utils/button.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
+import path from "path";
+import url from "url";
+import getAllFiles from "../../utils/getAllFiles.js";
+
+async function findLocalButtons() {
+  let localCommands: Button[] = [];
+
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+  const commandFiles = getAllFiles(
+    path.join(__dirname, "..", "..", "interactions", "buttons")
+  );
+
+  for (const commandFile of commandFiles) {
+    const filePath = path.resolve(commandFile);
+    const fileUrl = url.pathToFileURL(filePath);
+    const commandObject: Button = (await import(fileUrl.toString())).default;
+
+    localCommands.push(commandObject);
+  }
+
+  return localCommands;
+}
 
 export default new Event({
   callback: async (event: EventParams) => {
@@ -16,10 +38,10 @@ export default new Event({
 
     if (!buttonContext.isButton()) return;
 
-    const localButtons = await getLocalButtons();
+    const localButtons = await findLocalButtons();
 
     // check if command name is in localCommands
-    const button: Button = localButtons.find(
+    const button: Button | undefined = localButtons.find(
       (button: Button) => button.customId === buttonContext.customId
     );
 

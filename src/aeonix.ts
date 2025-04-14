@@ -10,6 +10,8 @@ import { green, magenta } from "ansis";
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
+  history: ["exit"],
+  historySize: 10,
   prompt: `${magenta("Aeonix")} ${green(">>")} `,
 });
 
@@ -365,7 +367,9 @@ export class Aeonix extends Client {
             type: "Warn",
           });
           try {
-            this.user.setPresence({ status: "invisible" });
+            if (this.user) {
+              this.user.setPresence({ status: "invisible" });
+            }
             await this.destroy();
             process.exit(0);
           } catch (error) {
@@ -472,6 +476,10 @@ export class Aeonix extends Client {
         type: "Info",
       });
 
+      if (!dscToken || !mdbToken) {
+        throw new Error("Missing token(s)");
+      }
+
       mongoose.connect(mdbToken).then(() => {
         log({
           header: "Linked to DB",
@@ -503,12 +511,18 @@ export class Aeonix extends Client {
       setInterval(() => {
         const randomChoice =
           activities[Math.floor(Math.random() * activities.length)];
-        this.user.setPresence({
-          status: "online",
-          activities: [
-            { name: "Aeonix", type: ActivityType.Custom, state: randomChoice },
-          ],
-        });
+        if (this.user) {
+          this.user.setPresence({
+            status: "online",
+            activities: [
+              {
+                name: "Aeonix",
+                type: ActivityType.Custom,
+                state: randomChoice,
+              },
+            ],
+          });
+        }
       }, 10 * 60 * 1000);
     } catch (e: any) {
       log({
