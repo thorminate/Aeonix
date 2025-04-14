@@ -1,5 +1,6 @@
-import Item, { ItemUsageContext, ItemUsageResult } from "../item.js";
 import { InventoryEntry } from "../../Inventory/inventoryUtils.js";
+import Item from "../item.js";
+import { ItemUsageContext, ItemUsageResult } from "../itemUtils.js";
 
 export interface IBackpackData {
   capacity: number;
@@ -8,7 +9,6 @@ export interface IBackpackData {
 
 export default class BackpackItem extends Item {
   name: string = "Backpack";
-  id: string = "BackpackItem";
   description: string = "A backpack.";
   weight: number = 10;
   value: number = 0;

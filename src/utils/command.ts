@@ -1,6 +1,7 @@
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import Player from "../models/Game/Player/Player.js";
 import deepInstantiate from "./deepInstantiate.js";
+import { CmdInteraction } from "../events/interactionCreate/handleCommands.js";
 
 export interface ICommand {
   data: SlashCommandBuilder;
@@ -9,7 +10,7 @@ export interface ICommand {
   deleted?: boolean;
   passPlayer?: boolean;
   ephemeral?: boolean;
-  callback: (context: CommandInteraction, player?: Player) => Promise<void>;
+  callback: (context: CmdInteraction, player?: Player) => Promise<void>;
   onError: (error: Error) => void;
 }
 
@@ -20,7 +21,7 @@ export default class Command implements ICommand {
   deleted?: boolean = false;
   passPlayer?: boolean = false;
   ephemeral?: boolean = true;
-  callback: (context: CommandInteraction, player?: Player) => Promise<void>;
+  callback: (context: CmdInteraction, player?: Player) => Promise<void>;
   onError: (error: Error) => void;
 
   constructor(commandObject: ICommand) {

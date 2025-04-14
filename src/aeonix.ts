@@ -365,6 +365,7 @@ export class Aeonix extends Client {
             header: "Shutting down",
             processName: "Process",
             type: "Warn",
+            doNotPrompt: true,
           });
           try {
             if (this.user) {
@@ -465,6 +466,7 @@ export class Aeonix extends Client {
           });
           break;
       }
+
       this.rl.prompt();
     });
     this.rl.prompt();

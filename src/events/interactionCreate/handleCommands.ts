@@ -1,4 +1,6 @@
 import {
+  CacheType,
+  ChatInputCommandInteraction,
   CommandInteraction,
   PermissionFlagsBits,
   PermissionsBitField,
@@ -9,6 +11,11 @@ import commandPrep from "../../utils/commandPrep.js";
 import Player from "../../models/Game/Player/Player.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 import { findLocalCommands } from "../ready/01registerCommands.js";
+
+export type CmdInteraction = Omit<
+  CommandInteraction<CacheType>,
+  "reply" | "deferReply"
+>;
 
 export default new Event({
   callback: async (event: EventParams) => {
@@ -76,7 +83,7 @@ export default new Event({
 
     // if all goes well, run the commands callback function.
     await commandObject
-      .callback(interaction, player)
+      .callback(interaction as CmdInteraction, player)
       .catch((e: Error) => commandObject.onError(e));
   },
   onError: async (e: any) => {

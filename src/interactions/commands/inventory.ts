@@ -1,6 +1,5 @@
 import {
-  ActionRowBuilder,
-  APIButtonComponent,
+  APIButtonComponentWithCustomId,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -14,6 +13,49 @@ import log from "../../utils/log.js";
 import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
+import { randomUUID } from "node:crypto";
+
+function getButtonsFromEntries(entries: InventoryEntry[]): ButtonBuilder[] {
+  return entries.map((entry: InventoryEntry): ButtonBuilder => {
+    return new ButtonBuilder()
+      .setCustomId(entry.id)
+      .setLabel(entry.name)
+      .setStyle(ButtonStyle.Primary);
+  });
+}
+
+function scrambleDuplicates(buttons: ButtonBuilder[]) {
+  const itemIds = [];
+
+  const seen = new Set();
+  const duplicates = new Set();
+  for (const button of buttons) {
+    const id = (button.data as APIButtonComponentWithCustomId).custom_id;
+    if (seen.has(id)) {
+      duplicates.add(id);
+    } else {
+      seen.add(id);
+    }
+  }
+
+  if (duplicates.size > 0) {
+    buttons = buttons.map((button: ButtonBuilder) => {
+      const id = (button.data as APIButtonComponentWithCustomId).custom_id;
+
+      if (duplicates.has(id)) {
+        const uuid = randomUUID();
+        button.setCustomId(uuid);
+
+        itemIds.push({
+          cId: uuid,
+          oldCId: id,
+        });
+      }
+      return button;
+    });
+  }
+  return { buttons, itemIds };
+}
 
 export default new Command({
   data: new SlashCommandBuilder()
@@ -28,25 +70,18 @@ export default new Command({
   ): Promise<void> => {
     let buttons: ButtonBuilder[];
 
-    buttons = player.inventory.entries.map(
-      (entry: InventoryEntry): ButtonBuilder => {
-        return new ButtonBuilder()
-          .setCustomId(entry.name)
-          .setLabel(entry.name)
-          .setStyle(ButtonStyle.Primary);
-      }
-    );
+    buttons = getButtonsFromEntries(player.inventory.entries);
 
     if (buttons.length === 0) {
       await context.reply("You have no items in your inventory.");
       return;
     }
 
-    // TODO: Make sure the buttons customId's are always different
+    const { buttons: newButtons, itemIds } = scrambleDuplicates(buttons);
 
     const message = await paginator(
       context,
-      buttons,
+      newButtons,
       `**Inventory:**\n-# (select an item to see more details)`
     );
 
@@ -65,8 +100,14 @@ export default new Command({
             break;
 
           default:
+            const item = itemIds.find(
+              (item) => item.cId === buttonContext.customId
+            );
+
+            if (!item) return;
+
             const activeEntry = player.inventory.entries.find(
-              (entry: InventoryEntry) => entry.id === buttonContext.customId
+              (entry: InventoryEntry) => entry.id === item.oldCId
             );
 
             if (!activeEntry) return;

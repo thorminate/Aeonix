@@ -40,47 +40,23 @@ export class InventoryEntry implements IInventoryEntry {
     this.data = data;
   }
 
-  static fromPOJO(pojo: IInventoryEntry): InventoryEntry {
-    let content = {
-      name: "",
-      id: "",
-      quantity: 0,
-      weight: 0,
-      data: {},
-    };
-
-    if (pojo.hasOwnProperty("id")) {
-      content.id = pojo.id;
-    }
-    if (pojo.hasOwnProperty("name")) {
-      content.name = pojo.name;
-    }
-    if (pojo.hasOwnProperty("quantity")) {
-      content.quantity = pojo.quantity;
-    }
-    if (pojo.hasOwnProperty("weight")) {
-      content.weight = pojo.weight;
-    }
-    if (pojo.hasOwnProperty("data")) {
-      content.data = pojo.data;
-    }
+  static fromPOJO(o: Partial<IInventoryEntry>): InventoryEntry {
     return new InventoryEntry(
-      content.name,
-      content.id,
-      content.quantity,
-      content.weight,
-      content.data
+      o.name || "",
+      o.id || "",
+      o.quantity || 1,
+      o.weight || 0,
+      o.data || {}
     );
   }
 
-  async toItem<T extends Item>(): Promise<T> {
-    const itemStructure: T = await Item.find(this.id);
-
+  async toItem() {
     return deepInstantiate(
-      itemStructure,
+      new Item(),
       {
         name: this.name,
         data: this.data,
+        id: this.id,
       },
       {}
     );

@@ -8,8 +8,8 @@ export default new Event({
   callback: async (event: EventParams) => {
     const player = new Player(event.aeonix.user, event.aeonix.user.username);
 
-    const item: WeaponItem = await Item.find("WeaponItem");
-    const item2: WeaponItem = await item.toInventoryEntry().toItem();
+    const item = new WeaponItem();
+    const item2 = (await item.toInventoryEntry().toItem()) as WeaponItem;
 
     let test = true;
 
@@ -27,7 +27,7 @@ export default new Event({
 
     if (item.data.damage !== item2.data.damage) {
       log({
-        header: "Test Error, capacity should be the same",
+        header: "Test Error, damage should be the same",
         processName: "TestRunner",
         payload: `${item.data.damage} !== ${item2.data.damage}`,
         type: "Error",

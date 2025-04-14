@@ -7,12 +7,13 @@ import { cyan, gray, red, redBright, yellow } from "ansis";
 import { Aeonix } from "../aeonix.js";
 import { actualPrimitives } from "mongoose";
 
-interface Options {
+interface LogOptions {
   header: string;
   processName?: string;
   folder?: string;
   payload?: any[] | any;
   type?: "Fatal" | "Error" | "Warn" | "Info" | "Verbose" | "Debug" | "Silly";
+  doNotPrompt?: boolean;
 }
 
 function stripAnsiCodes(str: string) {
@@ -22,7 +23,7 @@ function stripAnsiCodes(str: string) {
   );
 }
 
-export default (options: Options) => {
+export default (options: LogOptions) => {
   let { folder, payload, header, type, processName } = options;
 
   if (!header) return;
@@ -100,8 +101,10 @@ export default (options: Options) => {
 
   logStream.end();
 
-  import("../aeonix.js").then((module: any) => {
-    const aeonix: Aeonix = module.default;
-    if (aeonix) aeonix.rl.prompt();
-  });
+  if (!options.doNotPrompt) {
+    import("../aeonix.js").then((module: any) => {
+      const aeonix: Aeonix = module.default;
+      if (aeonix) aeonix.rl.prompt();
+    });
+  }
 };

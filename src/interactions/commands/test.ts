@@ -7,8 +7,8 @@ export default new Command({
     .setName("test")
     .setDescription("Test command"),
 
-  callback: async (interaction) => {
-    await interaction.reply("Test command");
+  callback: async (context) => {
+    await context.editReply("Test command");
   },
 
   onError(error) {
