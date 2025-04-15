@@ -1,9 +1,5 @@
-import {
-  EntryQuery,
-  IInventory,
-  IInventoryEntry,
-  InventoryEntry,
-} from "./inventoryUtils.js";
+import deepInstantiate from "../../../utils/deepInstantiate.js";
+import { EntryQuery, IInventory, InventoryEntry } from "./inventoryUtils.js";
 
 export default class Inventory implements IInventory {
   private _capacity: number = 10;
@@ -25,9 +21,9 @@ export default class Inventory implements IInventory {
       this._entries = [];
     }
 
-    this._entries.forEach((entry: IInventoryEntry) => {
-      if (!(entry instanceof InventoryEntry))
-        entry = InventoryEntry.fromPOJO(entry);
+    this._entries = this._entries.map((entry: InventoryEntry) => {
+      entry = deepInstantiate(new InventoryEntry(), entry);
+      return entry;
     });
 
     return this._entries;

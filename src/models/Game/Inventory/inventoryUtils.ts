@@ -1,5 +1,7 @@
 import Item from "../Item/item.js";
 import deepInstantiate from "../../../utils/deepInstantiate.js";
+import { randomUUID } from "node:crypto";
+import log from "../../../utils/log.js";
 
 export interface IInventoryEntry {
   name: string;
@@ -25,40 +27,46 @@ export class InventoryEntry implements IInventoryEntry {
   quantity: number;
   weight: number;
   data: object;
+  type: string;
 
   constructor(
-    name: string,
-    id: string,
-    quantity: number,
-    weight: number,
-    data: object
+    name: string = "",
+    id: string = randomUUID(),
+    quantity: number = 1,
+    weight: number = 1,
+    data: object = {},
+    type: string = ""
   ) {
     this.name = name;
     this.id = id;
     this.quantity = quantity;
     this.weight = weight;
     this.data = data;
+    this.type = type;
   }
 
-  static fromPOJO(o: Partial<IInventoryEntry>): InventoryEntry {
-    return new InventoryEntry(
-      o.name || "",
-      o.id || "",
-      o.quantity || 1,
-      o.weight || 0,
-      o.data || {}
-    );
-  }
+  async toItem(): Promise<Item | null> {
+    if (!this.type) return null;
 
-  async toItem() {
-    return deepInstantiate(
-      new Item(),
-      {
+    const modulePath = `../Item/content/${this.type}.js`;
+    try {
+      const module = await import(modulePath);
+
+      const ItemClass: typeof Item = module.default;
+
+      return deepInstantiate(new ItemClass(), {
         name: this.name,
-        data: this.data,
         id: this.id,
-      },
-      {}
-    );
+        weight: this.weight,
+        data: this.data,
+      });
+    } catch (e: unknown) {
+      log({
+        header: "Error instantiating item",
+        processName: "InventoryEntry",
+        type: "Error",
+        payload: e,
+      });
+    }
   }
 }

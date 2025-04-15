@@ -9,6 +9,7 @@ export interface IBackpackData {
 
 export default class BackpackItem extends Item {
   name: string = "Backpack";
+  type: string = "BackpackItem";
   description: string = "A backpack.";
   weight: number = 10;
   value: number = 0;

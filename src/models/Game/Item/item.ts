@@ -18,12 +18,13 @@ export class ItemUsageResult {
 }
 
 export default class Item {
+  id: string;
   name: string;
+  type: string;
   description: string;
   weight: number;
   value: number;
   data: any;
-  id: string;
   useType: string;
 
   constructor() {
@@ -47,7 +48,8 @@ export default class Item {
       this.id,
       quantity,
       this.weight,
-      this.data
+      this.data,
+      this.type
     );
   }
 }

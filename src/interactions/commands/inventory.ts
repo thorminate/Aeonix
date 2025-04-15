@@ -14,6 +14,7 @@ import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
 import { randomUUID } from "node:crypto";
+import { it } from "node:test";
 
 function getButtonsFromEntries(entries: InventoryEntry[]): ButtonBuilder[] {
   return entries.map((entry: InventoryEntry): ButtonBuilder => {
@@ -112,7 +113,14 @@ export default new Command({
 
             if (!activeEntry) return;
 
-            await buttonContext.update({
+            log({
+              header: "Item selected",
+              processName: "InventoryCommand",
+              payload: await activeEntry.toItem(),
+              type: "Info",
+            });
+
+            const message = await buttonContext.update({
               content: activeEntry.name,
               components: buttonWrapper([
                 new ButtonBuilder()
@@ -120,8 +128,59 @@ export default new Command({
                   .setLabel("Close")
                   .setEmoji("✖️")
                   .setStyle(ButtonStyle.Danger),
+                new ButtonBuilder()
+                  .setCustomId("use")
+                  .setLabel((await activeEntry.toItem()).useType)
+                  .setStyle(ButtonStyle.Success),
               ]),
             });
+
+            const newCollector = message.createMessageComponentCollector({
+              componentType: ComponentType.Button,
+              time: 5 * 60 * 1000,
+            });
+
+            newCollector.on(
+              "collect",
+              async (buttonContext: ButtonInteraction) => {
+                try {
+                  switch (buttonContext.customId) {
+                    case "use":
+                      const item = await activeEntry.toItem();
+
+                      const message = await item.use({
+                        player,
+                      });
+
+                      const newEntry = item.toInventoryEntry();
+
+                      player.inventory.entries = player.inventory.entries.map(
+                        (entry) => {
+                          if (entry.id === activeEntry.id) {
+                            return newEntry;
+                          }
+                          return entry;
+                        }
+                      );
+
+                      player.save();
+
+                      await buttonContext.update(message.message);
+                      break;
+
+                    case "close":
+                      newCollector.stop();
+                  }
+                } catch (e: unknown) {
+                  log({
+                    header: "Error in inventory command component handling",
+                    processName: "InventoryCommand",
+                    type: "Error",
+                    payload: e,
+                  });
+                }
+              }
+            );
             break;
         }
       } catch (e: any) {
