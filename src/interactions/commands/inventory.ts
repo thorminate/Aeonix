@@ -68,20 +68,20 @@ export default new Command({
     context: CommandInteraction,
     player: Player
   ): Promise<void> => {
-    let buttons: ButtonBuilder[];
+    let unsanitizedButtons: ButtonBuilder[];
 
-    buttons = getButtonsFromEntries(player.inventory.entries);
+    unsanitizedButtons = getButtonsFromEntries(player.inventory.entries);
 
-    if (buttons.length === 0) {
+    if (unsanitizedButtons.length === 0) {
       await context.reply("You have no items in your inventory.");
       return;
     }
 
-    const { buttons: newButtons, itemIds } = scrambleDuplicates(buttons);
+    const { buttons, itemIds } = scrambleDuplicates(unsanitizedButtons);
 
     const message = await paginator(
       context,
-      newButtons,
+      buttons,
       `**Inventory:**\n-# (select an item to see more details)`
     );
 
