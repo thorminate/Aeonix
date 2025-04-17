@@ -1,6 +1,5 @@
 import Event, { EventParams } from "../../models/Core/Event.js";
-import WeaponItem from "../../models/Game/Item/content/WeaponItem.js";
-import Item from "../../models/Game/Item/item.js";
+import BackpackItem from "../../models/Game/Item/content/BackpackItem.js";
 import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
 
@@ -8,8 +7,8 @@ export default new Event({
   callback: async (event: EventParams) => {
     const player = new Player(event.aeonix.user, event.aeonix.user.username);
 
-    const item = new WeaponItem();
-    const item2 = (await item.toInventoryEntry().toItem()) as WeaponItem;
+    const item = new BackpackItem();
+    const item2 = (await item.toInventoryEntry().toItem()) as BackpackItem;
 
     let test = true;
 
@@ -25,11 +24,11 @@ export default new Event({
       test = false;
     }
 
-    if (item.data.damage !== item2.data.damage) {
+    if (item.data.capacity !== item2.data.capacity) {
       log({
         header: "Test Error, damage should be the same",
         processName: "TestRunner",
-        payload: `${item.data.damage} !== ${item2.data.damage}`,
+        payload: `${item.data.entries} !== ${item2.data.entries}`,
         type: "Error",
       });
       test = false;
@@ -65,12 +64,6 @@ export default new Event({
       });
       test = false;
     }
-
-    const thor = await Player.find("thorminate");
-
-    thor.inventory.clear();
-    thor.inventory.add(item.toInventoryEntry(), item2.toInventoryEntry());
-    thor.save();
 
     log({
       header: test ? "Tests passed" : "A test failed, check logs",

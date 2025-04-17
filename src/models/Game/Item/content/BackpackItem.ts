@@ -27,6 +27,9 @@ export default class BackpackItem extends Item {
   }
 
   async use(context: ItemUsageContext): Promise<ItemUsageResult> {
-    return new ItemUsageResult("", true);
+    const { player } = context;
+
+    player.giveXpFromRange(5, 10);
+    return new ItemUsageResult("Wow!", true);
   }
 }
