@@ -7,6 +7,7 @@ export class ItemUsageContext {
 export class ItemUsageResult {
   message: string;
   success: boolean;
+  oneTime: boolean = false;
   data: any;
 
   constructor(message: string, success: boolean) {

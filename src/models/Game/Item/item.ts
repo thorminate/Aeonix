@@ -1,21 +1,6 @@
-import Player from "../Player/Player.js";
 import { InventoryEntry } from "../Inventory/inventoryUtils.js";
 import { randomUUID } from "node:crypto";
-
-export class ItemUsageContext {
-  player: Player;
-}
-
-export class ItemUsageResult {
-  message: string;
-  success: boolean;
-  data: any;
-
-  constructor(message: string, success: boolean) {
-    this.message = message;
-    this.success = success;
-  }
-}
+import { ItemUsageContext, ItemUsageResult } from "./itemUtils.js";
 
 export default class Item {
   id: string;

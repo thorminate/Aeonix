@@ -277,6 +277,10 @@ function createCollectors(
           currentPage = pages.length - 1;
           await paginate(buttonContext, pages, currentPage, getContent, true);
           break;
+
+        default:
+          collector.stop();
+          break;
       }
     } catch (e: any) {
       log({

@@ -5,6 +5,7 @@ import {
   ButtonStyle,
   CommandInteraction,
   ComponentType,
+  Message,
   SlashCommandBuilder,
 } from "discord.js";
 import Command from "../../utils/command.js";
@@ -14,7 +15,6 @@ import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
 import { randomUUID } from "node:crypto";
-import { it } from "node:test";
 
 function getButtonsFromEntries(entries: InventoryEntry[]): ButtonBuilder[] {
   return entries.map((entry: InventoryEntry): ButtonBuilder => {
@@ -25,9 +25,7 @@ function getButtonsFromEntries(entries: InventoryEntry[]): ButtonBuilder[] {
   });
 }
 
-function scrambleDuplicates(buttons: ButtonBuilder[]) {
-  const itemIds = [];
-
+function scrambleDuplicates(buttons: ButtonBuilder[], player: Player) {
   const seen = new Set();
   const duplicates = new Set();
   for (const button of buttons) {
@@ -47,15 +45,123 @@ function scrambleDuplicates(buttons: ButtonBuilder[]) {
         const uuid = randomUUID();
         button.setCustomId(uuid);
 
-        itemIds.push({
-          cId: uuid,
-          oldCId: id,
-        });
+        player.inventory.entries.find((e) => e.id === id).id = uuid;
       }
       return button;
     });
   }
-  return { buttons, itemIds };
+  return buttons;
+}
+
+function createCollectors(
+  message: Message,
+  buttons: ButtonBuilder[],
+  player: Player
+) {
+  const collector = message.createMessageComponentCollector({
+    componentType: ComponentType.Button,
+    time: 5 * 60 * 1000,
+  });
+
+  collector.on("collect", async (buttonContext: ButtonInteraction) => {
+    try {
+      collector.resetTimer();
+
+      const useType = buttonContext.customId.split(":")[0];
+
+      const useData = buttonContext.customId.split(":")[1];
+
+      switch (useType) {
+        case "close":
+          paginateFromButton(buttonContext, buttons, "**Inventory:**");
+          break;
+
+        case "use":
+          const activeEntryIndex = player.inventory.entries.findIndex(
+            (e) => e.id === useData
+          );
+
+          let activeEntry = player.inventory.entries[activeEntryIndex];
+
+          if (!activeEntry) {
+            log({
+              header: "Item not found in inventory",
+              processName: "InventoryCommand",
+              payload: [player.inventory.entries, useData, activeEntryIndex],
+              type: "Error",
+            });
+            return;
+          }
+
+          const item = await activeEntry.toItem();
+
+          const usageResult = await item.use({
+            player,
+          });
+
+          const newEntry = item.toInventoryEntry();
+
+          player.inventory.entries[activeEntryIndex] = newEntry;
+
+          player.save();
+
+          await buttonContext.update({
+            content: `**${item.name}**\n${usageResult.message}`,
+            components: buttonWrapper([
+              new ButtonBuilder()
+                .setCustomId("close")
+                .setLabel("Close")
+                .setEmoji("✖️")
+                .setStyle(ButtonStyle.Danger),
+              new ButtonBuilder()
+                .setCustomId(`use:${item.id}`)
+                .setLabel(item.useType)
+                .setStyle(ButtonStyle.Success)
+                .setDisabled(usageResult.oneTime),
+            ]),
+          });
+          break;
+
+        default:
+          const currentEntry = player.inventory.entries.find(
+            (entry: InventoryEntry) => entry.id === useType
+          );
+
+          if (!currentEntry) {
+            log({
+              header: "Item not found in inventory",
+              processName: "InventoryCommand",
+              payload: [item, player.inventory.entries],
+              type: "Error",
+            });
+            return;
+          }
+
+          await buttonContext.update({
+            content: `**${currentEntry.name}**`,
+            components: buttonWrapper([
+              new ButtonBuilder()
+                .setCustomId("close")
+                .setLabel("Close")
+                .setEmoji("✖️")
+                .setStyle(ButtonStyle.Danger),
+              new ButtonBuilder()
+                .setCustomId(`use:${currentEntry.id}`)
+                .setLabel((await currentEntry.toItem()).useType)
+                .setStyle(ButtonStyle.Success),
+            ]),
+          });
+          break;
+      }
+    } catch (e: any) {
+      log({
+        header: "Error in inventory command component handling",
+        processName: "InventoryCommand",
+        type: "Error",
+        payload: e,
+      });
+    }
+  });
 }
 
 export default new Command({
@@ -78,7 +184,7 @@ export default new Command({
       return;
     }
 
-    const { buttons, itemIds } = scrambleDuplicates(unsanitizedButtons);
+    const buttons = scrambleDuplicates(unsanitizedButtons, player);
 
     const message = await paginator(
       context,
@@ -86,112 +192,7 @@ export default new Command({
       `**Inventory:**\n-# (select an item to see more details)`
     );
 
-    const collector = message.createMessageComponentCollector({
-      componentType: ComponentType.Button,
-      time: 5 * 60 * 1000,
-    });
-
-    collector.on("collect", async (buttonContext: ButtonInteraction) => {
-      try {
-        collector.resetTimer();
-
-        switch (buttonContext.customId) {
-          case "close":
-            paginateFromButton(buttonContext, buttons, "**Inventory:**");
-            break;
-
-          default:
-            const item = itemIds.find(
-              (item) => item.cId === buttonContext.customId
-            );
-
-            if (!item) return;
-
-            const activeEntry = player.inventory.entries.find(
-              (entry: InventoryEntry) => entry.id === item.oldCId
-            );
-
-            if (!activeEntry) return;
-
-            log({
-              header: "Item selected",
-              processName: "InventoryCommand",
-              payload: await activeEntry.toItem(),
-              type: "Info",
-            });
-
-            const message = await buttonContext.update({
-              content: activeEntry.name,
-              components: buttonWrapper([
-                new ButtonBuilder()
-                  .setCustomId("close")
-                  .setLabel("Close")
-                  .setEmoji("✖️")
-                  .setStyle(ButtonStyle.Danger),
-                new ButtonBuilder()
-                  .setCustomId("use")
-                  .setLabel((await activeEntry.toItem()).useType)
-                  .setStyle(ButtonStyle.Success),
-              ]),
-            });
-
-            const newCollector = message.createMessageComponentCollector({
-              componentType: ComponentType.Button,
-              time: 5 * 60 * 1000,
-            });
-
-            newCollector.on(
-              "collect",
-              async (buttonContext: ButtonInteraction) => {
-                try {
-                  switch (buttonContext.customId) {
-                    case "use":
-                      const item = await activeEntry.toItem();
-
-                      const message = await item.use({
-                        player,
-                      });
-
-                      const newEntry = item.toInventoryEntry();
-
-                      player.inventory.entries = player.inventory.entries.map(
-                        (entry) => {
-                          if (entry.id === activeEntry.id) {
-                            return newEntry;
-                          }
-                          return entry;
-                        }
-                      );
-
-                      player.save();
-
-                      await buttonContext.update(message.message);
-                      break;
-
-                    case "close":
-                      newCollector.stop();
-                  }
-                } catch (e: unknown) {
-                  log({
-                    header: "Error in inventory command component handling",
-                    processName: "InventoryCommand",
-                    type: "Error",
-                    payload: e,
-                  });
-                }
-              }
-            );
-            break;
-        }
-      } catch (e: any) {
-        log({
-          header: "Error in inventory command component handling",
-          processName: "InventoryCommand",
-          type: "Error",
-          payload: e,
-        });
-      }
-    });
+    createCollectors(message, buttons, player);
   },
 
   onError(e: any): void {
