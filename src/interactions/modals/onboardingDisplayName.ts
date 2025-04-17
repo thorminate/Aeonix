@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
-import Modal from "../../utils/modal.js";
+import Modal from "../modal.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
 
 export default new Modal({

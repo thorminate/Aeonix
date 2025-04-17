@@ -8,7 +8,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import Button from "../../utils/button.js";
+import Button from "../button.js";
 import Player from "../../models/Game/Player/Player.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
 import log from "../../utils/log.js";

@@ -1,5 +1,5 @@
 import log from "../../utils/log.js";
-import Command from "../../utils/command.js";
+import Command from "../../interactions/command.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 import path from "path";
 import url from "url";
@@ -122,22 +122,22 @@ export default new Event({
 
       if (existingCommand) {
         if (localCommand.deleted) {
-          await applicationCommands.delete(existingCommand.id);
+          applicationCommands.delete(existingCommand.id);
           log({
-            header: `Deleted command, ${name}`,
+            header: `Deleting command, ${name}`,
             processName: "CommandRegistrant",
             type: "Info",
           });
           continue;
         }
         if (areCommandsDifferent(existingCommand, localCommand)) {
-          await applicationCommands.edit(existingCommand.id, {
+          applicationCommands.edit(existingCommand.id, {
             description,
             options,
           });
 
           log({
-            header: `Edited command, ${name}`,
+            header: `Editing command, ${name}`,
             processName: "CommandRegistrant",
             type: "Info",
           });
@@ -147,14 +147,29 @@ export default new Event({
         if (localCommand.deleted) {
           continue;
         }
-        await applicationCommands.create({
+        applicationCommands.create({
           name,
           description,
           options,
         });
 
         log({
-          header: `Registered command, ${name}`,
+          header: `Registering command, ${name}`,
+          processName: "CommandRegistrant",
+          type: "Info",
+        });
+      }
+    }
+
+    for (const existingCommand of applicationCommands.cache.values()) {
+      const isLocal = localCommands.some(
+        (local) => local.data.name === existingCommand.name
+      );
+
+      if (!isLocal) {
+        applicationCommands.delete(existingCommand.id);
+        log({
+          header: `Deleting stale command, ${existingCommand.name}`,
           processName: "CommandRegistrant",
           type: "Info",
         });

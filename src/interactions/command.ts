@@ -1,7 +1,7 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import Player from "../models/Game/Player/Player.js";
-import deepInstantiate from "./deepInstantiate.js";
-import { CmdInteraction } from "../events/interactionCreate/handleCommands.js";
+import deepInstantiate from "../utils/deepInstantiate.js";
+import { CmdInteraction } from "../events/interactionCreate/01handleCommands.js";
 
 export interface ICommand {
   data: SlashCommandBuilder;

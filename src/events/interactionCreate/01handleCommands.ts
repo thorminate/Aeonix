@@ -6,7 +6,7 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import log from "../../utils/log.js";
-import Command from "../../utils/command.js";
+import Command from "../../interactions/command.js";
 import commandPrep from "../../utils/commandPrep.js";
 import Player from "../../models/Game/Player/Player.js";
 import Event, { EventParams } from "../../models/Core/Event.js";

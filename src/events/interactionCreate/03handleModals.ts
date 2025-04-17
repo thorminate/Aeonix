@@ -5,7 +5,7 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
-import Modal from "../../utils/modal.js";
+import Modal from "../../interactions/modal.js";
 import log from "../../utils/log.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 import path from "path";

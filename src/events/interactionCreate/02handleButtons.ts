@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
-import Button from "../../utils/button.js";
+import Button from "../../interactions/button.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 import path from "path";
 import url from "url";

@@ -6,7 +6,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
-import Command from "../../utils/command.js";
+import Command from "../command.js";
 import {
   welcomeImage,
   welcomeMessage,

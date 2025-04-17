@@ -8,7 +8,7 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import Command from "../../utils/command.js";
+import Command from "../command.js";
 import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
 import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";

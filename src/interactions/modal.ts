@@ -1,6 +1,6 @@
 import { ModalSubmitInteraction } from "discord.js";
 import Player from "../models/Game/Player/Player.js";
-import deepInstantiate from "./deepInstantiate.js";
+import deepInstantiate from "./../utils/deepInstantiate.js";
 
 export interface IModal {
   customId: string;
