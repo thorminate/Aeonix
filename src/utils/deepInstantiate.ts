@@ -11,26 +11,26 @@ export default function deepInstantiate<T extends object>(
 
     if (Array.isArray(sourceValue) && classExistsInMap) {
       // If it's an array and a class is mapped, instantiate each element
-      target[key] = sourceValue.map((item: any) =>
-        typeof item === "object" && item !== null
+      (target as Record<string, any>)[key] = sourceValue.map((item: any) =>
+        typeof item === "object" && item
           ? deepInstantiate(new ClassFromMap(), item, classMap)
           : item
       );
     } else if (
       typeof sourceValue === "object" &&
-      sourceValue !== null &&
+      sourceValue &&
       targetHasProperty
     ) {
       if (classExistsInMap) {
-        target[key] = deepInstantiate(
+        (target as Record<string, any>)[key] = deepInstantiate(
           new ClassFromMap(),
           sourceValue,
           classMap
         );
       } else {
-        target[key] = deepInstantiate(
-          target[key] !== undefined
-            ? target[key]
+        (target as Record<string, any>)[key] = deepInstantiate(
+          (target as Record<string, any>)[key] !== undefined
+            ? (target as Record<string, any>)[key]
             : Array.isArray(sourceValue)
             ? []
             : {},
@@ -39,7 +39,7 @@ export default function deepInstantiate<T extends object>(
         );
       }
     } else {
-      target[key] = sourceValue; // Assign primitives directly
+      (target as Record<string, any>)[key] = sourceValue; // Assign primitives directly
     }
   }
 

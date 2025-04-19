@@ -1,7 +1,7 @@
 // Turn an array of buttons into an array of action rows.
 import { ActionRowBuilder, ButtonBuilder } from "discord.js"; // Import the discord.js library.
 
-export default (buttons: ButtonBuilder[]) => {
+export default (...buttons: ButtonBuilder[]) => {
   let chunks: ActionRowBuilder<ButtonBuilder>[] = [];
   for (let i = 0; i < buttons.length; i += 4) {
     chunks.push(

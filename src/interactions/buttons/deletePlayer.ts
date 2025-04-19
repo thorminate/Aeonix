@@ -21,12 +21,12 @@ export default new Button({
       return;
     }
 
-    const buttons = buttonWrapper([
+    const buttons = buttonWrapper(
       new ButtonBuilder()
         .setCustomId("deletePlayerConfirmed")
         .setLabel("Yes")
-        .setStyle(ButtonStyle.Danger),
-    ]);
+        .setStyle(ButtonStyle.Danger)
+    );
 
     await buttonContext.reply({
       content: "Are you sure you want to delete your persona?",

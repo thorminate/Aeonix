@@ -21,12 +21,12 @@ export default new Button({
       await buttonContext.reply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",
-        components: buttonWrapper([
+        components: buttonWrapper(
           new ButtonBuilder()
             .setCustomId("deletePlayer")
             .setLabel("Delete?")
-            .setStyle(ButtonStyle.Danger),
-        ]),
+            .setStyle(ButtonStyle.Danger)
+        ),
         flags: MessageFlags.Ephemeral,
       });
       return;

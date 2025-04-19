@@ -16,12 +16,12 @@ export default new Modal({
     const displayName = modalContext.fields.getTextInputValue("display-name");
 
     if (await Player.find(modalContext.user.username)) {
-      const buttons = buttonWrapper([
+      const buttons = buttonWrapper(
         new ButtonBuilder()
           .setCustomId("deletePlayer")
           .setLabel("Delete?")
-          .setStyle(ButtonStyle.Danger),
-      ]);
+          .setStyle(ButtonStyle.Danger)
+      );
 
       await modalContext.reply({
         content:
@@ -36,9 +36,28 @@ export default new Modal({
 
     await player.save();
 
-    await (modalContext.member.roles as GuildMemberRoleManager).add(
-      process.env.PLAYER_ROLE
-    );
+    if (!modalContext.member) {
+      log({
+        header: "Interaction member is falsy",
+        processName: "OnboardingDisplayNameModal",
+        payload: modalContext,
+        type: "Error",
+      });
+      return;
+    }
+
+    const playerRole = process.env.PLAYER_ROLE;
+
+    if (!playerRole) {
+      log({
+        header: "Player role not found in environment variables",
+        processName: "OnboardingDisplayNameModal",
+        type: "Error",
+      });
+      return;
+    }
+
+    await (modalContext.member.roles as GuildMemberRoleManager).add(playerRole);
 
     await modalContext.reply({
       content: "1/1 - Your persona has been created.",
@@ -46,7 +65,7 @@ export default new Modal({
     });
   },
 
-  onError: async (error) => {
+  onError: async (error: unknown) => {
     log({
       header: "Modal Error",
       processName: "OnboardingDisplayNameModal",

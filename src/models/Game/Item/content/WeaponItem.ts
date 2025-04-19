@@ -8,15 +8,15 @@ export interface IWeaponData {
 }
 
 export default class WeaponItem extends Item {
-  name: string = "Weapon";
-  type: string = "WeaponItem";
-  description: string = "A weapon.";
-  weight: number = 10;
-  value: number = 0;
-  data: IWeaponData = this.createData();
-  useType: string = "Swing";
+  override name: string = "Weapon";
+  override type: string = "WeaponItem";
+  override description: string = "A weapon.";
+  override weight: number = 10;
+  override value: number = 0;
+  override data: IWeaponData = this.createData();
+  override useType: string = "Swing";
 
-  createData(
+  override createData(
     damage: number = 10,
     range: number = 5,
     wear: number = 0
@@ -28,7 +28,7 @@ export default class WeaponItem extends Item {
     };
   }
 
-  async use(context: ItemUsageContext): Promise<ItemUsageResult> {
+  override async use(context: ItemUsageContext): Promise<ItemUsageResult> {
     const { player } = context;
 
     player.giveXpFromRange(5, 10);

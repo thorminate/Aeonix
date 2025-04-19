@@ -5,9 +5,7 @@ import {
   ButtonComponent,
   ButtonInteraction,
   ButtonStyle,
-  CommandInteraction,
   ComponentType,
-  InteractionEditReplyOptions,
   InteractionResponse,
   Message,
   MessageFlags,
@@ -17,6 +15,7 @@ import {
 } from "discord.js";
 import deepInstantiate from "./deepInstantiate.js";
 import log from "./log.js";
+import { CmdInteraction } from "../interactions/command.js";
 
 type Page = ActionRowBuilder<ButtonBuilder>;
 type GetterOrLiteral = string | ((currentPage: Page) => string);
@@ -188,9 +187,20 @@ function createCollectors(
           if (!search.isFromMessage()) return;
 
           currentPage = 0;
-          await search.update({
-            components: [pages2[0], paginationRow(0, pages2.length - 1, true)],
-          });
+
+          if (pages2[currentPage]) {
+            await search.update({
+              components: [
+                pages2[currentPage] as ActionRowBuilder<ButtonBuilder>,
+                paginationRow(currentPage, pages2.length - 1, true),
+              ],
+            });
+          } else {
+            await search.reply({
+              content: "No results found.",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
           break;
         case "nx":
           if (currentPage >= pages.length - 1) {
@@ -246,10 +256,13 @@ function createCollectors(
           break;
 
         case "sx":
-          await buttonContext.update({
-            components: [pages[0], paginationRow(0, pages.length - 1)],
-          });
           currentPage = 0;
+          await buttonContext.update({
+            components: [
+              pages[currentPage] as ActionRowBuilder<ButtonBuilder>,
+              paginationRow(0, pages.length - 1),
+            ],
+          });
           break;
 
         case "sn":
@@ -317,26 +330,45 @@ function splitIntoPages(buttons: ButtonBuilder[]): Page[] {
  * @returns {Message}
  */
 export default async (
-  context: CommandInteraction,
+  context: CmdInteraction,
   buttons: ButtonBuilder[],
   getContent?: GetterOrLiteral
-): Promise<Message> => {
+): Promise<Message | undefined> => {
   try {
     const pages = splitIntoPages(buttons);
 
     if (!getContent) getContent = "";
 
+    if (pages.length === 0) {
+      log({
+        header: "No buttons found",
+        processName: "Paginator",
+        payload: buttons,
+        type: "Error",
+      });
+      return;
+    }
+
     if (pages.length === 1) {
       return context.editReply({
-        content: toLiteral(getContent, pages[0]),
-        components: [pages[0]],
+        content: toLiteral(
+          getContent,
+          pages[0] as ActionRowBuilder<ButtonBuilder>
+        ),
+        components: [pages[0] as ActionRowBuilder<ButtonBuilder>],
       });
     }
 
     return createCollectors(
       await context.editReply({
-        content: toLiteral(getContent, pages[0]),
-        components: [pages[0], paginationRow(0, pages.length - 1)],
+        content: toLiteral(
+          getContent,
+          pages[0] as ActionRowBuilder<ButtonBuilder>
+        ),
+        components: [
+          pages[0] as ActionRowBuilder<ButtonBuilder>,
+          paginationRow(0, pages.length - 1),
+        ],
       }),
       pages,
       buttons,
@@ -349,6 +381,7 @@ export default async (
       payload: e,
       type: "Error",
     });
+    return undefined;
   }
 };
 
@@ -356,21 +389,32 @@ export async function paginateFromButton(
   context: ButtonInteraction,
   buttons: ButtonBuilder[],
   getContent: GetterOrLiteral
-) {
+): Promise<Message | undefined> {
   try {
     const pages = splitIntoPages(buttons);
 
     if (!getContent) getContent = "";
 
     if (pages.length === 1) {
-      return context.update({
-        content: toLiteral(getContent, pages[0]),
-        components: [pages[0]],
-      });
+      return (
+        await context.update({
+          content: toLiteral(
+            getContent,
+            pages[0] as ActionRowBuilder<ButtonBuilder>
+          ),
+          components: [pages[0] as ActionRowBuilder<ButtonBuilder>],
+        })
+      ).fetch();
     }
     await context.update({
-      content: toLiteral(getContent, pages[0]),
-      components: [pages[0], paginationRow(0, pages.length - 1)],
+      content: toLiteral(
+        getContent,
+        pages[0] as ActionRowBuilder<ButtonBuilder>
+      ),
+      components: [
+        pages[0] as ActionRowBuilder<ButtonBuilder>,
+        paginationRow(0, pages.length - 1),
+      ],
     });
 
     return createCollectors(
@@ -386,5 +430,6 @@ export async function paginateFromButton(
       payload: e,
       type: "Error",
     });
+    return undefined;
   }
 }

@@ -1,18 +1,26 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "outDir": "./dist",
     "rootDir": "./src",
+    "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
     "sourceMap": true,
-    "target": "ES2022",
-    "outDir": "./dist", // Specify the output folder for compiled JavaScript
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
     "allowJs": false,
-    "moduleResolution": "node",
     "esModuleInterop": true,
-    "module": "ESNext",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitOverride": true
   },
-  "exclude": ["./node_modules/**/*", "./dist/**/*", "./config.json"],
-  "include": ["./src/**/*"] // Specify the path to your TypeScript files
+  "exclude": ["node_modules/", "dist/"],
+  "include": ["src/"]
 }

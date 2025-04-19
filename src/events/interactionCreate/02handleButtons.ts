@@ -48,6 +48,16 @@ export default new Event({
     // if commandObject does not exist, return
     if (!button) return;
 
+    if (!buttonContext.member) {
+      log({
+        header: "Interaction member is falsy",
+        processName: "ButtonHandler",
+        payload: buttonContext,
+        type: "Error",
+      });
+      return;
+    }
+
     // if command is devOnly and user is not an admin, return
     if (button.adminOnly) {
       if (
@@ -80,7 +90,7 @@ export default new Event({
       }
     }
 
-    let player: Player;
+    let player: Player | undefined = undefined;
 
     if (button.passPlayer) {
       player = await Player.find(buttonContext.user.username);

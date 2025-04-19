@@ -1,21 +1,14 @@
 import {
-  CacheType,
-  ChatInputCommandInteraction,
   CommandInteraction,
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
 import log from "../../utils/log.js";
-import Command from "../../interactions/command.js";
+import Command, { CmdInteraction } from "../../interactions/command.js";
 import commandPrep from "../../utils/commandPrep.js";
 import Player from "../../models/Game/Player/Player.js";
 import Event, { EventParams } from "../../models/Core/Event.js";
 import { findLocalCommands } from "../ready/01registerCommands.js";
-
-export type CmdInteraction = Omit<
-  CommandInteraction<CacheType>,
-  "reply" | "deferReply"
->;
 
 export default new Event({
   callback: async (event: EventParams) => {
@@ -26,7 +19,7 @@ export default new Event({
     const localCommands = await findLocalCommands();
 
     // check if command name is in localCommands
-    const commandObject: Command = localCommands.find(
+    const commandObject: Command | undefined = localCommands.find(
       (cmd: Command) => cmd.data.name === interaction.commandName
     );
 
@@ -34,8 +27,18 @@ export default new Event({
     if (!commandObject) return;
 
     await commandPrep(interaction, {
-      ephemeral: commandObject.ephemeral,
+      ephemeral: commandObject.ephemeral ? true : false,
     });
+
+    if (!interaction.member) {
+      log({
+        header: "Interaction member is falsy",
+        processName: "CommandHandler",
+        payload: interaction,
+        type: "Error",
+      });
+      return;
+    }
 
     // if command is devOnly and user is not an admin, return
     if (commandObject.adminOnly) {
@@ -67,7 +70,7 @@ export default new Event({
       }
     }
 
-    let player: Player;
+    let player: Player | undefined = undefined;
 
     if (commandObject.passPlayer) {
       player = await Player.find(interaction.user.username);

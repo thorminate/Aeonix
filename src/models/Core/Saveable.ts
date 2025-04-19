@@ -19,15 +19,15 @@ export default abstract class Saveable<T extends Document> {
   protected abstract getModel(): Model<T>;
   protected abstract getClassMap(): Record<string, any>;
   protected abstract getIdentifier(): {
-    key: Array<keyof T | string>;
-    value: Array<string>;
+    key: string;
+    value: string;
   };
 
   async save(): Promise<void> {
     const { key, value } = this.getIdentifier();
 
     await this.getModel().findOneAndUpdate(
-      { [key[0]]: value[0] } as Record<string, any>,
+      { [key]: value } as Record<string, any>,
       this,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
@@ -38,11 +38,11 @@ export default abstract class Saveable<T extends Document> {
     // Ensure that this has a valid constructor
     this: SaveableConstructor<T, TInstance>,
     identifier: string
-  ): Promise<TInstance | null> {
+  ): Promise<TInstance | undefined> {
     const model = this.getModel();
 
     const query = {
-      [this.prototype.getIdentifier().key[0]]: identifier,
+      [this.prototype.getIdentifier().key]: identifier,
     };
     let doc = await model.findOne(query as Record<string, any>);
     if (!doc) return undefined;

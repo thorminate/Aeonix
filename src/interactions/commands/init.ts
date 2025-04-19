@@ -6,7 +6,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import Player from "../../models/Game/Player/Player.js";
-import Command from "../command.js";
+import Command, { CmdInteraction } from "../command.js";
 import {
   welcomeImage,
   welcomeMessage,
@@ -19,14 +19,14 @@ export default new Command({
     .setName("init")
     .setDescription("Initializes your persona"),
 
-  callback: async (context: CommandInteraction) => {
+  callback: async (context: CmdInteraction) => {
     if (await Player.find(context.user.username)) {
-      const buttons = buttonWrapper([
+      const buttons = buttonWrapper(
         new ButtonBuilder()
           .setCustomId("deletePlayer")
           .setLabel("Delete?")
-          .setStyle(ButtonStyle.Danger),
-      ]);
+          .setStyle(ButtonStyle.Danger)
+      );
 
       await context.editReply({
         content:
@@ -36,13 +36,13 @@ export default new Command({
       return;
     }
 
-    const components = buttonWrapper([
+    const components = buttonWrapper(
       new ButtonBuilder()
         .setCustomId("onboarding1")
         .setLabel("Begin")
         .setStyle(ButtonStyle.Primary)
-        .setEmoji("👋"),
-    ]);
+        .setEmoji("👋")
+    );
 
     await context.editReply({
       files: [welcomeImage],

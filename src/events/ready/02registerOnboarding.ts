@@ -25,6 +25,16 @@ export default new Event({
   callback: async (event: EventParams) => {
     const onboardingChannelId = process.env.ONBOARDING_CHANNEL;
 
+    if (!onboardingChannelId) {
+      log({
+        header: "Onboarding channel id not found in environment variables",
+        processName: "OnboardingSupervisor",
+        type: "Error",
+        payload: [onboardingChannelId, process.env],
+      });
+      return;
+    }
+
     const onboardingChannel = await event.aeonix.channels.fetch(
       onboardingChannelId
     );
@@ -52,13 +62,13 @@ export default new Event({
       }
     });
 
-    const components = buttonWrapper([
+    const components = buttonWrapper(
       new ButtonBuilder()
         .setCustomId("onboarding1")
         .setLabel("Begin")
         .setStyle(ButtonStyle.Primary)
-        .setEmoji("👋"),
-    ]);
+        .setEmoji("👋")
+    );
 
     await onboardingChannel.send({
       files: [welcomeImage],

@@ -45,8 +45,8 @@ export class InventoryEntry implements IInventoryEntry {
     this.type = type;
   }
 
-  async toItem(): Promise<Item | null> {
-    if (!this.type) return null;
+  async toItem(): Promise<Item | undefined> {
+    if (!this.type) return undefined;
 
     const modulePath = `../Item/content/${this.type}.js`;
     try {
@@ -67,6 +67,7 @@ export class InventoryEntry implements IInventoryEntry {
         type: "Error",
         payload: e,
       });
+      return undefined;
     }
   }
 }

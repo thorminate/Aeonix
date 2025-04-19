@@ -59,13 +59,13 @@ export default class Player extends Saveable<IPlayer> {
     return await aeonix.users.fetch(this._id);
   }
 
-  async levelUp(amount: number = 1, resetXp: boolean = true) {
+  levelUp(amount: number = 1, resetXp: boolean = true) {
     if (amount <= 0 || !amount) return;
     this.status.level += amount;
     if (resetXp) this.status.xp = 0;
   }
 
-  async giveXp(amount: number) {
+  giveXp(amount: number) {
     this.status.xp += amount;
     while (this.status.xp >= calculateXpRequirement(this.status.level)) {
       this.levelUp(1, false);
@@ -75,7 +75,7 @@ export default class Player extends Saveable<IPlayer> {
     if (this.status.xp < 0) this.status.xp = 0;
   }
 
-  async giveXpFromRange(min: number, max: number) {
+  giveXpFromRange(min: number, max: number) {
     const randomFromRange = Math.floor(Math.random() * (max - min + 1)) + min;
 
     this.giveXp(randomFromRange);
@@ -112,8 +112,8 @@ export default class Player extends Saveable<IPlayer> {
 
   protected getIdentifier() {
     return {
-      key: ["name", "_id"],
-      value: [this.name, this._id],
+      key: "name",
+      value: this.name,
     };
   }
 

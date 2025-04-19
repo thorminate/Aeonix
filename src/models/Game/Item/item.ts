@@ -4,13 +4,13 @@ import { ItemUsageContext, ItemUsageResult } from "./itemUtils.js";
 
 export default class Item {
   id: string;
-  name: string;
-  type: string;
-  description: string;
-  weight: number;
-  value: number;
-  data: any;
-  useType: string;
+  name: string = "";
+  type: string = "";
+  description: string = "";
+  weight: number = 0;
+  value: number = 0;
+  data: any = {};
+  useType: string = "Use";
 
   constructor() {
     this.id = randomUUID();

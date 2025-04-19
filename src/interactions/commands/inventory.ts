@@ -6,9 +6,10 @@ import {
   CommandInteraction,
   ComponentType,
   Message,
+  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Command from "../command.js";
+import Command, { CmdInteraction } from "../command.js";
 import Player from "../../models/Game/Player/Player.js";
 import log from "../../utils/log.js";
 import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";
@@ -45,7 +46,18 @@ function scrambleDuplicates(buttons: ButtonBuilder[], player: Player) {
         const uuid = randomUUID();
         button.setCustomId(uuid);
 
-        player.inventory.entries.find((e) => e.id === id).id = uuid;
+        const entry = player.inventory.entries.find((e) => e.id === id);
+        if (!entry) {
+          log({
+            header: "Could not find entry in player inventory, skipping",
+            processName: "Inventory",
+            payload: [id, player.inventory.entries],
+            type: "Warn",
+          });
+          return button;
+        }
+
+        entry.id = uuid;
       }
       return button;
     });
@@ -63,17 +75,24 @@ function createCollectors(
     time: 5 * 60 * 1000,
   });
 
-  collector.on("collect", async (buttonContext: ButtonInteraction) => {
+  collector.on("collect", async (context: ButtonInteraction) => {
     try {
       collector.resetTimer();
 
-      const useType = buttonContext.customId.split(":")[0];
+      const useType = context.customId.split(":")[0];
 
-      const useData = buttonContext.customId.split(":")[1];
+      const useData = context.customId.split(":")[1];
 
       switch (useType) {
         case "close":
-          paginateFromButton(buttonContext, buttons, "**Inventory:**");
+          paginateFromButton(context, buttons, "**Inventory:**");
+          break;
+
+        case "drop":
+          await context.reply({
+            content: "Not implemented yet. (Wait for environments first!)",
+            flags: MessageFlags.Ephemeral,
+          });
           break;
 
         case "use":
@@ -95,6 +114,16 @@ function createCollectors(
 
           const item = await activeEntry.toItem();
 
+          if (!item) {
+            log({
+              header: "Item not found in inventory",
+              processName: "InventoryCommand",
+              payload: [player.inventory.entries, useData, activeEntryIndex],
+              type: "Error",
+            });
+            return;
+          }
+
           const usageResult = await item.use({
             player,
           });
@@ -105,9 +134,9 @@ function createCollectors(
 
           player.save();
 
-          await buttonContext.update({
+          await context.update({
             content: `**${item.name}**\n${usageResult.message}`,
-            components: buttonWrapper([
+            components: buttonWrapper(
               new ButtonBuilder()
                 .setCustomId("close")
                 .setLabel("Close")
@@ -118,7 +147,11 @@ function createCollectors(
                 .setLabel(item.useType)
                 .setStyle(ButtonStyle.Success)
                 .setDisabled(usageResult.oneTime),
-            ]),
+              new ButtonBuilder()
+                .setCustomId(`drop:${item.id}`)
+                .setLabel("Drop")
+                .setStyle(ButtonStyle.Secondary)
+            ),
           });
           break;
 
@@ -131,15 +164,27 @@ function createCollectors(
             log({
               header: "Item not found in inventory",
               processName: "InventoryCommand",
-              payload: [item, player.inventory.entries],
+              payload: [useType, player.inventory.entries],
               type: "Error",
             });
             return;
           }
 
-          await buttonContext.update({
+          const currentItem = await currentEntry.toItem();
+
+          if (!currentItem) {
+            log({
+              header: "Inventory entry could not be converted to item",
+              processName: "InventoryCommand",
+              payload: [useType, player.inventory.entries],
+              type: "Error",
+            });
+            return;
+          }
+
+          await context.update({
             content: `**${currentEntry.name}**`,
-            components: buttonWrapper([
+            components: buttonWrapper(
               new ButtonBuilder()
                 .setCustomId("close")
                 .setLabel("Close")
@@ -147,9 +192,13 @@ function createCollectors(
                 .setStyle(ButtonStyle.Danger),
               new ButtonBuilder()
                 .setCustomId(`use:${currentEntry.id}`)
-                .setLabel((await currentEntry.toItem()).useType)
+                .setLabel(currentItem.useType)
                 .setStyle(ButtonStyle.Success),
-            ]),
+              new ButtonBuilder()
+                .setCustomId(`drop:${currentEntry.id}`)
+                .setLabel("Drop")
+                .setStyle(ButtonStyle.Secondary)
+            ),
           });
           break;
       }
@@ -172,15 +221,23 @@ export default new Command({
   passPlayer: true,
 
   callback: async (
-    context: CommandInteraction,
-    player: Player
+    context: CmdInteraction,
+    player: Player | undefined
   ): Promise<void> => {
+    if (!player) {
+      log({
+        header: "Player could not be passed to inventory command",
+        processName: "InventoryCommand",
+        type: "Error",
+      });
+      return;
+    }
     let unsanitizedButtons: ButtonBuilder[];
 
     unsanitizedButtons = getButtonsFromEntries(player.inventory.entries);
 
     if (unsanitizedButtons.length === 0) {
-      await context.reply("You have no items in your inventory.");
+      await context.editReply("You have no items in your inventory.");
       return;
     }
 
@@ -191,6 +248,15 @@ export default new Command({
       buttons,
       `**Inventory:**\n-# (select an item to see more details)`
     );
+
+    if (!message) {
+      log({
+        header: "Paginator returned falsy value",
+        processName: "InventoryCommand",
+        type: "Error",
+      });
+      return;
+    }
 
     createCollectors(message, buttons, player);
   },

@@ -1,6 +1,7 @@
 import { ModalSubmitInteraction } from "discord.js";
 import Player from "../models/Game/Player/Player.js";
-import deepInstantiate from "./../utils/deepInstantiate.js";
+import deepInstantiate from "../utils/deepInstantiate.js";
+import log from "../utils/log.js";
 
 export interface IModal {
   customId: string;
@@ -16,7 +17,7 @@ export interface IModal {
 }
 
 export default class Modal implements IModal {
-  customId: string;
+  customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
   deleted?: boolean = false;
@@ -24,8 +25,21 @@ export default class Modal implements IModal {
   callback: (
     buttonContext: ModalSubmitInteraction,
     player?: Player
-  ) => Promise<void>;
-  onError: (error: Error) => Promise<void>;
+  ) => Promise<void> = async () => {
+    log({
+      header: "Modal callback not implemented",
+      processName: "ModalHandler",
+      type: "Error",
+    });
+  };
+  onError: (error: unknown) => Promise<void> = async (e) => {
+    log({
+      header: "Modal Error (error handler not implemented!)",
+      processName: "ModalHandler",
+      payload: e,
+      type: "Error",
+    });
+  };
 
   constructor(modalObject: IModal) {
     return deepInstantiate(this, modalObject);

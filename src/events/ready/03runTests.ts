@@ -5,6 +5,16 @@ import log from "../../utils/log.js";
 
 export default new Event({
   callback: async (event: EventParams) => {
+    if (!event.aeonix.user) {
+      log({
+        header: "User is falsy",
+        processName: "TestRunner",
+        payload: event.aeonix.user,
+        type: "Error",
+      });
+      return;
+    }
+
     const player = new Player(event.aeonix.user, event.aeonix.user.username);
 
     const item = new BackpackItem();
@@ -59,7 +69,7 @@ export default new Event({
       log({
         header: "Test Error, quantity should be 1",
         processName: "TestRunner",
-        payload: `${player.inventory.entries[0].quantity} !== 1`,
+        payload: `${player.inventory.entries[0]?.quantity} !== 1`,
         type: "Error",
       });
       test = false;

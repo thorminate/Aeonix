@@ -8,15 +8,15 @@ export interface IBackpackData {
 }
 
 export default class BackpackItem extends Item {
-  name: string = "Backpack";
-  type: string = "BackpackItem";
-  description: string = "A backpack.";
-  weight: number = 10;
-  value: number = 0;
-  data: IBackpackData = this.createData();
-  useType: string = "Open";
+  override name: string = "Backpack";
+  override type: string = "BackpackItem";
+  override description: string = "A backpack.";
+  override weight: number = 10;
+  override value: number = 0;
+  override data: IBackpackData = this.createData();
+  override useType: string = "Open";
 
-  createData(
+  override createData(
     capacity: number = 20,
     entries: InventoryEntry[] = []
   ): IBackpackData {
@@ -26,7 +26,7 @@ export default class BackpackItem extends Item {
     };
   }
 
-  async use(context: ItemUsageContext): Promise<ItemUsageResult> {
+  override async use(context: ItemUsageContext): Promise<ItemUsageResult> {
     const { player } = context;
 
     player.giveXpFromRange(5, 10);

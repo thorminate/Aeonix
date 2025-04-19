@@ -14,6 +14,7 @@ export default (directory: string, foldersOnly = false): string[] => {
     const filePath = path.join(directory, file.name); // get file/folder path
 
     if (path.extname(filePath) === ".map") continue; // skip files with .map extension
+    if (path.extname(filePath) === ".ts") continue; // skip files with .ts extension
 
     if (foldersOnly) {
       // if foldersOnly is true, only push folders to fileNames

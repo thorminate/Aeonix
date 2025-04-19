@@ -18,10 +18,17 @@ export default async (aeonix: Aeonix) => {
       const eventFiles: Array<string> = getAllFiles(eventFolder);
       eventFiles.sort((a: string, b: string) => a.localeCompare(b));
 
-      const eventName: string = eventFolder
-        .replace(/\\/g, "/")
-        .split("/")
-        .pop();
+      const eventName = eventFolder.replace(/\\/g, "/").split("/").pop();
+
+      if (!eventName) {
+        log({
+          header: "Event name is undefined",
+          processName: "EventHandler",
+          type: "Error",
+          payload: [eventName, eventFolder],
+        });
+        return;
+      }
 
       aeonix.on(eventName, async (arg) => {
         for (const eventFile of eventFiles) {

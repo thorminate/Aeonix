@@ -40,12 +40,22 @@ export default new Event({
 
     const localModals = await findLocalModals();
     // check if command name is in localCommands
-    const modal: Modal = localModals.find(
+    const modal: Modal | undefined = localModals.find(
       (modal: Modal) => modal.customId === modalContext.customId
     );
 
     // if commandObject does not exist, return
     if (!modal) return;
+
+    if (!modalContext.member) {
+      log({
+        header: "Interaction member is falsy",
+        processName: "ModalHandler",
+        payload: modalContext,
+        type: "Error",
+      });
+      return;
+    }
 
     // if command is devOnly and user is not an admin, return
     if (modal.adminOnly) {
@@ -79,7 +89,7 @@ export default new Event({
       }
     }
 
-    let player: Player;
+    let player: Player | undefined = undefined;
 
     if (modal.passPlayer) {
       player = await Player.find(modalContext.user.username);

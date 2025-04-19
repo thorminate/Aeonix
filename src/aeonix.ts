@@ -3,9 +3,46 @@ import mongoose from "mongoose";
 import eventHandler from "./handlers/eventHandler.js";
 import log from "./utils/log.js";
 import readline from "readline/promises";
-import { appendFileSync, existsSync, writeFileSync } from "fs";
+import {
+  appendFileSync,
+  existsSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "fs";
 import { config } from "@dotenvx/dotenvx";
-import { green, magenta } from "ansis";
+import { blue, blueBright, green, magenta, redBright } from "ansis";
+import { execSync } from "child_process";
+import path from "path";
+
+interface PackageJson {
+  name: string;
+  version: string;
+  main: string;
+  author: string;
+  license: string;
+  type: string;
+  homepage: string;
+  description: string;
+  keywords: [];
+  scripts: {
+    start: string;
+  };
+  dependencies: {
+    "@dotenvx/dotenvx": string;
+    ansis: string;
+    "discord.js": string;
+    mongoose: string;
+    typescript: string;
+  };
+  repository: {
+    type: string;
+    url: string;
+  };
+  bugs: {
+    url: string;
+  };
+}
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -57,7 +94,6 @@ config();
 // Define Aeonix
 export class Aeonix extends Client {
   rl: readline.Interface;
-  logger: typeof log;
 
   constructor() {
     // Initialise variables
@@ -334,7 +370,6 @@ export class Aeonix extends Client {
       ],
     });
 
-    this.logger = log;
     // We already have an rl instance, so we don't need to create a new one.
     this.rl = rl;
 
@@ -346,20 +381,31 @@ export class Aeonix extends Client {
       );
 
       // When a line is typed.
-      switch (input.split(" ")[0]) {
+      switch (inputArr[0]?.toLowerCase().trim()) {
         case "help":
           log({
             header: "Help Command",
             processName: "CLI",
             payload: [
               "'exit' to quit and turn off Aeonix",
-              "\n'help' for help",
-              "\n'log <header> [options]' options are --payload and --folder",
+              "'help' for help",
+              "'log <header> [options]' options are --payload and --folder",
+              "'clear' to clear the console",
+              "'recompile" + " to recompile the bot's typescript files",
+              "'info' to get information about the bot",
             ],
             type: "Info",
           });
           break;
 
+        case "clear":
+          log({
+            header: "Clearing console",
+            processName: "CLI",
+            type: "Info",
+          });
+          process.stdout.write("\x1B[2J\x1B[0f");
+          break;
         case "exit": // Exit aeonix.
           log({
             header: "Shutting down",
@@ -455,6 +501,58 @@ export class Aeonix extends Client {
             processName,
             type,
           });
+          break;
+
+        case "recompile":
+          log({
+            header: "Recompiling",
+            processName: "CLI",
+            type: "Info",
+          });
+
+          rmSync("./dist", { recursive: true, force: true });
+          try {
+            execSync("tsc", { stdio: "inherit" });
+          } catch (e) {
+            log({
+              header: "Recompilation failed",
+              processName: "CLI",
+              type: "Error",
+            });
+          }
+          break;
+
+        case "info":
+          const packageJson: PackageJson = JSON.parse(
+            readFileSync("./package.json").toString()
+          );
+          const deps = packageJson.dependencies;
+          log({
+            header: "Info",
+            processName: "CLI",
+            payload: [
+              blue`Version: ` + blueBright(packageJson.version),
+              blue`Git hash: ` +
+                blueBright(
+                  execSync("git rev-parse --short HEAD").toString().trim()
+                ),
+              blue`Installed at: ` +
+                blueBright(path.join(import.meta.url, "..").slice(8)),
+              " ",
+              redBright`Dependencies:`,
+              "  Node.js: " + process.version,
+              `  Discord.js: ${deps["discord.js"].replace("^", "v")}`,
+              `  Mongoose: ${deps.mongoose.replace("^", "v")}`,
+              `  Dotenvx: ${deps["@dotenvx/dotenvx"].replace("^", "v")}`,
+              `  Ansis: ` + deps.ansis.replace("^", "v"),
+              `  TypeScript: ${deps.typescript.replace("^", "v")}`,
+              " ",
+            ],
+            type: "Info",
+          });
+          break;
+
+        case "": // Do nothing.
           break;
 
         default: // Invalid command handling.

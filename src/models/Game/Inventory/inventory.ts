@@ -55,7 +55,8 @@ export default class Inventory implements IInventory {
     if (!query.key) query.key = "name";
 
     return this.entries.find(
-      (e: InventoryEntry) => e[query.key] === query.value
+      (e: InventoryEntry) =>
+        e[query.key as keyof InventoryEntry] === query.value
     );
   }
 
@@ -63,7 +64,8 @@ export default class Inventory implements IInventory {
     if (!query.key) query.key = "name";
 
     return this.entries.filter(
-      (e: InventoryEntry) => e[query.key] === query.value
+      (e: InventoryEntry) =>
+        e[query.key as keyof InventoryEntry] === query.value
     );
   }
 

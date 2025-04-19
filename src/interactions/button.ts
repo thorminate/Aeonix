@@ -1,6 +1,7 @@
 import { ButtonInteraction } from "discord.js";
 import Player from "../models/Game/Player/Player.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
+import log from "../utils/log.js";
 
 export interface IButton {
   customId: string;
@@ -16,7 +17,7 @@ export interface IButton {
 }
 
 export default class Button implements IButton {
-  customId: string;
+  customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
   deleted?: boolean = false;
@@ -24,8 +25,21 @@ export default class Button implements IButton {
   callback: (
     buttonContext: ButtonInteraction,
     player?: Player
-  ) => Promise<void>;
-  onError: (error: Error) => void;
+  ) => Promise<void> = async () => {
+    log({
+      header: "Button callback not implemented",
+      processName: "ButtonHandler",
+      type: "Error",
+    });
+  };
+  onError: (error: unknown) => void = (e) => {
+    log({
+      header: "Button Error (error handler not implemented!)",
+      processName: "ButtonHandler",
+      payload: e,
+      type: "Error",
+    });
+  };
 
   constructor(buttonObject: IButton) {
     return deepInstantiate(this, buttonObject);
