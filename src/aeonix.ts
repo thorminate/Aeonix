@@ -319,9 +319,6 @@ export class Aeonix extends Client {
       "Studying",
     ];
 
-    const mdbToken = process.env.MONGODB_URI;
-    const dscToken = process.env.TOKEN;
-
     // Define the client
     super({
       presence: {
@@ -569,69 +566,78 @@ export class Aeonix extends Client {
     });
     this.rl.prompt();
 
-    try {
-      log({
-        header: "Initializing Aeonix...",
-        processName: "AeonixConstructor",
-        type: "Info",
-      });
-
-      if (!dscToken || !mdbToken) {
-        throw new Error("Missing token(s)");
-      }
-
-      mongoose.connect(mdbToken).then(() => {
+    const mdbToken = process.env.MONGODB_URI;
+    const dscToken = process.env.DISCORD_TOKEN;
+    (async () => {
+      try {
         log({
-          header: "Linked to DB",
+          header: "Initializing Aeonix...",
           processName: "AeonixConstructor",
           type: "Info",
         });
 
-        process.on("SIGINT", () => {
-          mongoose.connection.close();
-        });
-      });
+        if (!dscToken || !mdbToken) {
+          log({
+            header: "Missing token(s)",
+            processName: "AeonixConstructor",
+            type: "Fatal",
+          });
+          return;
+        }
 
-      eventHandler(this).then(() => {
+        await mongoose.connect(mdbToken).then(() => {
+          log({
+            header: "Linked to DB",
+            processName: "AeonixConstructor",
+            type: "Info",
+          });
+
+          process.on("SIGINT", () => {
+            mongoose.connection.close();
+          });
+        });
+
+        eventHandler(this);
+
         log({
           header: "Event handler initialized",
           processName: "AeonixConstructor",
           type: "Info",
         });
-      });
 
-      this.login(dscToken).then(() => {
-        log({
-          header: "Connected to Discord",
-          processName: "AeonixConstructor",
-          type: "Info",
-        });
-      });
-
-      setInterval(() => {
-        const randomChoice =
-          activities[Math.floor(Math.random() * activities.length)];
-        if (this.user) {
-          this.user.setPresence({
-            status: "online",
-            activities: [
-              {
-                name: "Aeonix",
-                type: ActivityType.Custom,
-                state: randomChoice,
-              },
-            ],
+        await this.login(dscToken).then(() => {
+          log({
+            header: "Connected to Discord",
+            processName: "AeonixConstructor",
+            type: "Info",
           });
-        }
-      }, 10 * 60 * 1000);
-    } catch (e: any) {
-      log({
-        header: "Error whilst creating Aeonix object",
-        processName: "AeonixConstructor",
-        payload: e,
-        type: "Fatal",
-      });
-    }
+        });
+
+        setInterval(() => {
+          const randomChoice =
+            activities[Math.floor(Math.random() * activities.length)];
+          if (this.user) {
+            this.user.setPresence({
+              status: "online",
+              activities: [
+                {
+                  name: "Aeonix",
+                  type: ActivityType.Custom,
+                  state: randomChoice,
+                },
+              ],
+            });
+          }
+        }, 10 * 60 * 1000);
+      } catch (e: any) {
+        log({
+          header: "Error whilst creating Aeonix object",
+          processName: "AeonixConstructor",
+          payload: e,
+          type: "Fatal",
+        });
+      }
+    })();
   }
 }
 

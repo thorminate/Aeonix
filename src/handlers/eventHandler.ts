@@ -5,7 +5,7 @@ import log from "../utils/log.js";
 import Event, { EventParams } from "../models/Core/Event.js";
 import { Aeonix } from "../aeonix.js";
 
-export default async (aeonix: Aeonix) => {
+export default (aeonix: Aeonix) => {
   try {
     const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
