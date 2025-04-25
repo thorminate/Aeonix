@@ -1,9 +1,45 @@
 import { InventoryEntry } from "../Inventory/inventoryUtils.js";
 import { randomUUID } from "node:crypto";
-import { ItemUsageContext, ItemUsageResult } from "./itemUtils.js";
+import {
+  ItemEventContext,
+  ItemEventResult,
+  ItemUsageContext,
+  ItemUsageResult,
+} from "./itemUtils.js";
 
-export default class Item {
-  id: string;
+export default abstract class Item {
+  id: string = randomUUID();
+  abstract name: string;
+  abstract type: string;
+  abstract description: string;
+  abstract weight: number;
+  abstract value: number;
+  abstract data: any;
+  abstract useType: string;
+
+  abstract createData(): object;
+  abstract use(context: ItemUsageContext): Promise<ItemUsageResult>;
+
+  onDrop(context: ItemEventContext): ItemEventResult {
+    return new ItemEventResult("", true);
+  }
+
+  toInventoryEntry<T extends Item>(
+    this: T,
+    quantity: number = 1
+  ): InventoryEntry {
+    return new InventoryEntry(
+      this.name,
+      this.id,
+      quantity,
+      this.weight,
+      this.data,
+      this.type
+    );
+  }
+}
+
+export class TemplateItem extends Item {
   name: string = "";
   type: string = "";
   description: string = "";
@@ -12,19 +48,17 @@ export default class Item {
   data: any = {};
   useType: string = "Use";
 
-  constructor() {
-    this.id = randomUUID();
-  }
-
   createData() {
     throw new Error("Not implemented");
+    return {};
   }
 
-  async use(context: ItemUsageContext): Promise<ItemUsageResult> {
+  override async use(context: ItemUsageContext): Promise<ItemUsageResult> {
     throw new Error("Not implemented");
+    return new ItemUsageResult("", false);
   }
 
-  toInventoryEntry<T extends Item>(
+  override toInventoryEntry<T extends Item>(
     this: T,
     quantity: number = 1
   ): InventoryEntry {

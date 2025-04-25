@@ -1,4 +1,4 @@
-import Item from "../Item/item.js";
+import Item, { TemplateItem } from "../Item/item.js";
 import deepInstantiate from "../../../utils/deepInstantiate.js";
 import { randomUUID } from "node:crypto";
 import log from "../../../utils/log.js";
@@ -6,6 +6,7 @@ import log from "../../../utils/log.js";
 export interface IInventoryEntry {
   name: string;
   id: string;
+  type: string;
   quantity: number;
   weight: number;
   data: object;
@@ -52,7 +53,7 @@ export class InventoryEntry implements IInventoryEntry {
     try {
       const module = await import(modulePath);
 
-      const ItemClass: typeof Item = module.default;
+      const ItemClass: typeof TemplateItem = module.default;
 
       return deepInstantiate(new ItemClass(), {
         name: this.name,
