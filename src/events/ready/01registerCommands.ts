@@ -1,6 +1,6 @@
 import log from "../../utils/log.js";
 import Command from "../../interactions/command.js";
-import Event, { EventParams } from "../../models/Core/Event.js";
+import Event, { EventParams } from "../../models/core/Event.js";
 import path from "path";
 import url from "url";
 import { Aeonix } from "../../aeonix.js";

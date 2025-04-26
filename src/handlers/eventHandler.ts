@@ -2,7 +2,7 @@ import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
 import url from "url";
 import log from "../utils/log.js";
-import Event, { EventParams } from "../models/Core/Event.js";
+import Event, { EventParams } from "../models/core/Event.js";
 import { Aeonix } from "../aeonix.js";
 
 export default (aeonix: Aeonix) => {

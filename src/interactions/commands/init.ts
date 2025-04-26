@@ -4,7 +4,7 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Player from "../../models/Game/Player/Player.js";
+import Player from "../../models/game/player/player.js";
 import Command, { CmdInteraction } from "../command.js";
 import {
   welcomeImage,

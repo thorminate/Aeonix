@@ -6,8 +6,8 @@ import {
 import log from "../../utils/log.js";
 import Command, { CmdInteraction } from "../../interactions/command.js";
 import commandPrep from "../../utils/commandPrep.js";
-import Player from "../../models/Game/Player/Player.js";
-import Event, { EventParams } from "../../models/Core/Event.js";
+import Player from "../../models/game/player/player.js";
+import Event, { EventParams } from "../../models/core/Event.js";
 import { findLocalCommands } from "../ready/01registerCommands.js";
 
 export default new Event({

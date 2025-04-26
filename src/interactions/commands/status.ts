@@ -1,6 +1,6 @@
 // shows your status
 import { HTTPError, SlashCommandBuilder } from "discord.js";
-import Player from "../../models/Game/Player/Player.js";
+import Player from "../../models/game/player/player.js";
 import log from "../../utils/log.js";
 import Command, { CmdInteraction } from "../command.js";
 

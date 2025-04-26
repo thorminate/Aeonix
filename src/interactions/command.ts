@@ -1,5 +1,5 @@
 import { CacheType, CommandInteraction, SlashCommandBuilder } from "discord.js";
-import Player from "../models/Game/Player/Player.js";
+import Player from "../models/game/player/player.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
 import log from "../utils/log.js";
 

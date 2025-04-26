@@ -9,9 +9,9 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import Command, { CmdInteraction } from "../command.js";
-import Player from "../../models/Game/Player/Player.js";
+import Player from "../../models/game/player/player.js";
 import log from "../../utils/log.js";
-import { InventoryEntry } from "../../models/Game/Inventory/inventoryUtils.js";
+import InventoryEntry from "../../models/game/inventory/utils/inventoryEntry.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
 import { randomUUID } from "node:crypto";

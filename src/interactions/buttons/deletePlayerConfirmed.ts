@@ -1,5 +1,5 @@
 import { MessageFlags } from "discord.js";
-import Player from "../../models/Game/Player/Player.js";
+import Player from "../../models/game/player/player.js";
 import Button from "../button.js";
 import log from "../../utils/log.js";
 

@@ -1,10 +1,8 @@
 import Item from "../item.js";
-import {
-  ItemEventContext,
-  ItemEventResult,
-  ItemUsageContext,
-  ItemUsageResult,
-} from "../itemUtils.js";
+import ItemEventContext from "../utils/itemEventContext.js";
+import ItemEventResult from "../utils/itemEventResult.js";
+import ItemUsageContext from "../utils/itemUsageContext.js";
+import ItemUsageResult from "../utils/itemUsageResult.js";
 
 export interface IWeaponData {
   damage: number;

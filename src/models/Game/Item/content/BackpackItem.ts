@@ -1,6 +1,9 @@
-import { InventoryEntry } from "../../Inventory/inventoryUtils.js";
+import InventoryEntry from "../../inventory/utils/inventoryEntry.js";
 import Item from "../item.js";
-import { ItemUsageContext, ItemUsageResult } from "../itemUtils.js";
+import ItemEventContext from "../utils/itemEventContext.js";
+import ItemEventResult from "../utils/itemEventResult.js";
+import ItemUsageContext from "../utils/itemUsageContext.js";
+import ItemUsageResult from "../utils/itemUsageResult.js";
 
 export interface IBackpackData {
   capacity: number;
@@ -24,6 +27,10 @@ export default class BackpackItem extends Item {
       capacity,
       entries,
     };
+  }
+
+  override onDrop(context: ItemEventContext): ItemEventResult {
+    return new ItemEventResult("Your backpack took damage!", true);
   }
 
   async use(context: ItemUsageContext): Promise<ItemUsageResult> {

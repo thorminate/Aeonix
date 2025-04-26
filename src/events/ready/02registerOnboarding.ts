@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import log from "../../utils/log.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
-import Event, { EventParams } from "../../models/Core/Event.js";
+import Event, { EventParams } from "../../models/core/Event.js";
 
 // turn on word wrap to see the full message
 

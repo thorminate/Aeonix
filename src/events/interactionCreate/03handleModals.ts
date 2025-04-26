@@ -4,10 +4,10 @@ import {
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
-import Player from "../../models/Game/Player/Player.js";
+import Player from "../../models/game/player/player.js";
 import Modal from "../../interactions/modal.js";
 import log from "../../utils/log.js";
-import Event, { EventParams } from "../../models/Core/Event.js";
+import Event, { EventParams } from "../../models/core/Event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";

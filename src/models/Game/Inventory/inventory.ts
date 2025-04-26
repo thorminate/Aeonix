@@ -1,5 +1,10 @@
 import deepInstantiate from "../../../utils/deepInstantiate.js";
-import { EntryQuery, IInventory, InventoryEntry } from "./inventoryUtils.js";
+import InventoryEntry from "./utils/inventoryEntry.js";
+
+export interface IInventory {
+  capacity: number;
+  entries: InventoryEntry[];
+}
 
 export default class Inventory implements IInventory {
   private _capacity: number = 10;
@@ -51,7 +56,7 @@ export default class Inventory implements IInventory {
     );
   }
 
-  findItem(query: EntryQuery): InventoryEntry | undefined {
+  findItem(query: { key?: string; value: string }): InventoryEntry | undefined {
     if (!query.key) query.key = "name";
 
     return this.entries.find(
@@ -60,7 +65,7 @@ export default class Inventory implements IInventory {
     );
   }
 
-  findItems(query: EntryQuery): InventoryEntry[] {
+  findItems(query: { key?: string; value: string }): InventoryEntry[] {
     if (!query.key) query.key = "name";
 
     return this.entries.filter(

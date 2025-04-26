@@ -1,11 +1,9 @@
-import { InventoryEntry } from "../Inventory/inventoryUtils.js";
+import InventoryEntry from "../inventory/utils/inventoryEntry.js";
 import { randomUUID } from "node:crypto";
-import {
-  ItemEventContext,
-  ItemEventResult,
-  ItemUsageContext,
-  ItemUsageResult,
-} from "./itemUtils.js";
+import ItemUsageContext from "./utils/itemUsageContext.js";
+import ItemUsageResult from "./utils/itemUsageResult.js";
+import ItemEventContext from "./utils/itemEventContext.js";
+import ItemEventResult from "./utils/itemEventResult.js";
 
 export default abstract class Item {
   id: string = randomUUID();

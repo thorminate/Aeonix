@@ -1,32 +1,20 @@
-import Saveable from "../../Core/Saveable.js";
+import Saveable from "../../core/Saveable.js";
 import deepInstantiate from "../../../utils/deepInstantiate.js";
 import { APIEmbed, EmbedBuilder, User } from "discord.js";
-import { Document, Model, model, Schema } from "mongoose";
-import Stats from "../Status/status.js";
-import Inventory from "../Inventory/inventory.js";
-import calculateXpRequirement from "../Status/utils/calculateXpRequirement.js";
+import { Document, Model } from "mongoose";
+import Stats from "../status/status.js";
+import Inventory from "../inventory/inventory.js";
+import calculateXpRequirement from "../status/utils/calculateXpRequirement.js";
 import aeonix from "../../../aeonix.js";
+import playerModel from "./utils/playerModel.js";
 
-interface IPlayer extends Document {
+export interface IPlayer extends Document {
   _id: string;
   name: string;
   displayName: string;
   _status: Stats;
   _inventory: Inventory;
 }
-
-const PlayerSchema = new Schema<IPlayer>({
-  _id: { type: String, required: true },
-  name: { type: String, required: true, unique: true },
-  displayName: { type: String, required: true },
-  _status: {
-    type: Object,
-    default: { level: 1, xp: 0, strength: 0, will: 0, cognition: 0 },
-  },
-  _inventory: { type: Object, default: { capacity: 0, entries: [] } },
-});
-
-const PlayerModel = model<IPlayer>("Player", PlayerSchema);
 
 export default class Player extends Saveable<IPlayer> {
   _id: string;
@@ -118,11 +106,11 @@ export default class Player extends Saveable<IPlayer> {
   }
 
   protected getModel(): Model<IPlayer> {
-    return PlayerModel;
+    return playerModel;
   }
 
   static getModel(): Model<IPlayer> {
-    return PlayerModel;
+    return playerModel;
   }
 
   protected getClassMap(): Record<string, any> {

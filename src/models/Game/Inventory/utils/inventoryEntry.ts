@@ -1,7 +1,7 @@
-import Item, { TemplateItem } from "../Item/item.js";
-import deepInstantiate from "../../../utils/deepInstantiate.js";
-import { randomUUID } from "node:crypto";
-import log from "../../../utils/log.js";
+import { randomUUID } from "crypto";
+import Item, { TemplateItem } from "../../item/item.js";
+import deepInstantiate from "../../../../utils/deepInstantiate.js";
+import log from "../../../../utils/log.js";
 
 export interface IInventoryEntry {
   name: string;
@@ -12,17 +12,7 @@ export interface IInventoryEntry {
   data: object;
 }
 
-export interface EntryQuery {
-  key?: string;
-  value: string;
-}
-
-export interface IInventory {
-  capacity: number;
-  entries: InventoryEntry[];
-}
-
-export class InventoryEntry implements IInventoryEntry {
+export default class InventoryEntry implements IInventoryEntry {
   name: string;
   id: string;
   quantity: number;
@@ -49,7 +39,7 @@ export class InventoryEntry implements IInventoryEntry {
   async toItem(): Promise<Item | undefined> {
     if (!this.type) return undefined;
 
-    const modulePath = `../Item/content/${this.type}.js`;
+    const modulePath = `../../Item/content/${this.type}.js`;
     try {
       const module = await import(modulePath);
 
