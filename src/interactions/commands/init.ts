@@ -1,7 +1,6 @@
 import {
   ButtonBuilder,
   ButtonStyle,
-  CommandInteraction,
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";

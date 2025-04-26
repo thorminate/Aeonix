@@ -46,7 +46,7 @@ export default new Modal({
       return;
     }
 
-    const playerRole = process.env.PLAYER_ROLE;
+    const playerRole = process.env["PLAYER_ROLE"];
 
     if (!playerRole) {
       log({

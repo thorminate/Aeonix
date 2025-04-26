@@ -95,6 +95,25 @@ config();
 export class Aeonix extends Client {
   rl: readline.Interface;
 
+  async exit(code: number = 0) {
+    log({
+      header: "Shutting down",
+      processName: "Process",
+      type: "Warn",
+      doNotPrompt: true,
+    });
+    try {
+      if (this.user) {
+        this.user.setPresence({ status: "invisible" });
+      }
+      await this.destroy();
+      process.exit(code);
+    } catch (error) {
+      console.error("Error during shutdown:", error);
+      process.exit(1); // Exit with error code
+    }
+  }
+
   constructor() {
     // Initialise variables
 
@@ -388,7 +407,7 @@ export class Aeonix extends Client {
               "'help' for help",
               "'log <header> [options]' options are --payload and --folder",
               "'clear' to clear the console",
-              "'recompile" + " to recompile the bot's typescript files",
+              "'tsc' to recompile the bot's typescript files",
               "'info' to get information about the bot",
             ],
             type: "Info",
@@ -404,22 +423,7 @@ export class Aeonix extends Client {
           process.stdout.write("\x1B[2J\x1B[0f");
           break;
         case "exit": // Exit aeonix.
-          log({
-            header: "Shutting down",
-            processName: "Process",
-            type: "Warn",
-            doNotPrompt: true,
-          });
-          try {
-            if (this.user) {
-              this.user.setPresence({ status: "invisible" });
-            }
-            await this.destroy();
-            process.exit(0);
-          } catch (error) {
-            console.error("Error during shutdown:", error);
-            process.exit(1); // Exit with error code
-          }
+          await this.exit();
           break;
 
         case "log": // Log the inputs
@@ -500,7 +504,7 @@ export class Aeonix extends Client {
           });
           break;
 
-        case "recompile":
+        case "tsc":
           log({
             header: "Recompiling",
             processName: "CLI",
@@ -566,8 +570,9 @@ export class Aeonix extends Client {
     });
     this.rl.prompt();
 
-    const mdbToken = process.env.MONGODB_URI;
-    const dscToken = process.env.DISCORD_TOKEN;
+    const mdbToken = process.env["MONGODB_URI"];
+    const dscToken = process.env["DISCORD_TOKEN"];
+
     (async () => {
       try {
         log({

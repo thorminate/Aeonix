@@ -3,7 +3,6 @@ import {
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
-  CommandInteraction,
   ComponentType,
   Message,
   MessageFlags,

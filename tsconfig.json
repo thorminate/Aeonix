@@ -6,6 +6,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
+    "alwaysStrict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
@@ -19,8 +20,11 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "useUnknownInCatchVariables": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "allowUnusedLabels": false
   },
+  "compileOnSave": true,
   "exclude": ["node_modules/", "dist/"],
   "include": ["src/"]
 }
