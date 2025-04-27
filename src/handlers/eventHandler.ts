@@ -2,7 +2,7 @@ import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
 import url from "url";
 import log from "../utils/log.js";
-import Event, { EventParams } from "../models/core/Event.js";
+import Event, { EventParams } from "../models/core/event.js";
 import { Aeonix } from "../aeonix.js";
 
 export default (aeonix: Aeonix) => {
@@ -40,8 +40,8 @@ export default (aeonix: Aeonix) => {
 
           await eventModule.default
             .callback(new EventParams(aeonix, arg))
-            .catch((err: any) => {
-              eventModule.default.onError(err).catch((e: any) =>
+            .catch((e: unknown) => {
+              eventModule.default.onError(e).catch((e: unknown) =>
                 log({
                   header: `Error in event ${eventName}`,
                   processName: "EventHandler",

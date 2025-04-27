@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import log from "../../utils/log.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
-import Event, { EventParams } from "../../models/core/Event.js";
+import Event, { EventParams } from "../../models/core/event.js";
 
 // turn on word wrap to see the full message
 
@@ -48,7 +48,7 @@ export default new Event({
       return;
     }
 
-    await onboardingChannel.bulkDelete(100).catch((e) => {
+    await onboardingChannel.bulkDelete(100).catch((e: unknown) => {
       if (!(e instanceof DiscordAPIError && !(e.code === 50034))) {
         // 50034 is cannot bulk delete messages older than 14 days.
         throw e;

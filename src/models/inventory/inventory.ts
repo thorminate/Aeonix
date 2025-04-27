@@ -1,4 +1,4 @@
-import deepInstantiate from "../../../utils/deepInstantiate.js";
+import deepInstantiate from "../../utils/deepInstantiate.js";
 import InventoryEntry from "./utils/inventoryEntry.js";
 
 export interface IInventory {

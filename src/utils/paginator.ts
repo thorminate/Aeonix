@@ -15,7 +15,7 @@ import {
 } from "discord.js";
 import deepInstantiate from "./deepInstantiate.js";
 import log from "./log.js";
-import { CmdInteraction } from "../interactions/command.js";
+import { CommandContext } from "../interactions/command.js";
 
 type Page = ActionRowBuilder<ButtonBuilder>;
 type GetterOrLiteral = string | ((currentPage: Page) => string);
@@ -295,7 +295,7 @@ function createCollectors(
           collector.stop();
           break;
       }
-    } catch (e: any) {
+    } catch (e) {
       log({
         header: "Error in paginator collector",
         processName: "Paginator",
@@ -330,7 +330,7 @@ function splitIntoPages(buttons: ButtonBuilder[]): Page[] {
  * @returns {Message}
  */
 export default async (
-  context: CmdInteraction,
+  context: CommandContext,
   buttons: ButtonBuilder[],
   getContent?: GetterOrLiteral
 ): Promise<Message | undefined> => {
@@ -374,7 +374,7 @@ export default async (
       buttons,
       getContent
     );
-  } catch (e: any) {
+  } catch (e) {
     log({
       header: "Error in setting up paginator",
       processName: "Paginator",
@@ -423,7 +423,7 @@ export async function paginateFromButton(
       buttons,
       getContent
     );
-  } catch (e: any) {
+  } catch (e) {
     log({
       header: "Error in setting up paginator",
       processName: "Paginator",

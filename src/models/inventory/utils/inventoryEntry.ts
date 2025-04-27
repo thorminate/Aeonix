@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import Item, { TemplateItem } from "../../item/item.js";
-import deepInstantiate from "../../../../utils/deepInstantiate.js";
-import log from "../../../../utils/log.js";
+import deepInstantiate from "../../../utils/deepInstantiate.js";
+import log from "../../../utils/log.js";
 
 export interface IInventoryEntry {
   name: string;
@@ -51,7 +51,7 @@ export default class InventoryEntry implements IInventoryEntry {
         weight: this.weight,
         data: this.data,
       });
-    } catch (e: unknown) {
+    } catch (e) {
       log({
         header: "Error instantiating item",
         processName: "InventoryEntry",

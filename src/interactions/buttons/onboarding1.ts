@@ -1,7 +1,6 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
   MessageFlags,
   ModalBuilder,
@@ -9,14 +8,17 @@ import {
   TextInputStyle,
 } from "discord.js";
 import Button from "../button.js";
-import Player from "../../models/game/player/player.js";
+import Player from "../../models/player/player.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
 import log from "../../utils/log.js";
 
 export default new Button({
   customId: "onboarding1",
+  ephemeral: true,
+  acknowledge: false,
+  passPlayer: false,
 
-  callback: async (buttonContext: ButtonInteraction) => {
+  callback: async (buttonContext) => {
     if (await Player.find(buttonContext.user.username)) {
       await buttonContext.reply({
         content:
@@ -31,6 +33,7 @@ export default new Button({
       });
       return;
     }
+
     await buttonContext.showModal(
       new ModalBuilder()
         .setTitle("Step 1/1 - Display Name")

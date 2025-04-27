@@ -1,6 +1,6 @@
-import Event, { EventParams } from "../../models/core/Event.js";
-import BackpackItem from "../../models/game/item/content/BackpackItem.js";
-import Player from "../../models/game/player/player.js";
+import Event, { EventParams } from "../../models/core/event.js";
+import BackpackItem from "../../models/item/content/BackpackItem.js";
+import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 
 export default new Event({

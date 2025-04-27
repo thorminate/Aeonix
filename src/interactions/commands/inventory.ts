@@ -8,10 +8,10 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Command, { CmdInteraction } from "../command.js";
-import Player from "../../models/game/player/player.js";
+import Command from "../command.js";
+import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
-import InventoryEntry from "../../models/game/inventory/utils/inventoryEntry.js";
+import InventoryEntry from "../../models/inventory/utils/inventoryEntry.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
 import { randomUUID } from "node:crypto";
@@ -201,7 +201,7 @@ function createCollectors(
           });
           break;
       }
-    } catch (e: any) {
+    } catch (e) {
       log({
         header: "Error in inventory command component handling",
         processName: "InventoryCommand",
@@ -217,12 +217,10 @@ export default new Command({
     .setName("inventory")
     .setDescription("Shows your inventory"),
   ephemeral: true,
+  acknowledge: true,
   passPlayer: true,
 
-  callback: async (
-    context: CmdInteraction,
-    player: Player | undefined
-  ): Promise<void> => {
+  callback: async (context, player): Promise<void> => {
     if (!player) {
       log({
         header: "Player could not be passed to inventory command",

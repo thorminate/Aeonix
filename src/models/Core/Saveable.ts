@@ -61,7 +61,7 @@ export default abstract class Saveable<T extends Document> {
   ): Promise<void> {
     const model = this.getModel();
     await model.findOneAndDelete({
-      [this.prototype.getIdentifier().key[0]]: identifier,
+      [this.prototype.getIdentifier().key]: identifier,
     } as Record<string, any>);
   }
 }

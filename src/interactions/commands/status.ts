@@ -1,16 +1,17 @@
 // shows your status
 import { HTTPError, SlashCommandBuilder } from "discord.js";
-import Player from "../../models/game/player/player.js";
 import log from "../../utils/log.js";
-import Command, { CmdInteraction } from "../command.js";
+import Command from "../command.js";
 
 export default new Command({
   data: new SlashCommandBuilder()
     .setName("status")
     .setDescription("Shows your personal menu"),
   passPlayer: true,
+  acknowledge: true,
+  ephemeral: true,
 
-  callback: async (context: CmdInteraction, player: Player | undefined) => {
+  callback: async (context, player) => {
     if (!player) {
       log({
         header: "Player could not be passed to status command",

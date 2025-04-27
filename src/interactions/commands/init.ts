@@ -4,8 +4,8 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Player from "../../models/game/player/player.js";
-import Command, { CmdInteraction } from "../command.js";
+import Player from "../../models/player/player.js";
+import Command from "../command.js";
 import {
   welcomeImage,
   welcomeMessage,
@@ -17,9 +17,11 @@ export default new Command({
   data: new SlashCommandBuilder()
     .setName("init")
     .setDescription("Initializes your persona"),
+  passPlayer: false,
+  acknowledge: true,
 
-  callback: async (context: CmdInteraction) => {
-    if (await Player.find(context.user.username)) {
+  callback: async (commandContext) => {
+    if (await Player.find(commandContext.user.username)) {
       const buttons = buttonWrapper(
         new ButtonBuilder()
           .setCustomId("deletePlayer")
@@ -27,7 +29,7 @@ export default new Command({
           .setStyle(ButtonStyle.Danger)
       );
 
-      await context.editReply({
+      await commandContext.editReply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",
         components: buttons,
@@ -43,11 +45,11 @@ export default new Command({
         .setEmoji("👋")
     );
 
-    await context.editReply({
+    await commandContext.editReply({
       files: [welcomeImage],
     });
 
-    await context.followUp({
+    await commandContext.followUp({
       content: welcomeMessage,
       components,
       flags: MessageFlags.Ephemeral,

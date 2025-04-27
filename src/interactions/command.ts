@@ -1,39 +1,51 @@
 import { CacheType, CommandInteraction, SlashCommandBuilder } from "discord.js";
-import Player from "../models/game/player/player.js";
+import Player from "../models/player/player.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
 import log from "../utils/log.js";
 
-export type CmdInteraction = Omit<
+export type CommandContext = Omit<
   CommandInteraction<CacheType>,
-  "reply" | "deferReply"
+  "reply" | "deferReply" | "showModal"
 >;
-export interface ICommand {
+
+type CommandCallback<A extends boolean, P extends boolean> = A extends true
+  ? P extends true
+    ? (context: CommandContext, player: Player) => Promise<void>
+    : (context: CommandContext) => Promise<void>
+  : P extends true
+  ? (context: CommandInteraction<CacheType>, player: Player) => Promise<void>
+  : (context: CommandInteraction<CacheType>) => Promise<void>;
+
+export interface ICommand<A extends boolean, P extends boolean> {
   data: SlashCommandBuilder;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
+  acknowledge: A;
   deleted?: boolean;
-  passPlayer?: boolean;
+  passPlayer: P;
   ephemeral?: boolean;
-  callback: (context: CmdInteraction, player?: Player) => Promise<void>;
+  callback: CommandCallback<A, P>;
   onError: (error: Error) => void;
 }
 
-export default class Command implements ICommand {
+export default class Command<A extends boolean, P extends boolean>
+  implements ICommand<A, P>
+{
   data: SlashCommandBuilder = new SlashCommandBuilder();
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
+  acknowledge: A = true as A;
   deleted?: boolean = false;
-  passPlayer?: boolean = false;
+  passPlayer: P = false as P;
   ephemeral?: boolean = true;
-  callback: (context: CmdInteraction, player?: Player) => Promise<void> =
-    async () => {
-      log({
-        header: "Command callback not implemented",
-        processName: "CommandHandler",
-        type: "Error",
-      });
-    };
-  onError: (error: unknown) => void = (e) => {
+  callback: CommandCallback<A, P> = async () =>
+    log({
+      header: "Command callback not implemented",
+      processName: "CommandHandler",
+      type: "Error",
+    });
+
+  onError: (e: unknown) => void = (e) => {
     log({
       header: "Command Error (error handler not implemented!)",
       processName: "CommandHandler",
@@ -42,7 +54,7 @@ export default class Command implements ICommand {
     });
   };
 
-  constructor(commandObject: ICommand) {
+  constructor(commandObject: ICommand<A, P>) {
     return deepInstantiate(this, commandObject, { data: SlashCommandBuilder });
   }
 }

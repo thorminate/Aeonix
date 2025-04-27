@@ -1,16 +1,14 @@
-import {
-  ButtonBuilder,
-  ButtonStyle,
-  GuildMemberRoleManager,
-  MessageFlags,
-} from "discord.js";
-import Player from "../../models/game/player/player.js";
+import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
+import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import Modal from "../modal.js";
 import buttonWrapper from "../../utils/buttonWrapper.js";
 
 export default new Modal({
   customId: "onboardingDisplayName",
+  ephemeral: true,
+  passPlayer: false,
+  acknowledge: true,
 
   callback: async (modalContext) => {
     const displayName = modalContext.fields.getTextInputValue("display-name");
@@ -23,11 +21,10 @@ export default new Modal({
           .setStyle(ButtonStyle.Danger)
       );
 
-      await modalContext.reply({
+      await modalContext.editReply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",
         components: buttons,
-        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -46,7 +43,7 @@ export default new Modal({
       return;
     }
 
-    const playerRole = process.env["PLAYER_ROLE"];
+    const playerRole = process.env.PLAYER_ROLE;
 
     if (!playerRole) {
       log({
@@ -59,9 +56,8 @@ export default new Modal({
 
     await (modalContext.member.roles as GuildMemberRoleManager).add(playerRole);
 
-    await modalContext.reply({
+    await modalContext.editReply({
       content: "1/1 - Your persona has been created.",
-      flags: MessageFlags.Ephemeral,
     });
   },
 

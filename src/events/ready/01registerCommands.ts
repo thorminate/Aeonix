@@ -1,6 +1,6 @@
 import log from "../../utils/log.js";
 import Command from "../../interactions/command.js";
-import Event, { EventParams } from "../../models/core/Event.js";
+import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import { Aeonix } from "../../aeonix.js";
@@ -8,7 +8,7 @@ import { ApplicationCommand } from "discord.js";
 import getAllFiles from "../../utils/getAllFiles.js";
 
 export async function findLocalCommands() {
-  let localCommands: Command[] = [];
+  let localCommands: Command<boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -19,7 +19,9 @@ export async function findLocalCommands() {
   for (const commandFile of commandFiles) {
     const filePath = path.resolve(commandFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const commandObject: Command = (await import(fileUrl.toString())).default;
+    const commandObject: Command<boolean, boolean> = (
+      await import(fileUrl.toString())
+    ).default;
 
     localCommands.push(commandObject);
   }
@@ -84,7 +86,7 @@ function areOptionsDifferent(existingOptions: any[], localOptions: any[]) {
 
 function areCommandsDifferent(
   existingCommand: ApplicationCommand,
-  localCommand: Command
+  localCommand: Command<boolean, boolean>
 ) {
   if (
     existingCommand.description !== localCommand.data.description ||
@@ -103,7 +105,8 @@ function areCommandsDifferent(
 
 export default new Event({
   callback: async (event: EventParams) => {
-    const localCommands: Command[] = await findLocalCommands();
+    const localCommands: Command<boolean, boolean>[] =
+      await findLocalCommands();
     const applicationCommands = await getApplicationCommands(
       event.aeonix,
       "1267928656877977670"
