@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export default function deepInstantiate<T extends object>(
   target: T,
   source: any,
-  classMap: Record<string, any> = {}
+  classMap: Record<string, new (...args: any[]) => any> = {}
 ): T {
   for (const key of Object.keys(source)) {
     const sourceValue = source[key];
@@ -11,10 +12,11 @@ export default function deepInstantiate<T extends object>(
 
     if (Array.isArray(sourceValue) && classExistsInMap) {
       // If it's an array and a class is mapped, instantiate each element
-      (target as Record<string, any>)[key] = sourceValue.map((item: any) =>
-        typeof item === "object" && item
-          ? deepInstantiate(new ClassFromMap(), item, classMap)
-          : item
+      (target as Record<string, unknown>)[key] = sourceValue.map(
+        (item: unknown) =>
+          typeof item === "object" && item
+            ? deepInstantiate(new ClassFromMap!(), item, classMap)
+            : item
       );
     } else if (
       typeof sourceValue === "object" &&
@@ -23,7 +25,7 @@ export default function deepInstantiate<T extends object>(
     ) {
       if (classExistsInMap) {
         (target as Record<string, any>)[key] = deepInstantiate(
-          new ClassFromMap(),
+          new ClassFromMap!(),
           sourceValue,
           classMap
         );

@@ -85,7 +85,7 @@ export default new Event({
       type: "Info",
     });
   },
-  onError: async (e: any) => {
+  onError: async (e) => {
     log({
       header: "Error sending onboarding message",
       processName: "OnboardingSupervisor",

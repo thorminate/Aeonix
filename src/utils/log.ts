@@ -11,20 +11,23 @@ interface LogOptions {
   header: string;
   processName?: string;
   folder?: string;
-  payload?: any[] | any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any;
   type?: "Fatal" | "Error" | "Warn" | "Info" | "Verbose" | "Debug" | "Silly";
   doNotPrompt?: boolean;
 }
 
 function stripAnsiCodes(str: string) {
   return str.replace(
+    // eslint-disable-next-line no-control-regex
     /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
     ""
   );
 }
 
 export default (options: LogOptions) => {
-  let { folder, payload, header, type, processName } = options;
+  const { header, type, processName, doNotPrompt } = options;
+  let { folder, payload } = options;
 
   if (!header) return;
 
@@ -101,8 +104,8 @@ export default (options: LogOptions) => {
 
   logStream.end();
 
-  if (!options.doNotPrompt) {
-    import("../aeonix.js").then((module: any) => {
+  if (!doNotPrompt) {
+    import("../aeonix.js").then((module: { default: Aeonix }) => {
       const aeonix: Aeonix = module.default;
       if (aeonix) aeonix.rl.prompt();
     });

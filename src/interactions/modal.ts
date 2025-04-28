@@ -28,7 +28,7 @@ export interface IModal<A extends boolean, P extends boolean> {
   deleted?: boolean;
   passPlayer: P;
   callback: ButtonCallback<A, P>;
-  onError: (error: Error) => Promise<void>;
+  onError: (e: unknown) => void;
 }
 
 export default class Modal<A extends boolean, P extends boolean>
@@ -48,7 +48,7 @@ export default class Modal<A extends boolean, P extends boolean>
       type: "Error",
     });
   };
-  onError: (error: unknown) => Promise<void> = async (e) => {
+  onError: (e: unknown) => void = (e) => {
     log({
       header: "Modal Error (error handler not implemented!)",
       processName: "ModalHandler",

@@ -25,12 +25,12 @@ export default new Command({
     });
   },
 
-  onError(error: Error): void {
-    if (error instanceof HTTPError && error.status === 503) {
+  onError(e) {
+    if (e instanceof HTTPError && e.status === 503) {
       log({
         header: "Status Error, the API did not respond in time.",
         processName: "StatusCommand",
-        payload: error,
+        payload: e,
         type: "Error",
       });
       return;
@@ -38,7 +38,7 @@ export default new Command({
     log({
       header: "Status Error",
       processName: "StatusCommand",
-      payload: error,
+      payload: e,
       type: "Error",
     });
   },

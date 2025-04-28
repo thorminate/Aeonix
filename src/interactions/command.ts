@@ -25,7 +25,7 @@ export interface ICommand<A extends boolean, P extends boolean> {
   passPlayer: P;
   ephemeral?: boolean;
   callback: CommandCallback<A, P>;
-  onError: (error: Error) => void;
+  onError: (e: unknown) => void;
 }
 
 export default class Command<A extends boolean, P extends boolean>

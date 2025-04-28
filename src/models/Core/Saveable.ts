@@ -11,13 +11,13 @@ import deepInstantiate from "../../utils/deepInstantiate.js";
 
 // Define a specialized interface for the constructor
 export interface SaveableConstructor<T extends Document, TInstance> {
-  new (...args: any[]): TInstance;
+  new (...args: never[]): TInstance;
   getModel(): Model<T>;
 }
 
 export default abstract class Saveable<T extends Document> {
   protected abstract getModel(): Model<T>;
-  protected abstract getClassMap(): Record<string, any>;
+  protected abstract getClassMap(): Record<string, object>;
   protected abstract getIdentifier(): {
     key: string;
     value: string;
@@ -27,7 +27,7 @@ export default abstract class Saveable<T extends Document> {
     const { key, value } = this.getIdentifier();
 
     await this.getModel().findOneAndUpdate(
-      { [key]: value } as Record<string, any>,
+      { [key]: value } as Record<string, string>,
       this,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
@@ -44,7 +44,7 @@ export default abstract class Saveable<T extends Document> {
     const query = {
       [this.prototype.getIdentifier().key]: identifier,
     };
-    let doc = await model.findOne(query as Record<string, any>);
+    const doc = await model.findOne(query as Record<string, string>);
     if (!doc) return undefined;
 
     const instance = deepInstantiate(
@@ -55,13 +55,13 @@ export default abstract class Saveable<T extends Document> {
     return instance;
   }
 
-  static async delete<T extends Document>(
-    this: SaveableConstructor<T, any>,
-    identifier: any
+  static async delete<T extends Document, TInstance extends Saveable<T>>(
+    this: SaveableConstructor<T, TInstance>,
+    identifier: string
   ): Promise<void> {
     const model = this.getModel();
     await model.findOneAndDelete({
       [this.prototype.getIdentifier().key]: identifier,
-    } as Record<string, any>);
+    } as Record<string, string>);
   }
 }

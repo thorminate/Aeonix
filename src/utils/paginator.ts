@@ -109,7 +109,7 @@ function createCollectors(
       collector.resetTimer();
 
       switch (buttonContext.customId) {
-        case "fp":
+        case "fp": {
           if (currentPage <= 0) {
             buttonContext.reply({
               content:
@@ -121,7 +121,8 @@ function createCollectors(
           currentPage = 0;
           paginate(buttonContext, pages, currentPage, getContent);
           break;
-        case "pr":
+        }
+        case "pr": {
           if (currentPage <= 0) {
             buttonContext.reply({
               content:
@@ -133,7 +134,8 @@ function createCollectors(
           currentPage--;
           paginate(buttonContext, pages, currentPage, getContent);
           break;
-        case "sh":
+        }
+        case "sh": {
           const modal = new ModalBuilder()
             .setTitle("Search")
             .setCustomId("sh")
@@ -202,7 +204,8 @@ function createCollectors(
             });
           }
           break;
-        case "nx":
+        }
+        case "nx": {
           if (currentPage >= pages.length - 1) {
             await buttonContext.reply({
               content:
@@ -214,7 +217,8 @@ function createCollectors(
           currentPage++;
           await paginate(buttonContext, pages, currentPage, getContent);
           break;
-        case "lp":
+        }
+        case "lp": {
           if (currentPage >= pages.length - 1) {
             await buttonContext.reply({
               content:
@@ -226,10 +230,11 @@ function createCollectors(
           currentPage = pages.length - 1;
           await paginate(buttonContext, pages, currentPage, getContent);
           break;
+        }
 
         // Search-only buttons
 
-        case "sf":
+        case "sf": {
           if (currentPage <= 0) {
             buttonContext.reply({
               content:
@@ -241,8 +246,9 @@ function createCollectors(
           currentPage = 0;
           paginate(buttonContext, pages, currentPage, getContent, true);
           break;
+        }
 
-        case "sp":
+        case "sp": {
           if (currentPage <= 0) {
             buttonContext.reply({
               content:
@@ -254,8 +260,9 @@ function createCollectors(
           currentPage--;
           paginate(buttonContext, pages, currentPage, getContent, true);
           break;
+        }
 
-        case "sx":
+        case "sx": {
           currentPage = 0;
           await buttonContext.update({
             components: [
@@ -264,8 +271,9 @@ function createCollectors(
             ],
           });
           break;
+        }
 
-        case "sn":
+        case "sn": {
           if (currentPage >= pages.length - 1) {
             await buttonContext.reply({
               content:
@@ -277,8 +285,9 @@ function createCollectors(
           currentPage++;
           await paginate(buttonContext, pages, currentPage, getContent, true);
           break;
+        }
 
-        case "sl":
+        case "sl": {
           if (currentPage >= pages.length - 1) {
             await buttonContext.reply({
               content:
@@ -290,10 +299,12 @@ function createCollectors(
           currentPage = pages.length - 1;
           await paginate(buttonContext, pages, currentPage, getContent, true);
           break;
+        }
 
-        default:
+        default: {
           collector.stop();
           break;
+        }
       }
     } catch (e) {
       log({
@@ -313,7 +324,7 @@ function createCollectors(
 }
 
 function splitIntoPages(buttons: ButtonBuilder[]): Page[] {
-  let chunks: Page[] = [];
+  const chunks: Page[] = [];
   for (let i = 0; i < buttons.length; i += 4) {
     chunks.push(
       new ActionRowBuilder<ButtonBuilder>().setComponents(

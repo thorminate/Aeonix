@@ -113,7 +113,7 @@ export default class Player extends Saveable<IPlayer> {
     return playerModel;
   }
 
-  protected getClassMap(): Record<string, any> {
+  protected getClassMap(): Record<string, object> {
     return {
       _inventory: Inventory,
       _status: Stats,

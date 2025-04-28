@@ -31,11 +31,11 @@ export default new Button({
     });
   },
 
-  onError(error) {
+  onError(e) {
     log({
       header: "Button Error",
       processName: "DeletePlayerButton",
-      payload: error,
+      payload: e,
       type: "Error",
     });
   },

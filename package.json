@@ -12,11 +12,11 @@
     "start": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/aeonix.js"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.39.1",
+    "@dotenvx/dotenvx": "^1.41.0",
     "ansis": "^3.17.0",
-    "discord.js": "^14.18.0",
-    "mongoose": "^8.12.1",
-    "typescript": "^5.8.2"
+    "discord.js": "^14.19.1",
+    "mongoose": "^8.14.0",
+    "typescript": "^5.8.3"
   },
   "repository": {
     "type": "git",
@@ -24,5 +24,11 @@
   },
   "bugs": {
     "url": "https://github.com/thorminate/Aeonix/issues"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "eslint": "^9.25.1",
+    "globals": "^16.0.0",
+    "typescript-eslint": "^8.31.1"
   }
 }

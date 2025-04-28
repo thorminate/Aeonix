@@ -2,7 +2,7 @@
 import { ActionRowBuilder, ButtonBuilder } from "discord.js"; // Import the discord.js library.
 
 export default (...buttons: ButtonBuilder[]) => {
-  let chunks: ActionRowBuilder<ButtonBuilder>[] = [];
+  const chunks: ActionRowBuilder<ButtonBuilder>[] = [];
   for (let i = 0; i < buttons.length; i += 4) {
     chunks.push(
       new ActionRowBuilder<ButtonBuilder>().setComponents(

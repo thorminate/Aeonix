@@ -12,12 +12,13 @@ export default abstract class Item {
   abstract description: string;
   abstract weight: number;
   abstract value: number;
-  abstract data: any;
+  abstract data: object;
   abstract useType: string;
 
   abstract createData(): object;
   abstract use(context: ItemUsageContext): Promise<ItemUsageResult>;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDrop(context: ItemEventContext): ItemEventResult {
     return new ItemEventResult("", true);
   }
@@ -43,7 +44,7 @@ export class TemplateItem extends Item {
   description: string = "";
   weight: number = 0;
   value: number = 0;
-  data: any = {};
+  data: object = {};
   useType: string = "Use";
 
   createData() {
@@ -51,7 +52,7 @@ export class TemplateItem extends Item {
     return {};
   }
 
-  override async use(context: ItemUsageContext): Promise<ItemUsageResult> {
+  override async use(): Promise<ItemUsageResult> {
     throw new Error("Not implemented");
     return new ItemUsageResult("", false);
   }

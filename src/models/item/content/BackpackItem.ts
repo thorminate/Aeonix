@@ -1,6 +1,5 @@
 import InventoryEntry from "../../inventory/utils/inventoryEntry.js";
 import Item from "../item.js";
-import ItemEventContext from "../utils/itemEventContext.js";
 import ItemEventResult from "../utils/itemEventResult.js";
 import ItemUsageContext from "../utils/itemUsageContext.js";
 import ItemUsageResult from "../utils/itemUsageResult.js";
@@ -29,7 +28,7 @@ export default class BackpackItem extends Item {
     };
   }
 
-  override onDrop(context: ItemEventContext): ItemEventResult {
+  override onDrop(): ItemEventResult {
     return new ItemEventResult("Your backpack took damage!", true);
   }
 

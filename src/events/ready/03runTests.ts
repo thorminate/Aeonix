@@ -81,7 +81,7 @@ export default new Event({
       type: test ? "Info" : "Error",
     });
   },
-  onError: async (e: any) => {
+  onError: async (e) => {
     log({
       header: "Error running tests",
       processName: "TestRunner",

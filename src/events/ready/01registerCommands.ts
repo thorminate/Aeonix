@@ -8,7 +8,7 @@ import { ApplicationCommand } from "discord.js";
 import getAllFiles from "../../utils/getAllFiles.js";
 
 export async function findLocalCommands() {
-  let localCommands: Command<boolean, boolean>[] = [];
+  const localCommands: Command<boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -35,10 +35,11 @@ async function getApplicationCommands(aeonix: Aeonix, guildId: string) {
   return applicationCommands; // return commands
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function areChoicesDifferent(existingChoices: any[], localChoices: any[]) {
   for (const localChoice of localChoices) {
     const existingChoice = existingChoices?.find(
-      (choice: { name: any }) => choice.name === localChoice.name
+      (choice: { name: string }) => choice.name === localChoice.name
     );
 
     if (!existingChoice) {
@@ -52,12 +53,14 @@ function areChoicesDifferent(existingChoices: any[], localChoices: any[]) {
   return false;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function areOptionsDifferent(existingOptions: any[], localOptions: any[]) {
   // Define the areOptionsDifferent function.
   for (const localOption of localOptions) {
     // Loop through the localOptions array.
     const existingOption = existingOptions?.find(
       // Find the option in the existingOptions array.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (option: any) => option.name === localOption.name // If the option name matches the localOption name, return true.
     );
 
@@ -120,7 +123,7 @@ export default new Event({
       const { name, description, options } = localCommand.data.toJSON();
 
       const existingCommand = applicationCommands.cache.find(
-        (cmd: any) => cmd.name === name
+        (cmd: ApplicationCommand) => cmd.name === name
       );
 
       if (existingCommand) {

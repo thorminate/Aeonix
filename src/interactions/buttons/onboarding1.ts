@@ -53,11 +53,11 @@ export default new Button({
     );
   },
 
-  onError(error) {
+  onError(e) {
     log({
       header: "Button Error",
       processName: "Onboarding1Button",
-      payload: error,
+      payload: e,
       type: "Error",
     });
   },

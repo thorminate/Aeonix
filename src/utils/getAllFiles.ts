@@ -5,7 +5,7 @@ import fs from "fs"; // Get the file system library.
 
 export default (directory: string, foldersOnly = false): string[] => {
   //export the function
-  let fileNames = []; // define fileNames as an array
+  const fileNames = []; // define fileNames as an array
 
   const files = fs.readdirSync(directory, { withFileTypes: true }); // get all files/folders in directory
 

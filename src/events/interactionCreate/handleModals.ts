@@ -13,7 +13,7 @@ import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
 
 async function findLocalModals() {
-  let localCommands: Modal<boolean, boolean>[] = [];
+  const localCommands: Modal<boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -133,7 +133,7 @@ export default new Event({
       }
     });
   },
-  onError: async (e: any) => {
+  onError: async (e) => {
     log({
       header: "A modal could not be handled correctly",
       processName: "ModalHandler",

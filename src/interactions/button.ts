@@ -28,7 +28,7 @@ export interface IButton<A extends boolean, P extends boolean> {
   deleted?: boolean;
   passPlayer: P;
   callback: ButtonCallback<A, P>;
-  onError: (error: Error) => void;
+  onError: (e: unknown) => void;
 }
 
 export default class Button<A extends boolean, P extends boolean>
@@ -58,12 +58,6 @@ export default class Button<A extends boolean, P extends boolean>
   };
 
   constructor(buttonObject: IButton<A, P>) {
-    if (
-      buttonObject.acknowledge !== false &&
-      buttonObject.acknowledge !== true
-    ) {
-      throw new Error("acknowledge must be true or false");
-    }
     return deepInstantiate(this, buttonObject);
   }
 }

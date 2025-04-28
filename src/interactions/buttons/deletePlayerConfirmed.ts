@@ -24,11 +24,11 @@ export default new Button({
     });
   },
 
-  onError(error) {
+  onError(e) {
     log({
       header: "Button Error",
       processName: "DeletePlayerConfirmedButton",
-      payload: error,
+      payload: e,
       type: "Error",
     });
   },

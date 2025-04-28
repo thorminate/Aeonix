@@ -61,11 +61,11 @@ export default new Modal({
     });
   },
 
-  onError: async (error: unknown) => {
+  onError: (e) => {
     log({
       header: "Modal Error",
       processName: "OnboardingDisplayNameModal",
-      payload: error,
+      payload: e,
       type: "Error",
     });
   },

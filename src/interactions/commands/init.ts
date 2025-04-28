@@ -56,11 +56,11 @@ export default new Command({
     });
   },
 
-  onError(error: Error) {
+  onError(e) {
     log({
       header: "Error with init command",
       processName: "InitCommand",
-      payload: error,
+      payload: e,
       type: "Error",
     });
   },

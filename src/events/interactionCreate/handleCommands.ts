@@ -109,7 +109,7 @@ export default new Event({
       }
     });
   },
-  onError: async (e: any) => {
+  onError: async (e) => {
     log({
       header: "A command could not be handled correctly",
       processName: "CommandHandler",

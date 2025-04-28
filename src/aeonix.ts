@@ -412,7 +412,7 @@ export class Aeonix extends Client {
 
       // When a line is typed.
       switch (inputArr[0]?.toLowerCase().trim()) {
-        case "help":
+        case "help": {
           log({
             header: "Help Command",
             processName: "CLI",
@@ -427,8 +427,9 @@ export class Aeonix extends Client {
             type: "Info",
           });
           break;
+        }
 
-        case "clear":
+        case "clear": {
           log({
             header: "Clearing console",
             processName: "CLI",
@@ -436,11 +437,16 @@ export class Aeonix extends Client {
           });
           process.stdout.write("\x1B[2J\x1B[0f");
           break;
-        case "exit": // Exit aeonix.
+        }
+
+        case "exit": {
+          // Exit aeonix.
           await this.exit();
           break;
+        }
 
-        case "log": // Log the inputs
+        case "log": {
+          // Log the inputs
           if (firstOptionIndex === -1) {
             log({
               header: inputArr.slice(1).join(" "),
@@ -449,7 +455,7 @@ export class Aeonix extends Client {
             });
             return;
           }
-          let header: string = inputArr.slice(1, firstOptionIndex).join(" ");
+          const header: string = inputArr.slice(1, firstOptionIndex).join(" ");
 
           const options: string[] = inputArr.slice(firstOptionIndex);
           let payload: string = "";
@@ -517,8 +523,9 @@ export class Aeonix extends Client {
             type,
           });
           break;
+        }
 
-        case "tsc":
+        case "tsc": {
           log({
             header: "Recompiling",
             processName: "CLI",
@@ -532,12 +539,14 @@ export class Aeonix extends Client {
             log({
               header: "Recompilation failed",
               processName: "CLI",
+              payload: e,
               type: "Error",
             });
           }
           break;
+        }
 
-        case "info":
+        case "info": {
           const deps = this.packageJson.dependencies;
           log({
             header: "Info",
@@ -563,11 +572,10 @@ export class Aeonix extends Client {
             type: "Info",
           });
           break;
+        }
 
-        case "": // Do nothing.
-          break;
-
-        default: // Invalid command handling.
+        default: {
+          // Invalid command handling.
           log({
             header: "Invalid command: " + input,
             processName: "CLI",
@@ -575,6 +583,7 @@ export class Aeonix extends Client {
             type: "Warn",
           });
           break;
+        }
       }
 
       this.rl.prompt();

@@ -13,25 +13,25 @@ import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
 
 async function findLocalButtons() {
-  let localCommands: Button<boolean, boolean>[] = [];
+  const localButtons: Button<boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const commandFiles = getAllFiles(
+  const buttonFiles = getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "buttons")
   );
 
-  for (const commandFile of commandFiles) {
-    const filePath = path.resolve(commandFile);
+  for (const buttonFile of buttonFiles) {
+    const filePath = path.resolve(buttonFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const commandObject: Button<boolean, boolean> = (
+    const buttonObject: Button<boolean, boolean> = (
       await import(fileUrl.toString())
     ).default;
 
-    localCommands.push(commandObject);
+    localButtons.push(buttonObject);
   }
 
-  return localCommands;
+  return localButtons;
 }
 
 export default new Event({
@@ -110,18 +110,14 @@ export default new Event({
     let player: Player | undefined;
 
     if (button.passPlayer) {
-      let foundPlayer: Player | undefined = await Player.find(
-        buttonContext.user.username
-      );
+      player = await Player.find(buttonContext.user.username);
 
-      if (!foundPlayer) {
+      if (!player) {
         await buttonContext.editReply({
           content: "You don't exist in the DB, run the /init command.",
         });
         return;
       }
-
-      player = foundPlayer;
     }
     // if all goes well, run the button's callback function.
     await button
@@ -139,7 +135,7 @@ export default new Event({
         }
       });
   },
-  onError: async (e: any) =>
+  onError: async (e) =>
     log({
       header: "A button could not be handled correctly",
       processName: "ButtonHandler",

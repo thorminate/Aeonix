@@ -83,23 +83,25 @@ function createCollectors(
       const useData = context.customId.split(":")[1];
 
       switch (useType) {
-        case "close":
+        case "close": {
           paginateFromButton(context, buttons, "**Inventory:**");
           break;
+        }
 
-        case "drop":
+        case "drop": {
           await context.reply({
             content: "Not implemented yet. (Wait for environments first!)",
             flags: MessageFlags.Ephemeral,
           });
           break;
+        }
 
-        case "use":
+        case "use": {
           const activeEntryIndex = player.inventory.entries.findIndex(
             (e) => e.id === useData
           );
 
-          let activeEntry = player.inventory.entries[activeEntryIndex];
+          const activeEntry = player.inventory.entries[activeEntryIndex];
 
           if (!activeEntry) {
             log({
@@ -153,52 +155,55 @@ function createCollectors(
             ),
           });
           break;
+        }
 
         default:
-          const currentEntry = player.inventory.entries.find(
-            (entry: InventoryEntry) => entry.id === useType
-          );
+          {
+            const currentEntry = player.inventory.entries.find(
+              (entry: InventoryEntry) => entry.id === useType
+            );
 
-          if (!currentEntry) {
-            log({
-              header: "Item not found in inventory",
-              processName: "InventoryCommand",
-              payload: [useType, player.inventory.entries],
-              type: "Error",
+            if (!currentEntry) {
+              log({
+                header: "Item not found in inventory",
+                processName: "InventoryCommand",
+                payload: [useType, player.inventory.entries],
+                type: "Error",
+              });
+              return;
+            }
+
+            const currentItem = await currentEntry.toItem();
+
+            if (!currentItem) {
+              log({
+                header: "Inventory entry could not be converted to item",
+                processName: "InventoryCommand",
+                payload: [useType, player.inventory.entries],
+                type: "Error",
+              });
+              return;
+            }
+
+            await context.update({
+              content: `**${currentEntry.name}**`,
+              components: buttonWrapper(
+                new ButtonBuilder()
+                  .setCustomId("close")
+                  .setLabel("Close")
+                  .setEmoji("✖️")
+                  .setStyle(ButtonStyle.Danger),
+                new ButtonBuilder()
+                  .setCustomId(`use:${currentEntry.id}`)
+                  .setLabel(currentItem.useType)
+                  .setStyle(ButtonStyle.Success),
+                new ButtonBuilder()
+                  .setCustomId(`drop:${currentEntry.id}`)
+                  .setLabel("Drop")
+                  .setStyle(ButtonStyle.Secondary)
+              ),
             });
-            return;
           }
-
-          const currentItem = await currentEntry.toItem();
-
-          if (!currentItem) {
-            log({
-              header: "Inventory entry could not be converted to item",
-              processName: "InventoryCommand",
-              payload: [useType, player.inventory.entries],
-              type: "Error",
-            });
-            return;
-          }
-
-          await context.update({
-            content: `**${currentEntry.name}**`,
-            components: buttonWrapper(
-              new ButtonBuilder()
-                .setCustomId("close")
-                .setLabel("Close")
-                .setEmoji("✖️")
-                .setStyle(ButtonStyle.Danger),
-              new ButtonBuilder()
-                .setCustomId(`use:${currentEntry.id}`)
-                .setLabel(currentItem.useType)
-                .setStyle(ButtonStyle.Success),
-              new ButtonBuilder()
-                .setCustomId(`drop:${currentEntry.id}`)
-                .setLabel("Drop")
-                .setStyle(ButtonStyle.Secondary)
-            ),
-          });
           break;
       }
     } catch (e) {
@@ -229,9 +234,7 @@ export default new Command({
       });
       return;
     }
-    let unsanitizedButtons: ButtonBuilder[];
-
-    unsanitizedButtons = getButtonsFromEntries(player.inventory.entries);
+    const unsanitizedButtons = getButtonsFromEntries(player.inventory.entries);
 
     if (unsanitizedButtons.length === 0) {
       await context.editReply("You have no items in your inventory.");
@@ -258,7 +261,7 @@ export default new Command({
     createCollectors(message, buttons, player);
   },
 
-  onError(e: any): void {
+  onError(e) {
     log({
       header: "Error in inventory command",
       processName: "InventoryCommand",
