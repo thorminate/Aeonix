@@ -1,86 +1,137 @@
-/**
- * Handles the slash commands.
- * @param {Client} bot The instantiating client.
- * @param {Interaction} interaction The interaction that ran the command.
- */
-import getLocalCommands from "../../utils/getLocalCommands";
-import { Client, CommandInteraction, PermissionsBitField } from "discord.js";
-import log from "../../utils/log";
+import {
+  CacheType,
+  CommandInteraction,
+  MessageFlags,
+  PermissionFlagsBits,
+  PermissionsBitField,
+} from "discord.js";
+import log from "../../utils/log.js";
+import Command from "../../interactions/command.js";
+import Player from "../../models/player/player.js";
+import Event, { EventParams } from "../../models/core/event.js";
+import { findLocalCommands } from "../ready/01registerCommands.js";
 
-export default async (bot: Client, commandInteraction: CommandInteraction) => {
-  if (!commandInteraction.isChatInputCommand()) return;
-  // get already registered commands
-  const localCommands = await getLocalCommands();
+export default new Event({
+  callback: async (event: EventParams) => {
+    const context = event.context as CommandInteraction<CacheType>;
 
-  try {
+    if (!context.isChatInputCommand()) return;
+
+    const localCommands = await findLocalCommands();
+
     // check if command name is in localCommands
-    const commandObject = localCommands.find(
-      (cmd) => cmd.name === commandInteraction.commandName
+    const command: Command<boolean, boolean> | undefined = localCommands.find(
+      (cmd: Command<boolean, boolean>) => cmd.data.name === context.commandName
     );
 
     // if commandObject does not exist, return
-    if (!commandObject) return;
+    if (!command) return;
 
-    // if command is devOnly and user is not an admin, return
-    if (commandObject.adminOnly) {
-      if (
-        !(commandInteraction.member.permissions as PermissionsBitField).has(
-          PermissionsBitField.Flags.Administrator
-        )
-      ) {
-        commandInteraction.reply({
-          content: "Only administrators can run this command",
-          ephemeral: true,
-        });
-        return;
-      }
-    }
-
-    // if where the command is called was not in the main server, return
-    if (!(commandInteraction.guild.id === "1267928656877977670")) {
-      commandInteraction.reply({
-        content: "Nuh uh, wrong server.",
-        ephemeral: true,
+    if (!context.inGuild()) {
+      await context.reply({
+        content: "Invalid command.",
+        flags: command.ephemeral ? MessageFlags.Ephemeral : undefined,
       });
       return;
     }
-    // if command requires permissions and user does not have aforementioned permission, return
-    if (commandObject.permissionsRequired?.length) {
-      for (const permission of commandObject.permissionsRequired) {
-        if (
-          !(commandInteraction.member.permissions as PermissionsBitField).has(
-            permission as PermissionsBitField
-          )
-        ) {
-          commandInteraction.reply({
-            content: "Access Denied",
-            ephemeral: true,
-          });
-          return;
-        }
-      }
-    }
-    // if command requires bot permissions and bot does not have aforementioned permission, return
-    if (commandObject.botPermissions?.length) {
-      for (const permission of commandObject.botPermissions) {
-        const bot = commandInteraction.guild.members.me;
 
-        if (!bot.permissions.has(permission)) {
-          commandInteraction.reply({
-            content: "I don't have enough permissions.",
-            ephemeral: true,
+    if (command.acknowledge) {
+      await context.deferReply({
+        flags: command.ephemeral ? MessageFlags.Ephemeral : undefined,
+      });
+    }
+
+    if (!context.member) {
+      log({
+        header: "Interaction member is falsy",
+        processName: "CommandHandler",
+        payload: context,
+        type: "Error",
+      });
+      return;
+    }
+
+    // if command is devOnly and user is not an admin, return
+    if (command.adminOnly) {
+      if (
+        !(context.member.permissions as PermissionsBitField).has(
+          PermissionFlagsBits.Administrator
+        )
+      ) {
+        if (command.acknowledge) {
+          await context.editReply({
+            content: "Only administrators can run this",
+          });
+          return;
+        } else {
+          await context.reply({
+            content: "Only administrators can run this",
           });
           return;
         }
       }
     }
+
+    if (command.permissionsRequired?.length) {
+      for (const permission of command.permissionsRequired) {
+        if (
+          !(context.member.permissions as PermissionsBitField).has(permission)
+        ) {
+          if (command.acknowledge) {
+            await context.editReply({
+              content: "You don't have permissions to run this command.",
+            });
+            return;
+          } else {
+            context.reply({
+              content: "You don't have permissions to run this command.",
+            });
+            return;
+          }
+        }
+      }
+    }
+
+    let player: Player | undefined = undefined;
+
+    if (command.passPlayer) {
+      player = await Player.find(context.user.username);
+
+      if (!player) {
+        if (command.acknowledge) {
+          await context.editReply({
+            content: "You aren't a player. Register with the /init command.",
+          });
+          return;
+        } else {
+          context.reply({
+            content: "You aren't a player. Register with the /init command.",
+          });
+          return;
+        }
+      }
+    }
+
     // if all goes well, run the commands callback function.
-    await commandObject.callback(commandInteraction.client, commandInteraction);
-  } catch (error) {
+    await command.callback(context, player as Player).catch((e) => {
+      try {
+        command.onError(e);
+      } catch (e) {
+        log({
+          header: "Error in command error handler",
+          processName: "CommandHandler",
+          payload: e,
+          type: "Error",
+        });
+      }
+    });
+  },
+  onError: async (e) => {
     log({
-      header: "Command Error",
-      payload: `${error}`,
+      header: "A command could not be handled correctly",
+      processName: "CommandHandler",
+      payload: e,
       type: "Error",
     });
-  }
-};
+  },
+});

@@ -2,33 +2,33 @@
   "name": "aeonix",
   "version": "alpha",
   "main": "dist/index.js",
-  "scripts": {
-    "start": "node ./scripts/sanitize.js && tsc && node ./dist/index.js",
-    "reset": "rm -rf ./dist && rm -rf ./logs && rm -rf ./node_modules && rm -rf ./package-lock.json && npm i && npm i -g typescript && npm cache clean --force"
-  },
-  "keywords": [],
   "author": "Thorminate",
   "license": "MIT",
+  "type": "module",
+  "homepage": "https://github.com/thorminate/Aeonix#readme",
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
-  "dependencies": {
-    "discord.js": "^14.16.2",
-    "dotenv": "^16.4.7",
-    "mongodb": "^6.9.0",
-    "mongoose": "^8.6.2",
-    "ms": "^2.1.3",
-    "node": "^20.17.0",
-    "pretty-ms": "^9.1.0",
-    "typescript": "^5.6.2"
+  "keywords": [],
+  "scripts": {
+    "start": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/aeonix.js"
   },
-  "devDependencies": {
-    "@types/ms": "^0.7.34"
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.41.0",
+    "ansis": "^3.17.0",
+    "discord.js": "^14.19.1",
+    "mongoose": "^8.14.0",
+    "typescript": "^5.8.3"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thorminate/The-System.git"
+    "url": "https://github.com/thorminate/Aeonix.git"
   },
   "bugs": {
-    "url": "https://github.com/thorminate/The-System/issues"
+    "url": "https://github.com/thorminate/Aeonix/issues"
   },
-  "homepage": "https://github.com/thorminate/The-System#readme"
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "eslint": "^9.25.1",
+    "globals": "^16.0.0",
+    "typescript-eslint": "^8.31.1"
+  }
 }

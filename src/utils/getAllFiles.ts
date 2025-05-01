@@ -3,15 +3,18 @@
 import path from "path"; // Get the path library.
 import fs from "fs"; // Get the file system library.
 
-export default (directory: string, foldersOnly = false) => {
+export default (directory: string, foldersOnly = false): string[] => {
   //export the function
-  let fileNames = []; // define fileNames as an array
+  const fileNames = []; // define fileNames as an array
 
   const files = fs.readdirSync(directory, { withFileTypes: true }); // get all files/folders in directory
 
   for (const file of files) {
     // loop through all files/folders
     const filePath = path.join(directory, file.name); // get file/folder path
+
+    if (path.extname(filePath) === ".map") continue; // skip files with .map extension
+    if (path.extname(filePath) === ".ts") continue; // skip files with .ts extension
 
     if (foldersOnly) {
       // if foldersOnly is true, only push folders to fileNames

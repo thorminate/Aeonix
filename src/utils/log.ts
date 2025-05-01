@@ -1,20 +1,39 @@
 import path from "node:path";
 import fs from "node:fs";
+import url from "node:url";
+import { inspect } from "node:util";
+import readline from "node:readline";
+import { cyan, gray, red, redBright, yellow } from "ansis";
+import { Aeonix } from "../aeonix.js";
+import { actualPrimitives } from "mongoose";
 
-interface Options {
+interface LogOptions {
   header: string;
   processName?: string;
   folder?: string;
-  payload?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any;
   type?: "Fatal" | "Error" | "Warn" | "Info" | "Verbose" | "Debug" | "Silly";
+  doNotPrompt?: boolean;
 }
 
-export default (options: Options) => {
-  let { folder, payload, header, type, processName } = options;
+function stripAnsiCodes(str: string) {
+  return str.replace(
+    // eslint-disable-next-line no-control-regex
+    /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
+    ""
+  );
+}
+
+export default (options: LogOptions) => {
+  const { header, type, processName, doNotPrompt } = options;
+  let { folder, payload } = options;
 
   if (!header) return;
 
   const date = new Date();
+
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   if (!fs.existsSync(path.join(__dirname, "..", "..", "logs"))) {
     fs.mkdirSync(path.join(__dirname, "..", "..", "logs"), {
@@ -29,35 +48,66 @@ export default (options: Options) => {
     { flags: "a" }
   );
 
-  const logPrefix = `${date.toLocaleTimeString()}`;
-  const logContent = payload ? `${header}\n${payload}` : `${header}`;
+  if (!Array.isArray(payload)) {
+    payload = [payload];
+  }
+
+  const fPayload: string = payload
+    .map((p: object | actualPrimitives) => {
+      const stringified =
+        typeof p === "string"
+          ? p
+          : inspect(p, { depth: Infinity, colors: true, sorted: true });
+
+      if (!stringified || stringified === "[90mundefined[39m") return "";
+
+      return "\n" + stringified;
+    })
+    .join(" ");
+
+  const headerColour =
+    type === "Fatal"
+      ? redBright
+      : type === "Error"
+      ? red
+      : type === "Warn"
+      ? yellow
+      : cyan;
+
+  const logTime = gray`${date.toLocaleTimeString()}`;
+  const logContent = `${headerColour(header)}${fPayload}`;
   const logProcessName = processName ? `${processName}/` : "Main/";
   const logType = type ? `${type}` : "Info";
 
-  const log = `[${logPrefix}] [${logProcessName}${logType}] ${logContent}`;
+  const log = `[${logTime}] [${logProcessName}${logType}] ${logContent}`;
 
-  logStream.write(log + "\n");
+  logStream.write(stripAnsiCodes(log) + "\n");
+
+  readline.clearLine(process.stdout, 0);
+  readline.cursorTo(process.stdout, 0);
+
   switch (type) {
     case "Fatal":
     case "Error":
+    case "Warn":
       console.error(log);
       break;
-    case "Warn":
-      console.warn(log);
-      break;
-    case "Info":
-      console.info(log);
-      break;
+
     case "Verbose":
-      console.log(log);
-      break;
-    case "Debug":
-      console.debug(log);
-      break;
     case "Silly":
-      console.log(log);
-      break;
+    case "Debug":
+    case "Info":
     default:
       console.log(log);
+      break;
+  }
+
+  logStream.end();
+
+  if (!doNotPrompt) {
+    import("../aeonix.js").then((module: { default: Aeonix }) => {
+      const aeonix: Aeonix = module.default;
+      if (aeonix) aeonix.rl.prompt();
+    });
   }
 };

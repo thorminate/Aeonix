@@ -1,41 +1,64 @@
-// when an event is triggered, it runs all files in that event's folder
-
-import { Client } from "discord.js"; // Get the discord.js library for setting the type of the bot parameter.
 import path from "path"; // Get the path library.
-import getAllFiles from "../utils/getAllFiles"; // Get the getAllFiles function.
+import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
 import url from "url";
-import log from "../utils/log";
+import log from "../utils/log.js";
+import Event, { EventParams } from "../models/core/event.js";
+import { Aeonix } from "../aeonix.js";
 
-export default async (bot: Client) => {
-  // Export the function.
-  const eventFolders: Array<string> = getAllFiles(
-    path.join(__dirname, "..", "events"),
-    true
-  ); // Get the event folders.
+export default (aeonix: Aeonix) => {
+  try {
+    const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  for (const eventFolder of eventFolders) {
-    // Loop through the event folders.
-    const eventFiles: Array<string> = getAllFiles(eventFolder); // Get the event files.
-    eventFiles.sort((a: string, b: string) => a.localeCompare(b)); // Sort the event files.
+    const eventFolders: Array<string> = getAllFiles(
+      path.join(__dirname, "..", "events"),
+      true
+    );
 
-    const eventName: string = eventFolder.replace(/\\/g, "/").split("/").pop(); // Get the event name.
+    for (const eventFolder of eventFolders) {
+      const eventFiles: Array<string> = getAllFiles(eventFolder);
+      eventFiles.sort((a: string, b: string) => a.localeCompare(b));
 
-    bot.on(eventName, async (arg) => {
-      // When the event that is the same name as the event folder is triggered.
-      for (const eventFile of eventFiles) {
-        // Loop through the event files.
-        const filePath = path.resolve(eventFile); // Get the path to the event file.
-        const fileUrl = url.pathToFileURL(filePath); // Get the URL to the event file.
-        const eventFunction = await import(fileUrl.toString()); // Get the event function.
-        // Run the event function. (the extra default is needed for some reason)
-        await eventFunction.default.default(bot, arg).catch((err: any) => {
-          log({
-            header: "Event Error, unable to process event",
-            payload: `${err}`,
-            type: "Error",
-          });
+      const eventName = eventFolder.replace(/\\/g, "/").split("/").pop();
+
+      if (!eventName) {
+        log({
+          header: "Event name is undefined",
+          processName: "EventHandler",
+          type: "Error",
+          payload: [eventName, eventFolder],
         });
+        return;
       }
+
+      aeonix.on(eventName, async (arg) => {
+        for (const eventFile of eventFiles) {
+          const filePath = path.resolve(eventFile);
+          const fileUrl = url.pathToFileURL(filePath);
+          const eventModule: { default: Event } = await import(
+            fileUrl.toString()
+          );
+
+          await eventModule.default
+            .callback(new EventParams(aeonix, arg))
+            .catch((e: unknown) => {
+              eventModule.default.onError(e).catch((e: unknown) =>
+                log({
+                  header: `Error in event ${eventName}`,
+                  processName: "EventHandler",
+                  type: "Error",
+                  payload: e,
+                })
+              );
+            });
+        }
+      });
+    }
+  } catch (e) {
+    log({
+      header: "Fatal Error in event handler",
+      processName: "EventHandler",
+      type: "Fatal",
+      payload: e,
     });
   }
 };

@@ -1,16 +1,30 @@
 {
   "compilerOptions": {
-    "target": "ES2023",
-    "outDir": "./dist", // Specify the output folder for compiled JavaScript
-    "allowJs": true,
-    "moduleResolution": "NodeNext",
+    "target": "ES2022",
     "module": "NodeNext",
-    "resolveJsonModule": true
+    "moduleResolution": "nodenext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "alwaysStrict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "allowJs": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "allowUnusedLabels": false
   },
-  "exclude": ["./node_modules/**/*", "./dist/**/*", "./config.json"],
-  "include": [
-    "./src/**/*",
-    "src/events/ready/01register-commands.ts",
-    "src/events/ready/02playerOnboarding.ts"
-  ] // Specify the path to your TypeScript files
+  "compileOnSave": true,
+  "exclude": ["node_modules/", "dist/"],
+  "include": ["src/"]
 }

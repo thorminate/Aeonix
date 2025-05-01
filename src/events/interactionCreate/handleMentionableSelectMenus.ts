@@ -1,0 +1,165 @@
+import {
+  MentionableSelectMenuInteraction,
+  MessageFlags,
+  PermissionFlagsBits,
+  PermissionsBitField,
+} from "discord.js";
+import Player from "../../models/player/player.js";
+import log from "../../utils/log.js";
+import Event, { EventParams } from "../../models/core/event.js";
+import path from "path";
+import url from "url";
+import getAllFiles from "../../utils/getAllFiles.js";
+import MentionableSelectMenu from "../../interactions/mentionableSelectMenu.js";
+
+async function findLocalMentionableSelectMenus() {
+  const localMentionableSelectMenus: MentionableSelectMenu<boolean, boolean>[] =
+    [];
+
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+  const mentionableSelectMenuFiles = getAllFiles(
+    path.join(__dirname, "..", "..", "interactions", "mentionableSelectMenus")
+  );
+
+  for (const mentionableSelectMenuFile of mentionableSelectMenuFiles) {
+    const filePath = path.resolve(mentionableSelectMenuFile);
+    const fileUrl = url.pathToFileURL(filePath);
+    const mentionableSelectMenu: MentionableSelectMenu<boolean, boolean> = (
+      await import(fileUrl.toString())
+    ).default;
+
+    localMentionableSelectMenus.push(mentionableSelectMenu);
+  }
+
+  return localMentionableSelectMenus;
+}
+
+export default new Event({
+  callback: async (event: EventParams) => {
+    const context = event.context as MentionableSelectMenuInteraction;
+
+    if (!context.isMentionableSelectMenu()) return;
+
+    const localMentionableSelectMenus = await findLocalMentionableSelectMenus();
+
+    const mentionableSelectMenu:
+      | MentionableSelectMenu<boolean, boolean>
+      | undefined = localMentionableSelectMenus.find(
+      (mentionableSelectMenu: MentionableSelectMenu<boolean, boolean>) =>
+        mentionableSelectMenu.customId === context.customId
+    );
+
+    if (!mentionableSelectMenu) return;
+
+    if (!context.inGuild()) {
+      log({
+        header: "Interaction is not in a guild",
+        processName: "MentionableSelectMenuHandler",
+        payload: context,
+        type: "Error",
+      });
+      return;
+    }
+
+    if (mentionableSelectMenu.acknowledge) {
+      await context.deferReply({
+        flags: mentionableSelectMenu.ephemeral
+          ? MessageFlags.Ephemeral
+          : undefined,
+      });
+    }
+
+    if (!context.member) {
+      log({
+        header: "Interaction member is falsy",
+        processName: "MentionableSelectMenuHandler",
+        payload: context,
+        type: "Error",
+      });
+      return;
+    }
+
+    if (mentionableSelectMenu.adminOnly) {
+      if (
+        !(context.member.permissions as PermissionsBitField).has(
+          PermissionFlagsBits.Administrator
+        )
+      ) {
+        if (mentionableSelectMenu.acknowledge) {
+          await context.editReply({
+            content: "Only administrators can run this.",
+          });
+          return;
+        } else {
+          context.reply({
+            content: "Only administrators can run this.",
+          });
+          return;
+        }
+      }
+    }
+
+    if (mentionableSelectMenu.permissionsRequired?.length) {
+      for (const permission of mentionableSelectMenu.permissionsRequired) {
+        if (
+          !(context.member.permissions as PermissionsBitField).has(permission)
+        ) {
+          if (mentionableSelectMenu.acknowledge) {
+            await context.editReply({
+              content: "You don't have permission to run this.",
+            });
+            return;
+          } else {
+            context.reply({
+              content: "You don't have permission to run this.",
+            });
+            return;
+          }
+        }
+      }
+    }
+
+    let player: Player | undefined;
+
+    if (mentionableSelectMenu.passPlayer) {
+      player = await Player.find(context.user.username);
+
+      if (!player) {
+        if (mentionableSelectMenu.acknowledge) {
+          await context.editReply({
+            content: "You aren't a player. Register with the /init command.",
+          });
+          return;
+        } else {
+          context.reply({
+            content: "You aren't a player. Register with the /init command.",
+          });
+          return;
+        }
+      }
+    }
+
+    await mentionableSelectMenu
+      .callback(context, player as Player)
+      .catch((e: unknown) => {
+        try {
+          mentionableSelectMenu.onError(e);
+        } catch (e) {
+          log({
+            header: "Error in mentionable select menu error handler",
+            processName: "MentionableSelectMenuHandler",
+            payload: e,
+            type: "Error",
+          });
+        }
+      });
+  },
+  onError: async (e) =>
+    log({
+      header: "A mentionable select menu could not be handled correctly",
+      processName: "MentionableSelectMenuHandler",
+      payload: e,
+      type: "Error",
+    }),
+});

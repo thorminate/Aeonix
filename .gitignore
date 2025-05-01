@@ -1,4 +1,4 @@
 dist/
 logs/
 node_modules/
-.env
+pnpm-lock.yaml
