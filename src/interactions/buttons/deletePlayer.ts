@@ -1,33 +1,32 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
 import Button from "../button.js";
 import Player from "../../models/player/player.js";
-import buttonWrapper from "../../utils/buttonWrapper.js";
 import log from "../../utils/log.js";
+import deletePlayerConfirmed from "./deletePlayerConfirmed.js";
+import componentWrapper from "../../utils/componentWrapper.js";
 
 export default new Button({
+  data: new ButtonBuilder()
+    .setCustomId("deletePlayer")
+    .setLabel("Delete")
+    .setStyle(ButtonStyle.Danger),
+
   customId: "deletePlayer",
   ephemeral: true,
   acknowledge: false,
   passPlayer: false,
 
-  callback: async (buttonContext) => {
-    if (!(await Player.find(buttonContext.user.username))) {
-      await buttonContext.update({
+  callback: async (context) => {
+    if (!(await Player.find(context.user.username))) {
+      await context.update({
         content: "You don't exist in the DB, therefore you cannot be deleted.",
       });
       return;
     }
 
-    const buttons = buttonWrapper(
-      new ButtonBuilder()
-        .setCustomId("deletePlayerConfirmed")
-        .setLabel("Yes")
-        .setStyle(ButtonStyle.Danger)
-    );
-
-    await buttonContext.update({
+    await context.update({
       content: "Are you sure you want to delete your persona?",
-      components: buttons,
+      components: componentWrapper(deletePlayerConfirmed.data),
     });
   },
 

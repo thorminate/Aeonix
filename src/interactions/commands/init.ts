@@ -11,7 +11,8 @@ import {
   welcomeMessage,
 } from "../../events/ready/02registerOnboarding.js";
 import log from "../../utils/log.js";
-import buttonWrapper from "../../utils/buttonWrapper.js";
+import deletePlayer from "../buttons/deletePlayer.js";
+import componentWrapper from "../../utils/componentWrapper.js";
 
 export default new Command({
   data: new SlashCommandBuilder()
@@ -20,16 +21,11 @@ export default new Command({
   passPlayer: false,
   acknowledge: true,
 
-  callback: async (commandContext) => {
-    if (await Player.find(commandContext.user.username)) {
-      const buttons = buttonWrapper(
-        new ButtonBuilder()
-          .setCustomId("deletePlayer")
-          .setLabel("Delete?")
-          .setStyle(ButtonStyle.Danger)
-      );
+  callback: async (context) => {
+    if (await Player.find(context.user.username)) {
+      const buttons = componentWrapper(deletePlayer.data);
 
-      await commandContext.editReply({
+      await context.editReply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",
         components: buttons,
@@ -37,7 +33,7 @@ export default new Command({
       return;
     }
 
-    const components = buttonWrapper(
+    const components = componentWrapper(
       new ButtonBuilder()
         .setCustomId("onboarding1")
         .setLabel("Begin")
@@ -45,11 +41,11 @@ export default new Command({
         .setEmoji("👋")
     );
 
-    await commandContext.editReply({
+    await context.editReply({
       files: [welcomeImage],
     });
 
-    await commandContext.followUp({
+    await context.followUp({
       content: welcomeMessage,
       components,
       flags: MessageFlags.Ephemeral,

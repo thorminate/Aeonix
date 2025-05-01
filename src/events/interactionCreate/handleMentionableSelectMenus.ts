@@ -1,8 +1,8 @@
 import {
+  MentionableSelectMenuInteraction,
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
-  StringSelectMenuInteraction,
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
@@ -10,85 +10,89 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import StringSelectMenu from "../../interactions/stringSelectMenu.js";
+import MentionableSelectMenu from "../../interactions/mentionableSelectMenu.js";
 
-async function findLocalStringSelectMenus() {
-  const localStringSelectMenus: StringSelectMenu<boolean, boolean>[] = [];
+async function findLocalMentionableSelectMenus() {
+  const localMentionableSelectMenus: MentionableSelectMenu<boolean, boolean>[] =
+    [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const stringSelectMenuFiles = getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "stringSelectMenus")
+  const mentionableSelectMenuFiles = getAllFiles(
+    path.join(__dirname, "..", "..", "interactions", "mentionableSelectMenus")
   );
 
-  for (const stringSelectMenuFile of stringSelectMenuFiles) {
-    const filePath = path.resolve(stringSelectMenuFile);
+  for (const mentionableSelectMenuFile of mentionableSelectMenuFiles) {
+    const filePath = path.resolve(mentionableSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const stringSelectMenu: StringSelectMenu<boolean, boolean> = (
+    const mentionableSelectMenu: MentionableSelectMenu<boolean, boolean> = (
       await import(fileUrl.toString())
     ).default;
 
-    localStringSelectMenus.push(stringSelectMenu);
+    localMentionableSelectMenus.push(mentionableSelectMenu);
   }
 
-  return localStringSelectMenus;
+  return localMentionableSelectMenus;
 }
 
 export default new Event({
   callback: async (event: EventParams) => {
-    const context = event.context as StringSelectMenuInteraction;
+    const context = event.context as MentionableSelectMenuInteraction;
 
-    if (!context.isStringSelectMenu()) return;
+    if (!context.isMentionableSelectMenu()) return;
 
-    const localStringSelectMenus = await findLocalStringSelectMenus();
+    const localMentionableSelectMenus = await findLocalMentionableSelectMenus();
 
-    const stringSelectMenu: StringSelectMenu<boolean, boolean> | undefined =
-      localStringSelectMenus.find(
-        (stringSelectMenu: StringSelectMenu<boolean, boolean>) =>
-          stringSelectMenu.customId === context.customId
-      );
+    const mentionableSelectMenu:
+      | MentionableSelectMenu<boolean, boolean>
+      | undefined = localMentionableSelectMenus.find(
+      (mentionableSelectMenu: MentionableSelectMenu<boolean, boolean>) =>
+        mentionableSelectMenu.customId === context.customId
+    );
 
-    if (!stringSelectMenu) return;
+    if (!mentionableSelectMenu) return;
 
     if (!context.inGuild()) {
       log({
         header: "Interaction is not in a guild",
-        processName: "StringSelectMenuHandler",
+        processName: "MentionableSelectMenuHandler",
         payload: context,
         type: "Error",
       });
       return;
     }
 
-    if (stringSelectMenu.acknowledge) {
+    if (mentionableSelectMenu.acknowledge) {
       await context.deferReply({
-        flags: stringSelectMenu.ephemeral ? MessageFlags.Ephemeral : undefined,
+        flags: mentionableSelectMenu.ephemeral
+          ? MessageFlags.Ephemeral
+          : undefined,
       });
     }
 
     if (!context.member) {
       log({
         header: "Interaction member is falsy",
-        processName: "StringSelectMenuHandler",
+        processName: "MentionableSelectMenuHandler",
         payload: context,
         type: "Error",
       });
       return;
     }
 
-    if (stringSelectMenu.adminOnly) {
+    if (mentionableSelectMenu.adminOnly) {
       if (
         !(context.member.permissions as PermissionsBitField).has(
           PermissionFlagsBits.Administrator
         )
       ) {
-        if (stringSelectMenu.acknowledge) {
+        if (mentionableSelectMenu.acknowledge) {
           await context.editReply({
             content: "Only administrators can run this.",
           });
           return;
         } else {
-          await context.reply({
+          context.reply({
             content: "Only administrators can run this.",
           });
           return;
@@ -96,12 +100,12 @@ export default new Event({
       }
     }
 
-    if (stringSelectMenu.permissionsRequired?.length) {
-      for (const permission of stringSelectMenu.permissionsRequired) {
+    if (mentionableSelectMenu.permissionsRequired?.length) {
+      for (const permission of mentionableSelectMenu.permissionsRequired) {
         if (
           !(context.member.permissions as PermissionsBitField).has(permission)
         ) {
-          if (stringSelectMenu.acknowledge) {
+          if (mentionableSelectMenu.acknowledge) {
             await context.editReply({
               content: "You don't have permission to run this.",
             });
@@ -118,11 +122,11 @@ export default new Event({
 
     let player: Player | undefined;
 
-    if (stringSelectMenu.passPlayer) {
+    if (mentionableSelectMenu.passPlayer) {
       player = await Player.find(context.user.username);
 
       if (!player) {
-        if (stringSelectMenu.acknowledge) {
+        if (mentionableSelectMenu.acknowledge) {
           await context.editReply({
             content: "You aren't a player. Register with the /init command.",
           });
@@ -136,15 +140,15 @@ export default new Event({
       }
     }
 
-    await stringSelectMenu
+    await mentionableSelectMenu
       .callback(context, player as Player)
       .catch((e: unknown) => {
         try {
-          stringSelectMenu.onError(e);
+          mentionableSelectMenu.onError(e);
         } catch (e) {
           log({
-            header: "Error in string select menu error handler",
-            processName: "StringSelectMenuHandler",
+            header: "Error in mentionable select menu error handler",
+            processName: "MentionableSelectMenuHandler",
             payload: e,
             type: "Error",
           });
@@ -153,8 +157,8 @@ export default new Event({
   },
   onError: async (e) =>
     log({
-      header: "A string select menu could not be handled correctly",
-      processName: "StringSelectMenuHandler",
+      header: "A mentionable select menu could not be handled correctly",
+      processName: "MentionableSelectMenuHandler",
       payload: e,
       type: "Error",
     }),

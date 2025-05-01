@@ -36,73 +36,80 @@ async function findLocalButtons() {
 
 export default new Event({
   callback: async (event: EventParams) => {
-    const buttonContext = event.context as ButtonInteraction;
+    const context = event.context as ButtonInteraction;
 
-    if (!buttonContext.isButton()) return;
+    if (!context.isButton()) return;
 
     const localButtons = await findLocalButtons();
 
-    // check if command name is in localCommands
     const button: Button<boolean, boolean> | undefined = localButtons.find(
-      (button: Button<boolean, boolean>) =>
-        button.customId === buttonContext.customId
+      (button: Button<boolean, boolean>) => button.customId === context.customId
     );
 
-    // if commandObject does not exist, return
     if (!button) return;
 
-    if (!buttonContext.inGuild()) {
+    if (!context.inGuild()) {
       log({
         header: "Interaction is not in a guild",
         processName: "ButtonHandler",
-        payload: buttonContext,
+        payload: context,
         type: "Error",
       });
       return;
     }
 
     if (button.acknowledge) {
-      await buttonContext.deferReply({
+      await context.deferReply({
         flags: button.ephemeral ? MessageFlags.Ephemeral : undefined,
       });
     }
 
-    if (!buttonContext.member) {
+    if (!context.member) {
       log({
         header: "Interaction member is falsy",
         processName: "ButtonHandler",
-        payload: buttonContext,
+        payload: context,
         type: "Error",
       });
       return;
     }
 
-    // if command is devOnly and user is not an admin, return
     if (button.adminOnly) {
       if (
-        !(buttonContext.member.permissions as PermissionsBitField).has(
+        !(context.member.permissions as PermissionsBitField).has(
           PermissionFlagsBits.Administrator
         )
       ) {
-        await buttonContext.editReply({
-          content: "Only administrators can run this command",
-        });
-        return;
+        if (button.acknowledge) {
+          await context.editReply({
+            content: "Only administrators can press this button.",
+          });
+          return;
+        } else {
+          context.reply({
+            content: "Only administrators can press this button.",
+          });
+          return;
+        }
       }
     }
 
-    // if button requires permissions and user does not have aforementioned permission, return
     if (button.permissionsRequired?.length) {
       for (const permission of button.permissionsRequired) {
         if (
-          !(buttonContext.member.permissions as PermissionsBitField).has(
-            permission
-          )
+          !(context.member.permissions as PermissionsBitField).has(permission)
         ) {
-          await buttonContext.editReply({
-            content: "You don't have permissions to press this button.",
-          });
-          return;
+          if (button.acknowledge) {
+            await context.editReply({
+              content: "You don't have permissions to press this button.",
+            });
+            return;
+          } else {
+            context.reply({
+              content: "You don't have permissions to press this button.",
+            });
+            return;
+          }
         }
       }
     }
@@ -110,30 +117,35 @@ export default new Event({
     let player: Player | undefined;
 
     if (button.passPlayer) {
-      player = await Player.find(buttonContext.user.username);
+      player = await Player.find(context.user.username);
 
       if (!player) {
-        await buttonContext.editReply({
-          content: "You don't exist in the DB, run the /init command.",
-        });
-        return;
+        if (button.acknowledge) {
+          await context.editReply({
+            content: "You aren't a player. Register with the /init command.",
+          });
+          return;
+        } else {
+          context.reply({
+            content: "You aren't a player. Register with the /init command.",
+          });
+          return;
+        }
       }
     }
-    // if all goes well, run the button's callback function.
-    await button
-      .callback(buttonContext, player as Player)
-      .catch((e: unknown) => {
-        try {
-          button.onError(e);
-        } catch (e) {
-          log({
-            header: "Error in button error handler",
-            processName: "ButtonHandler",
-            payload: e,
-            type: "Error",
-          });
-        }
-      });
+
+    await button.callback(context, player as Player).catch((e: unknown) => {
+      try {
+        button.onError(e);
+      } catch (e) {
+        log({
+          header: "Error in button error handler",
+          processName: "ButtonHandler",
+          payload: e,
+          type: "Error",
+        });
+      }
+    });
   },
   onError: async (e) =>
     log({

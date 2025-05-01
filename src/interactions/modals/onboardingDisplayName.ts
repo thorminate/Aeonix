@@ -1,27 +1,44 @@
-import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
+import {
+  ActionRowBuilder,
+  GuildMemberRoleManager,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import Modal from "../modal.js";
-import buttonWrapper from "../../utils/buttonWrapper.js";
+import deletePlayer from "../buttons/deletePlayer.js";
+import componentWrapper from "../../utils/componentWrapper.js";
 
 export default new Modal({
+  data: new ModalBuilder()
+    .setTitle("Step 1/1 - Display Name")
+    .setCustomId("onboardingDisplayName")
+    .addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+          .setCustomId("display-name")
+          .setLabel("Display name/Character Name")
+          .setPlaceholder("Name of your character within this world.")
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true)
+          .setMaxLength(32)
+          .setMinLength(2)
+      )
+    ),
   customId: "onboardingDisplayName",
   ephemeral: true,
   passPlayer: false,
   acknowledge: true,
 
-  callback: async (modalContext) => {
-    const displayName = modalContext.fields.getTextInputValue("display-name");
+  callback: async (context) => {
+    const displayName = context.fields.getTextInputValue("display-name");
 
-    if (await Player.find(modalContext.user.username)) {
-      const buttons = buttonWrapper(
-        new ButtonBuilder()
-          .setCustomId("deletePlayer")
-          .setLabel("Delete?")
-          .setStyle(ButtonStyle.Danger)
-      );
+    if (await Player.find(context.user.username)) {
+      const buttons = componentWrapper(deletePlayer.data);
 
-      await modalContext.editReply({
+      await context.editReply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",
         components: buttons,
@@ -29,15 +46,15 @@ export default new Modal({
       return;
     }
 
-    const player = new Player(modalContext.user, displayName);
+    const player = new Player(context.user, displayName);
 
     await player.save();
 
-    if (!modalContext.member) {
+    if (!context.member) {
       log({
         header: "Interaction member is falsy",
         processName: "OnboardingDisplayNameModal",
-        payload: modalContext,
+        payload: context,
         type: "Error",
       });
       return;
@@ -54,9 +71,9 @@ export default new Modal({
       return;
     }
 
-    await (modalContext.member.roles as GuildMemberRoleManager).add(playerRole);
+    await (context.member.roles as GuildMemberRoleManager).add(playerRole);
 
-    await modalContext.editReply({
+    await context.editReply({
       content: "1/1 - Your persona has been created.",
     });
   },

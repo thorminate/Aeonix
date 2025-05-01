@@ -13,8 +13,8 @@ import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import InventoryEntry from "../../models/inventory/utils/inventoryEntry.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
-import buttonWrapper from "../../utils/buttonWrapper.js";
 import { randomUUID } from "node:crypto";
+import componentWrapper from "../../utils/componentWrapper.js";
 
 function getButtonsFromEntries(entries: InventoryEntry[]): ButtonBuilder[] {
   return entries.map((entry: InventoryEntry): ButtonBuilder => {
@@ -137,7 +137,7 @@ function createCollectors(
 
           await context.update({
             content: `**${item.name}**\n${usageResult.message}`,
-            components: buttonWrapper(
+            components: componentWrapper(
               new ButtonBuilder()
                 .setCustomId("close")
                 .setLabel("Close")
@@ -187,7 +187,7 @@ function createCollectors(
 
             await context.update({
               content: `**${currentEntry.name}**`,
-              components: buttonWrapper(
+              components: componentWrapper(
                 new ButtonBuilder()
                   .setCustomId("close")
                   .setLabel("Close")

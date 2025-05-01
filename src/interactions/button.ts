@@ -1,4 +1,4 @@
-import { ButtonInteraction, CacheType } from "discord.js";
+import { ButtonBuilder, ButtonInteraction, CacheType } from "discord.js";
 import Player from "../models/player/player.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
 import log from "../utils/log.js";
@@ -10,16 +10,14 @@ export type ButtonContext = Omit<
 
 type ButtonCallback<A extends boolean, P extends boolean> = A extends true
   ? P extends true
-    ? (buttonContext: ButtonContext, player: Player) => Promise<void>
-    : (buttonContext: ButtonContext) => Promise<void>
+    ? (context: ButtonContext, player: Player) => Promise<void>
+    : (context: ButtonContext) => Promise<void>
   : P extends true
-  ? (
-      buttonContext: ButtonInteraction<CacheType>,
-      player: Player
-    ) => Promise<void>
-  : (buttonContext: ButtonInteraction<CacheType>) => Promise<void>;
+  ? (context: ButtonInteraction<CacheType>, player: Player) => Promise<void>
+  : (context: ButtonInteraction<CacheType>) => Promise<void>;
 
 export interface IButton<A extends boolean, P extends boolean> {
+  data: ButtonBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
@@ -34,6 +32,7 @@ export interface IButton<A extends boolean, P extends boolean> {
 export default class Button<A extends boolean, P extends boolean>
   implements IButton<A, P>
 {
+  data: ButtonBuilder = new ButtonBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;

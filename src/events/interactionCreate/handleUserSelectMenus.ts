@@ -2,7 +2,7 @@ import {
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
-  StringSelectMenuInteraction,
+  UserSelectMenuInteraction,
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
@@ -10,79 +10,79 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import StringSelectMenu from "../../interactions/stringSelectMenu.js";
+import UserSelectMenu from "../../interactions/userSelectMenu.js";
 
-async function findLocalStringSelectMenus() {
-  const localStringSelectMenus: StringSelectMenu<boolean, boolean>[] = [];
+async function findLocalUserSelectMenus() {
+  const localUserSelectMenus: UserSelectMenu<boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const stringSelectMenuFiles = getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "stringSelectMenus")
+  const userSelectMenuFiles = getAllFiles(
+    path.join(__dirname, "..", "..", "interactions", "userSelectMenus")
   );
 
-  for (const stringSelectMenuFile of stringSelectMenuFiles) {
-    const filePath = path.resolve(stringSelectMenuFile);
+  for (const userSelectMenuFile of userSelectMenuFiles) {
+    const filePath = path.resolve(userSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const stringSelectMenu: StringSelectMenu<boolean, boolean> = (
+    const userSelectMenu: UserSelectMenu<boolean, boolean> = (
       await import(fileUrl.toString())
     ).default;
 
-    localStringSelectMenus.push(stringSelectMenu);
+    localUserSelectMenus.push(userSelectMenu);
   }
 
-  return localStringSelectMenus;
+  return localUserSelectMenus;
 }
 
 export default new Event({
   callback: async (event: EventParams) => {
-    const context = event.context as StringSelectMenuInteraction;
+    const context = event.context as UserSelectMenuInteraction;
 
-    if (!context.isStringSelectMenu()) return;
+    if (!context.isUserSelectMenu()) return;
 
-    const localStringSelectMenus = await findLocalStringSelectMenus();
+    const localUserSelectMenus = await findLocalUserSelectMenus();
 
-    const stringSelectMenu: StringSelectMenu<boolean, boolean> | undefined =
-      localStringSelectMenus.find(
-        (stringSelectMenu: StringSelectMenu<boolean, boolean>) =>
-          stringSelectMenu.customId === context.customId
+    const userSelectMenu: UserSelectMenu<boolean, boolean> | undefined =
+      localUserSelectMenus.find(
+        (userSelectMenu: UserSelectMenu<boolean, boolean>) =>
+          userSelectMenu.customId === context.customId
       );
 
-    if (!stringSelectMenu) return;
+    if (!userSelectMenu) return;
 
     if (!context.inGuild()) {
       log({
         header: "Interaction is not in a guild",
-        processName: "StringSelectMenuHandler",
+        processName: "UserSelectMenuHandler",
         payload: context,
         type: "Error",
       });
       return;
     }
 
-    if (stringSelectMenu.acknowledge) {
+    if (userSelectMenu.acknowledge) {
       await context.deferReply({
-        flags: stringSelectMenu.ephemeral ? MessageFlags.Ephemeral : undefined,
+        flags: userSelectMenu.ephemeral ? MessageFlags.Ephemeral : undefined,
       });
     }
 
     if (!context.member) {
       log({
         header: "Interaction member is falsy",
-        processName: "StringSelectMenuHandler",
+        processName: "UserSelectMenuHandler",
         payload: context,
         type: "Error",
       });
       return;
     }
 
-    if (stringSelectMenu.adminOnly) {
+    if (userSelectMenu.adminOnly) {
       if (
         !(context.member.permissions as PermissionsBitField).has(
           PermissionFlagsBits.Administrator
         )
       ) {
-        if (stringSelectMenu.acknowledge) {
+        if (userSelectMenu.acknowledge) {
           await context.editReply({
             content: "Only administrators can run this.",
           });
@@ -96,12 +96,12 @@ export default new Event({
       }
     }
 
-    if (stringSelectMenu.permissionsRequired?.length) {
-      for (const permission of stringSelectMenu.permissionsRequired) {
+    if (userSelectMenu.permissionsRequired?.length) {
+      for (const permission of userSelectMenu.permissionsRequired) {
         if (
           !(context.member.permissions as PermissionsBitField).has(permission)
         ) {
-          if (stringSelectMenu.acknowledge) {
+          if (userSelectMenu.acknowledge) {
             await context.editReply({
               content: "You don't have permission to run this.",
             });
@@ -118,11 +118,11 @@ export default new Event({
 
     let player: Player | undefined;
 
-    if (stringSelectMenu.passPlayer) {
+    if (userSelectMenu.passPlayer) {
       player = await Player.find(context.user.username);
 
       if (!player) {
-        if (stringSelectMenu.acknowledge) {
+        if (userSelectMenu.acknowledge) {
           await context.editReply({
             content: "You aren't a player. Register with the /init command.",
           });
@@ -136,15 +136,15 @@ export default new Event({
       }
     }
 
-    await stringSelectMenu
+    await userSelectMenu
       .callback(context, player as Player)
       .catch((e: unknown) => {
         try {
-          stringSelectMenu.onError(e);
+          userSelectMenu.onError(e);
         } catch (e) {
           log({
-            header: "Error in string select menu error handler",
-            processName: "StringSelectMenuHandler",
+            header: "Error in user select menu error handler",
+            processName: "UserSelectMenuHandler",
             payload: e,
             type: "Error",
           });
@@ -153,8 +153,8 @@ export default new Event({
   },
   onError: async (e) =>
     log({
-      header: "A string select menu could not be handled correctly",
-      processName: "StringSelectMenuHandler",
+      header: "A user select menu could not be handled correctly",
+      processName: "UserSelectMenuHandler",
       payload: e,
       type: "Error",
     }),

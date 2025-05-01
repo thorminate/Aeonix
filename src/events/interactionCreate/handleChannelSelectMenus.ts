@@ -1,8 +1,8 @@
 import {
+  ChannelSelectMenuInteraction,
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
-  StringSelectMenuInteraction,
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
@@ -10,79 +10,79 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import StringSelectMenu from "../../interactions/stringSelectMenu.js";
+import ChannelSelectMenu from "../../interactions/channelSelectMenu.js";
 
-async function findLocalStringSelectMenus() {
-  const localStringSelectMenus: StringSelectMenu<boolean, boolean>[] = [];
+async function findLocalChannelSelectMenus() {
+  const localChannelSelectMenus: ChannelSelectMenu<boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const stringSelectMenuFiles = getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "stringSelectMenus")
+  const channelSelectMenuFiles = getAllFiles(
+    path.join(__dirname, "..", "..", "interactions", "channelSelectMenus")
   );
 
-  for (const stringSelectMenuFile of stringSelectMenuFiles) {
-    const filePath = path.resolve(stringSelectMenuFile);
+  for (const channelSelectMenuFile of channelSelectMenuFiles) {
+    const filePath = path.resolve(channelSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const stringSelectMenu: StringSelectMenu<boolean, boolean> = (
+    const channelSelectMenu: ChannelSelectMenu<boolean, boolean> = (
       await import(fileUrl.toString())
     ).default;
 
-    localStringSelectMenus.push(stringSelectMenu);
+    localChannelSelectMenus.push(channelSelectMenu);
   }
 
-  return localStringSelectMenus;
+  return localChannelSelectMenus;
 }
 
 export default new Event({
   callback: async (event: EventParams) => {
-    const context = event.context as StringSelectMenuInteraction;
+    const context = event.context as ChannelSelectMenuInteraction;
 
-    if (!context.isStringSelectMenu()) return;
+    if (!context.isChannelSelectMenu()) return;
 
-    const localStringSelectMenus = await findLocalStringSelectMenus();
+    const localChannelSelectMenus = await findLocalChannelSelectMenus();
 
-    const stringSelectMenu: StringSelectMenu<boolean, boolean> | undefined =
-      localStringSelectMenus.find(
-        (stringSelectMenu: StringSelectMenu<boolean, boolean>) =>
-          stringSelectMenu.customId === context.customId
+    const channelSelectMenu: ChannelSelectMenu<boolean, boolean> | undefined =
+      localChannelSelectMenus.find(
+        (channelSelectMenu: ChannelSelectMenu<boolean, boolean>) =>
+          channelSelectMenu.customId === context.customId
       );
 
-    if (!stringSelectMenu) return;
+    if (!channelSelectMenu) return;
 
     if (!context.inGuild()) {
       log({
         header: "Interaction is not in a guild",
-        processName: "StringSelectMenuHandler",
+        processName: "ChannelSelectMenuHandler",
         payload: context,
         type: "Error",
       });
       return;
     }
 
-    if (stringSelectMenu.acknowledge) {
+    if (channelSelectMenu.acknowledge) {
       await context.deferReply({
-        flags: stringSelectMenu.ephemeral ? MessageFlags.Ephemeral : undefined,
+        flags: channelSelectMenu.ephemeral ? MessageFlags.Ephemeral : undefined,
       });
     }
 
     if (!context.member) {
       log({
         header: "Interaction member is falsy",
-        processName: "StringSelectMenuHandler",
+        processName: "ChannelSelectMenuHandler",
         payload: context,
         type: "Error",
       });
       return;
     }
 
-    if (stringSelectMenu.adminOnly) {
+    if (channelSelectMenu.adminOnly) {
       if (
         !(context.member.permissions as PermissionsBitField).has(
           PermissionFlagsBits.Administrator
         )
       ) {
-        if (stringSelectMenu.acknowledge) {
+        if (channelSelectMenu.acknowledge) {
           await context.editReply({
             content: "Only administrators can run this.",
           });
@@ -96,12 +96,12 @@ export default new Event({
       }
     }
 
-    if (stringSelectMenu.permissionsRequired?.length) {
-      for (const permission of stringSelectMenu.permissionsRequired) {
+    if (channelSelectMenu.permissionsRequired?.length) {
+      for (const permission of channelSelectMenu.permissionsRequired) {
         if (
           !(context.member.permissions as PermissionsBitField).has(permission)
         ) {
-          if (stringSelectMenu.acknowledge) {
+          if (channelSelectMenu.acknowledge) {
             await context.editReply({
               content: "You don't have permission to run this.",
             });
@@ -118,11 +118,11 @@ export default new Event({
 
     let player: Player | undefined;
 
-    if (stringSelectMenu.passPlayer) {
+    if (channelSelectMenu.passPlayer) {
       player = await Player.find(context.user.username);
 
       if (!player) {
-        if (stringSelectMenu.acknowledge) {
+        if (channelSelectMenu.acknowledge) {
           await context.editReply({
             content: "You aren't a player. Register with the /init command.",
           });
@@ -136,15 +136,15 @@ export default new Event({
       }
     }
 
-    await stringSelectMenu
+    await channelSelectMenu
       .callback(context, player as Player)
       .catch((e: unknown) => {
         try {
-          stringSelectMenu.onError(e);
+          channelSelectMenu.onError(e);
         } catch (e) {
           log({
-            header: "Error in string select menu error handler",
-            processName: "StringSelectMenuHandler",
+            header: "Error in role select menu error handler",
+            processName: "ChannelSelectMenuHandler",
             payload: e,
             type: "Error",
           });
@@ -153,8 +153,8 @@ export default new Event({
   },
   onError: async (e) =>
     log({
-      header: "A string select menu could not be handled correctly",
-      processName: "StringSelectMenuHandler",
+      header: "A role select menu could not be handled correctly",
+      processName: "ChannelSelectMenuHandler",
       payload: e,
       type: "Error",
     }),

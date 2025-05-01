@@ -1,14 +1,14 @@
 import {
-  AnySelectMenuInteraction,
   CacheType,
+  StringSelectMenuBuilder,
   StringSelectMenuInteraction,
 } from "discord.js";
 import Player from "../models/player/player.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
 import log from "../utils/log.js";
 
-export type SelectMenuContext = Omit<
-  AnySelectMenuInteraction<CacheType>,
+export type StringSelectMenuContext = Omit<
+  StringSelectMenuInteraction<CacheType>,
   "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
 >;
 
@@ -17,16 +17,17 @@ type StringSelectMenuCallback<
   P extends boolean
 > = A extends true
   ? P extends true
-    ? (buttonContext: SelectMenuContext, player: Player) => Promise<void>
-    : (buttonContext: SelectMenuContext) => Promise<void>
+    ? (context: StringSelectMenuContext, player: Player) => Promise<void>
+    : (context: StringSelectMenuContext) => Promise<void>
   : P extends true
   ? (
-      buttonContext: StringSelectMenuInteraction<CacheType>,
+      context: StringSelectMenuInteraction<CacheType>,
       player: Player
     ) => Promise<void>
-  : (buttonContext: StringSelectMenuInteraction<CacheType>) => Promise<void>;
+  : (context: StringSelectMenuInteraction<CacheType>) => Promise<void>;
 
 export interface IStringSelectMenu<A extends boolean, P extends boolean> {
+  data: StringSelectMenuBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
@@ -41,6 +42,7 @@ export interface IStringSelectMenu<A extends boolean, P extends boolean> {
 export default class StringSelectMenu<A extends boolean, P extends boolean>
   implements IStringSelectMenu<A, P>
 {
+  data: StringSelectMenuBuilder = new StringSelectMenuBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
@@ -50,15 +52,15 @@ export default class StringSelectMenu<A extends boolean, P extends boolean>
   passPlayer: P = false as P;
   callback: StringSelectMenuCallback<A, P> = async () => {
     log({
-      header: "Select menu callback not implemented",
-      processName: "ButtonHandler",
+      header: "String select menu callback not implemented",
+      processName: "StringSelectMenuHandler",
       type: "Error",
     });
   };
   onError: (e: unknown) => void = (e) => {
     log({
-      header: "Select menu Error (error handler not implemented!)",
-      processName: "ButtonHandler",
+      header: "String select menu Error (error handler not implemented!)",
+      processName: "StringSelectMenuHandler",
       payload: e,
       type: "Error",
     });

@@ -1,4 +1,4 @@
-import { CacheType, ModalSubmitInteraction } from "discord.js";
+import { CacheType, ModalBuilder, ModalSubmitInteraction } from "discord.js";
 import Player from "../models/player/player.js";
 import deepInstantiate from "../utils/deepInstantiate.js";
 import log from "../utils/log.js";
@@ -8,18 +8,19 @@ export type ModalContext = Omit<
   "reply" | "deferReply" | "update" | "deferUpdate"
 >;
 
-type ButtonCallback<A extends boolean, P extends boolean> = A extends true
+type ModalCallback<A extends boolean, P extends boolean> = A extends true
   ? P extends true
-    ? (buttonContext: ModalContext, player: Player) => Promise<void>
-    : (buttonContext: ModalContext) => Promise<void>
+    ? (context: ModalContext, player: Player) => Promise<void>
+    : (context: ModalContext) => Promise<void>
   : P extends true
   ? (
-      buttonContext: ModalSubmitInteraction<CacheType>,
+      context: ModalSubmitInteraction<CacheType>,
       player: Player
     ) => Promise<void>
-  : (buttonContext: ModalSubmitInteraction<CacheType>) => Promise<void>;
+  : (context: ModalSubmitInteraction<CacheType>) => Promise<void>;
 
 export interface IModal<A extends boolean, P extends boolean> {
+  data: ModalBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
@@ -27,13 +28,14 @@ export interface IModal<A extends boolean, P extends boolean> {
   ephemeral?: boolean;
   deleted?: boolean;
   passPlayer: P;
-  callback: ButtonCallback<A, P>;
+  callback: ModalCallback<A, P>;
   onError: (e: unknown) => void;
 }
 
 export default class Modal<A extends boolean, P extends boolean>
   implements IModal<A, P>
 {
+  data: ModalBuilder = new ModalBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
@@ -41,7 +43,7 @@ export default class Modal<A extends boolean, P extends boolean>
   ephemeral?: boolean = true;
   deleted?: boolean = false;
   passPlayer: P = false as P;
-  callback: ButtonCallback<A, P> = async () => {
+  callback: ModalCallback<A, P> = async () => {
     log({
       header: "Modal callback not implemented",
       processName: "ModalHandler",

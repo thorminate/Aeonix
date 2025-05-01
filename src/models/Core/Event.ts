@@ -1,10 +1,11 @@
+import { BaseInteraction } from "discord.js";
 import { Aeonix } from "../../aeonix.js";
 
-export class EventParams {
+export class EventParams<T extends BaseInteraction | unknown = unknown> {
   aeonix: Aeonix;
-  context: unknown;
+  context: T;
 
-  constructor(aeonix: Aeonix, context: unknown) {
+  constructor(aeonix: Aeonix, context: T) {
     this.aeonix = aeonix;
     this.context = context;
   }

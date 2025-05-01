@@ -6,8 +6,8 @@ import {
   TextChannel,
 } from "discord.js";
 import log from "../../utils/log.js";
-import buttonWrapper from "../../utils/buttonWrapper.js";
 import Event, { EventParams } from "../../models/core/event.js";
+import componentWrapper from "../../utils/componentWrapper.js";
 
 // turn on word wrap to see the full message
 
@@ -62,7 +62,7 @@ export default new Event({
       }
     });
 
-    const components = buttonWrapper(
+    const components = componentWrapper(
       new ButtonBuilder()
         .setCustomId("onboarding1")
         .setLabel("Begin")
