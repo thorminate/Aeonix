@@ -3,7 +3,7 @@ import Item, { TemplateItem } from "../../item/item.js";
 import deepInstantiate from "../../../utils/deepInstantiate.js";
 import log from "../../../utils/log.js";
 
-export interface IInventoryEntry {
+export interface IItemReference {
   name: string;
   id: string;
   type: string;
@@ -12,7 +12,7 @@ export interface IInventoryEntry {
   data: object;
 }
 
-export default class InventoryEntry implements IInventoryEntry {
+export default class ItemReference implements IItemReference {
   name: string;
   id: string;
   quantity: number;
@@ -39,7 +39,7 @@ export default class InventoryEntry implements IInventoryEntry {
   async toItem(): Promise<Item | undefined> {
     if (!this.type) return undefined;
 
-    const modulePath = `../../item/content/${this.type}.js`;
+    const modulePath = `../../Item/content/${this.type}.js`;
     try {
       const module = await import(modulePath);
 
@@ -54,7 +54,7 @@ export default class InventoryEntry implements IInventoryEntry {
     } catch (e) {
       log({
         header: "Error instantiating item",
-        processName: "InventoryEntry",
+        processName: "ItemReferenceToItemMethod",
         type: "Error",
         payload: e,
       });

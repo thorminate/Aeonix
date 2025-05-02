@@ -11,13 +11,13 @@ import {
 import Command from "../command.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
-import InventoryEntry from "../../models/inventory/utils/inventoryEntry.js";
+import ItemReference from "../../models/inventory/utils/itemReference.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
 import { randomUUID } from "node:crypto";
 import componentWrapper from "../../utils/componentWrapper.js";
 
-function getButtonsFromEntries(entries: InventoryEntry[]): ButtonBuilder[] {
-  return entries.map((entry: InventoryEntry): ButtonBuilder => {
+function getButtonsFromEntries(entries: ItemReference[]): ButtonBuilder[] {
+  return entries.map((entry: ItemReference): ButtonBuilder => {
     return new ButtonBuilder()
       .setCustomId(entry.id)
       .setLabel(entry.name)
@@ -129,7 +129,7 @@ function createCollectors(
             player,
           });
 
-          const newEntry = item.toInventoryEntry();
+          const newEntry = item.toItemReference();
 
           player.inventory.entries[activeEntryIndex] = newEntry;
 
@@ -160,7 +160,7 @@ function createCollectors(
         default:
           {
             const currentEntry = player.inventory.entries.find(
-              (entry: InventoryEntry) => entry.id === useType
+              (entry: ItemReference) => entry.id === useType
             );
 
             if (!currentEntry) {

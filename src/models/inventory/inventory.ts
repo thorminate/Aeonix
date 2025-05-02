@@ -1,14 +1,14 @@
 import deepInstantiate from "../../utils/deepInstantiate.js";
-import InventoryEntry from "./utils/inventoryEntry.js";
+import ItemReference from "./utils/itemReference.js";
 
 export interface IInventory {
   capacity: number;
-  entries: InventoryEntry[];
+  entries: ItemReference[];
 }
 
 export default class Inventory implements IInventory {
   private _capacity: number = 10;
-  private _entries: InventoryEntry[] = [];
+  private _entries: ItemReference[] = [];
 
   public get capacity(): number {
     if (!this._capacity) {
@@ -21,56 +21,54 @@ export default class Inventory implements IInventory {
     this._capacity = capacity;
   }
 
-  public get entries(): InventoryEntry[] {
+  public get entries(): ItemReference[] {
     if (!Array.isArray(this._entries)) {
       this._entries = [];
     }
 
-    this._entries = this._entries.map((entry: InventoryEntry) => {
-      entry = deepInstantiate(new InventoryEntry(), entry);
+    this._entries = this._entries.map((entry: ItemReference) => {
+      entry = deepInstantiate(new ItemReference(), entry);
       return entry;
     });
 
     return this._entries;
   }
 
-  public set entries(entries: InventoryEntry[]) {
+  public set entries(entries: ItemReference[]) {
     this._entries = entries;
   }
 
-  add(...entries: InventoryEntry[]): void {
+  add(...entries: ItemReference[]): void {
     this._entries.push(...entries);
   }
 
-  remove(entry: InventoryEntry | string): void {
+  remove(entry: ItemReference | string): void {
     if (typeof entry === "string") {
       this._entries = this.entries.filter(
-        (e: InventoryEntry) => e.name !== entry
+        (e: ItemReference) => e.name !== entry
       );
 
       return;
     }
 
     this._entries = this.entries.filter(
-      (e: InventoryEntry) => e.name != entry.name
+      (e: ItemReference) => e.name != entry.name
     );
   }
 
-  findItem(query: { key?: string; value: string }): InventoryEntry | undefined {
+  findItem(query: { key?: string; value: string }): ItemReference | undefined {
     if (!query.key) query.key = "name";
 
     return this.entries.find(
-      (e: InventoryEntry) =>
-        e[query.key as keyof InventoryEntry] === query.value
+      (e: ItemReference) => e[query.key as keyof ItemReference] === query.value
     );
   }
 
-  findItems(query: { key?: string; value: string }): InventoryEntry[] {
+  findItems(query: { key?: string; value: string }): ItemReference[] {
     if (!query.key) query.key = "name";
 
     return this.entries.filter(
-      (e: InventoryEntry) =>
-        e[query.key as keyof InventoryEntry] === query.value
+      (e: ItemReference) => e[query.key as keyof ItemReference] === query.value
     );
   }
 

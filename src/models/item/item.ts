@@ -1,4 +1,4 @@
-import InventoryEntry from "../inventory/utils/inventoryEntry.js";
+import ItemReference from "../inventory/utils/itemReference.js";
 import { randomUUID } from "node:crypto";
 import ItemUsageContext from "./utils/itemUsageContext.js";
 import ItemUsageResult from "./utils/itemUsageResult.js";
@@ -23,11 +23,11 @@ export default abstract class Item {
     return new ItemEventResult("", true);
   }
 
-  toInventoryEntry<T extends Item>(
+  toItemReference<T extends Item>(
     this: T,
     quantity: number = 1
-  ): InventoryEntry {
-    return new InventoryEntry(
+  ): ItemReference {
+    return new ItemReference(
       this.name,
       this.id,
       quantity,
@@ -48,26 +48,10 @@ export class TemplateItem extends Item {
   useType: string = "Use";
 
   createData() {
-    throw new Error("Not implemented");
     return {};
   }
 
-  override async use(): Promise<ItemUsageResult> {
-    throw new Error("Not implemented");
+  async use(): Promise<ItemUsageResult> {
     return new ItemUsageResult("", false);
-  }
-
-  override toInventoryEntry<T extends Item>(
-    this: T,
-    quantity: number = 1
-  ): InventoryEntry {
-    return new InventoryEntry(
-      this.name,
-      this.id,
-      quantity,
-      this.weight,
-      this.data,
-      this.type
-    );
   }
 }

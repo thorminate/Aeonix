@@ -1,4 +1,4 @@
-import InventoryEntry from "../../inventory/utils/inventoryEntry.js";
+import ItemReference from "../../inventory/utils/itemReference.js";
 import Item from "../item.js";
 import ItemEventResult from "../utils/itemEventResult.js";
 import ItemUsageContext from "../utils/itemUsageContext.js";
@@ -6,7 +6,7 @@ import ItemUsageResult from "../utils/itemUsageResult.js";
 
 export interface IBackpackData {
   capacity: number;
-  entries: InventoryEntry[];
+  entries: ItemReference[];
 }
 
 export default class BackpackItem extends Item {
@@ -20,7 +20,7 @@ export default class BackpackItem extends Item {
 
   createData(
     capacity: number = 20,
-    entries: InventoryEntry[] = []
+    entries: ItemReference[] = []
   ): IBackpackData {
     return {
       capacity,

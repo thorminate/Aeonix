@@ -18,7 +18,7 @@ export default new Event({
     const player = new Player(event.aeonix.user, event.aeonix.user.username);
 
     const item = new BackpackItem();
-    const item2 = (await item.toInventoryEntry().toItem()) as BackpackItem;
+    const item2 = (await item.toItemReference().toItem()) as BackpackItem;
 
     let test = true;
 
@@ -55,7 +55,7 @@ export default new Event({
 
     player.inventory.clear();
 
-    player.inventory.add(item.toInventoryEntry());
+    player.inventory.add(item.toItemReference());
 
     if (player.inventory.entries.length !== 1) {
       log({
