@@ -1,7 +1,9 @@
 import {
   ActionRowBuilder,
+  GuildChannel,
   GuildMemberRoleManager,
   ModalBuilder,
+  OverwriteType,
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
@@ -10,6 +12,7 @@ import log from "../../utils/log.js";
 import Modal from "../modal.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
+import aeonix from "../../aeonix.js";
 
 export default new Modal({
   data: new ModalBuilder()
@@ -35,7 +38,7 @@ export default new Modal({
   callback: async (context) => {
     const displayName = context.fields.getTextInputValue("display-name");
 
-    if (await Player.find(context.user.username)) {
+    if (await Player.find(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 
       await context.editReply({
@@ -70,6 +73,46 @@ export default new Modal({
       });
       return;
     }
+
+    const startChannel = await aeonix.channels
+      .fetch(process.env.START_ENV_CHANNEL || "")
+      .catch((e) => {
+        log({
+          header: "Start channel not found",
+          processName: "OnboardingDisplayNameModal",
+          payload: e,
+          type: "Error",
+        });
+      });
+
+    if (!startChannel) {
+      log({
+        header: "Start channel not found",
+        processName: "OnboardingDisplayNameModal",
+        type: "Error",
+      });
+      return;
+    }
+
+    if (!startChannel.isTextBased()) {
+      log({
+        header: "Start channel is not a text channel",
+        processName: "OnboardingDisplayNameModal",
+        type: "Error",
+      });
+      return;
+    }
+
+    (startChannel as GuildChannel).permissionOverwrites.create(
+      context.user,
+      {
+        ViewChannel: true,
+      },
+      {
+        reason: "Onboarding",
+        type: OverwriteType.Member,
+      }
+    );
 
     await (context.member.roles as GuildMemberRoleManager).add(playerRole);
 

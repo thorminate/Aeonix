@@ -23,7 +23,7 @@ export const welcomeImage = new AttachmentBuilder("./assets/welcome.png");
 
 export default new Event({
   callback: async (event: EventParams) => {
-    const onboardingChannelId = process.env["ONBOARDING_CHANNEL"];
+    const onboardingChannelId = process.env.ONBOARDING_CHANNEL;
 
     if (!onboardingChannelId) {
       log({

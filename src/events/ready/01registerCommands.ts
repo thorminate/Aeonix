@@ -1,6 +1,6 @@
 import log from "../../utils/log.js";
 import Command from "../../interactions/command.js";
-import Event, { EventParams } from "../../models/core/event.js";
+import Event from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import { Aeonix } from "../../aeonix.js";
@@ -107,11 +107,11 @@ function areCommandsDifferent(
 }
 
 export default new Event({
-  callback: async (event: EventParams) => {
+  callback: async ({ aeonix }) => {
     const localCommands: Command<boolean, boolean>[] =
       await findLocalCommands();
     const applicationCommands = await getApplicationCommands(
-      event.aeonix,
+      aeonix,
       "1267928656877977670"
     );
 

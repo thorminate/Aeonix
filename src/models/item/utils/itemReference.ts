@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import Item, { TemplateItem } from "../../item/item.js";
+import Item, { TemplateItem } from "../item.js";
 import deepInstantiate from "../../../utils/deepInstantiate.js";
 import log from "../../../utils/log.js";
 

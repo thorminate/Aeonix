@@ -14,7 +14,7 @@ export default new Button({
   passPlayer: false,
 
   callback: async (context) => {
-    if (await Player.find(context.user.username)) {
+    if (await Player.find(context.user.id)) {
       await context.reply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",

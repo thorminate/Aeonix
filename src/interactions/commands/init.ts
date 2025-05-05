@@ -22,7 +22,7 @@ export default new Command({
   acknowledge: true,
 
   callback: async (context) => {
-    if (await Player.find(context.user.username)) {
+    if (await Player.find(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 
       await context.editReply({

@@ -1,4 +1,4 @@
-import ItemReference from "../inventory/utils/itemReference.js";
+import ItemReference from "./utils/itemReference.js";
 import { randomUUID } from "node:crypto";
 import ItemUsageContext from "./utils/itemUsageContext.js";
 import ItemUsageResult from "./utils/itemUsageResult.js";

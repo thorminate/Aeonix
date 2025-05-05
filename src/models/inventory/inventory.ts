@@ -1,5 +1,5 @@
 import deepInstantiate from "../../utils/deepInstantiate.js";
-import ItemReference from "./utils/itemReference.js";
+import ItemReference from "../item/utils/itemReference.js";
 
 export interface IInventory {
   capacity: number;

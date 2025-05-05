@@ -11,7 +11,7 @@ import {
 import Command from "../command.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
-import ItemReference from "../../models/inventory/utils/itemReference.js";
+import ItemReference from "../../models/item/utils/itemReference.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
 import { randomUUID } from "node:crypto";
 import componentWrapper from "../../utils/componentWrapper.js";

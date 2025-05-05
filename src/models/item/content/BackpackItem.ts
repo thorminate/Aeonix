@@ -1,4 +1,4 @@
-import ItemReference from "../../inventory/utils/itemReference.js";
+import ItemReference from "../utils/itemReference.js";
 import Item from "../item.js";
 import ItemEventResult from "../utils/itemEventResult.js";
 import ItemUsageContext from "../utils/itemUsageContext.js";

@@ -14,7 +14,7 @@ export default new Button({
   passPlayer: false,
 
   callback: async (context) => {
-    if (!(await Player.find(context.user.username))) {
+    if (!(await Player.find(context.user.id))) {
       await context.update({
         content: "You don't exist in the DB, therefore you cannot be deleted.",
       });

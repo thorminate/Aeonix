@@ -116,7 +116,7 @@ export default new Event({
     let player: Player | undefined = undefined;
 
     if (modal.passPlayer) {
-      player = await Player.find(context.user.username);
+      player = await Player.find(context.user.id);
 
       if (!player) {
         if (modal.acknowledge) {

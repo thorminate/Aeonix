@@ -123,7 +123,7 @@ export default new Event({
     let player: Player | undefined;
 
     if (mentionableSelectMenu.passPlayer) {
-      player = await Player.find(context.user.username);
+      player = await Player.find(context.user.id);
 
       if (!player) {
         if (mentionableSelectMenu.acknowledge) {

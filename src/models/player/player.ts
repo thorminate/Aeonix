@@ -1,12 +1,13 @@
 import Saveable from "../core/saveable.js";
 import deepInstantiate from "../../utils/deepInstantiate.js";
-import { APIEmbed, EmbedBuilder, User } from "discord.js";
+import { APIEmbed, EmbedBuilder, TextChannel, User } from "discord.js";
 import { Document, Model } from "mongoose";
 import Stats from "../status/status.js";
 import Inventory from "../inventory/inventory.js";
 import calculateXpRequirement from "../status/utils/calculateXpRequirement.js";
 import aeonix from "../../aeonix.js";
 import playerModel from "./utils/playerModel.js";
+import environmentIdToChannelId from "../environment/utils/environmentIdToChannelId.js";
 
 export interface IPlayer extends Document {
   _id: string;
@@ -20,6 +21,7 @@ export default class Player extends Saveable<IPlayer> {
   _id: string;
   name: string;
   displayName: string;
+  location: string = "start";
   private _inventory: Inventory;
   private _status: Stats;
 
@@ -43,8 +45,22 @@ export default class Player extends Saveable<IPlayer> {
     this._inventory = value;
   }
 
-  async getUser(): Promise<User> {
-    return await aeonix.users.fetch(this._id);
+  resolveUser(): User | undefined {
+    return aeonix.users.cache.get(this._id);
+  }
+
+  async fetchUserChannelOverrides(guildId: string) {
+    const guild = await aeonix.guilds.cache.get(guildId);
+
+    if (!guild) return;
+
+    const channel = guild.channels.cache.get(
+      await environmentIdToChannelId(this.location)
+    );
+
+    if (!channel || !(channel instanceof TextChannel)) return;
+
+    return channel.permissionOverwrites.cache.get(this._id);
   }
 
   levelUp(amount: number = 1, resetXp: boolean = true) {
@@ -80,6 +96,11 @@ export default class Player extends Saveable<IPlayer> {
       "Howdy",
       "Hiya",
     ];
+
+    const user = await this.resolveUser();
+
+    if (!user) return new EmbedBuilder().toJSON();
+
     return new EmbedBuilder()
       .setTitle(
         `${welcomeOptions[Math.floor(Math.random() * welcomeOptions.length)]} ${
@@ -92,15 +113,15 @@ export default class Player extends Saveable<IPlayer> {
         }/${calculateXpRequirement(this.status.level)} xp.`
       )
       .setAuthor({
-        name: (await this.getUser()).username,
-        iconURL: (await this.getUser()).displayAvatarURL(),
+        name: user.username,
+        iconURL: user.displayAvatarURL(),
       })
       .toJSON();
   }
 
   protected getIdentifier() {
     return {
-      key: "name",
+      key: "_id",
       value: this.name,
     };
   }
@@ -120,13 +141,14 @@ export default class Player extends Saveable<IPlayer> {
     };
   }
 
-  constructor(user?: User, displayName?: string) {
+  constructor(user?: User, displayName?: string, location?: string) {
     super();
     // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
 
     this.name = user ? user.username : "";
     this.displayName = displayName || "";
     this._id = user ? user.id : "";
+    this.location = location ?? "Start";
 
     this._status = new Stats();
     this._inventory = new Inventory();
