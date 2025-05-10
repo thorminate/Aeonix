@@ -51,7 +51,6 @@ const rl = readline.createInterface({
   historySize: 10,
   prompt: `${magenta("Aeonix")} ${green(">>")} `,
 });
-
 // Make sure the .env file exists
 if (!existsSync("./.env")) {
   // If the .env file doesn't exist, we create it.

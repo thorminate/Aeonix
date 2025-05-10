@@ -3,7 +3,7 @@ import fs from "node:fs";
 import url from "node:url";
 import { inspect } from "node:util";
 import readline from "node:readline";
-import { cyan, gray, red, redBright, yellow } from "ansis";
+import { blackBright, cyan, red, redBright, yellow } from "ansis";
 import { Aeonix } from "../aeonix.js";
 import { actualPrimitives } from "mongoose";
 
@@ -74,7 +74,9 @@ export default (options: LogOptions) => {
       ? yellow
       : cyan;
 
-  const logTime = gray`${date.toLocaleTimeString()}`;
+  date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+  
+  const logTime = blackBright`${date.toLocaleString("sv")}`;
   const logContent = `${headerColour(header)}${fPayload}`;
   const logProcessName = processName ? `${processName}/` : "Main/";
   const logType = type ? `${type}` : "Info";
