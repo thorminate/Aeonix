@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { ActivityType, Client, GatewayIntentBits, Partials } from "discord.js";
 import mongoose from "mongoose";
 import eventHandler from "./handlers/eventHandler.js";
@@ -14,6 +16,12 @@ import { config } from "@dotenvx/dotenvx";
 import { blue, blueBright, green, magenta, redBright } from "ansis";
 import { execSync } from "child_process";
 import path from "path";
+import Environment, {
+  SaveableEnvironment,
+} from "./models/environment/environment.js";
+import { glob } from "glob";
+import { fileURLToPath } from "url";
+import mergeEnvironments from "./models/environment/utils/mergeEnvironments.js";
 
 interface PackageJson {
   name: string;
@@ -91,9 +99,84 @@ if (!existsSync("./.env")) {
 // Load environment variables
 config();
 
+export class EnvironmentManager {
+  private staticEnvs: Record<string, Environment> = {};
+  private saveableEnvs: Record<string, SaveableEnvironment> = {};
+
+  constructor() {}
+
+  async init(): Promise<EnvironmentManager> {
+    this.staticEnvs = await this.loadStaticEnvs();
+    for (const id of Object.keys(this.staticEnvs)) {
+      const saveable = await SaveableEnvironment.find(id);
+      if (saveable) {
+        this.saveableEnvs[id] = saveable;
+      } else {
+        const newEnv = new SaveableEnvironment();
+        newEnv.id = id;
+        await newEnv.save();
+        this.saveableEnvs[id] = newEnv;
+      }
+    }
+
+    return this;
+  }
+
+  get(id: string): Environment | undefined {
+    const staticEnv = this.staticEnvs[id];
+    const saveableEnv = this.saveableEnvs[id];
+    if (staticEnv && saveableEnv) {
+      return mergeEnvironments(staticEnv, saveableEnv);
+    }
+    return;
+  }
+
+  getAll(): Array<Environment> {
+    return Object.keys(this.staticEnvs).map((id) => this.get(id)!);
+  }
+
+  // HELPER FUNCTIONS
+  private async loadStaticEnvs(): Promise<Record<string, Environment>> {
+    log({
+      header: "Loading environments",
+      processName: "EnvironmentManager",
+      type: "Info",
+    });
+
+    const files = await glob(
+      `${path.dirname(
+        fileURLToPath(import.meta.url)
+      )}/environments/*Environment.@(js|ts)`
+    );
+
+    const envs: Record<string, Environment> = {};
+
+    for (const file of files) {
+      const mod = await import("./" + file.replace("\\", "/").substring(4));
+
+      const Cls = mod.default;
+
+      if (typeof Cls !== "function") {
+        continue;
+      }
+
+      const instance = new Cls();
+
+      if (!instance.id) {
+        continue;
+      }
+
+      envs[instance.id] = instance;
+    }
+
+    return envs;
+  }
+}
+
 // Define Aeonix
 export class Aeonix extends Client {
-  rl: readline.Interface;
+  environments: EnvironmentManager = new EnvironmentManager();
+  rl: readline.Interface = rl;
   packageJson: PackageJson = JSON.parse(
     readFileSync("./package.json").toString()
   );
@@ -360,7 +443,12 @@ export class Aeonix extends Client {
   }
 
   constructor() {
-    // Define the client
+    log({
+      header: "Initializing Aeonix...",
+      processName: "AeonixConstructor",
+      type: "Info",
+    });
+
     super({
       presence: {
         status: "online",
@@ -401,9 +489,8 @@ export class Aeonix extends Client {
       ],
     });
 
-    this.rl = rl;
+    this.environments.init();
 
-    // Inject CLI
     this.rl.on("line", async (input: string) => {
       const inputArr: string[] = input.split(" ");
       const firstOptionIndex: number = inputArr.findIndex((arg) =>
@@ -436,6 +523,7 @@ export class Aeonix extends Client {
             type: "Info",
           });
           process.stdout.write("\x1B[2J\x1B[0f");
+          console.clear();
           break;
         }
 
@@ -595,12 +683,6 @@ export class Aeonix extends Client {
 
     (async () => {
       try {
-        log({
-          header: "Initializing Aeonix...",
-          processName: "AeonixConstructor",
-          type: "Info",
-        });
-
         if (!dscToken || !mdbToken) {
           log({
             header: "Missing token(s)",

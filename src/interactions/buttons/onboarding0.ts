@@ -3,12 +3,12 @@ import Button from "../button.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayer from "./deletePlayer.js";
-import onboardingDisplayName from "../modals/onboardingDisplayName.js";
+import onboarding1 from "../modals/onboarding1.js";
 import componentWrapper from "../../utils/componentWrapper.js";
 
 export default new Button({
   data: new ButtonBuilder(),
-  customId: "onboarding1",
+  customId: "onboarding0",
   ephemeral: true,
   acknowledge: false,
   passPlayer: false,
@@ -24,13 +24,13 @@ export default new Button({
       return;
     }
 
-    await context.showModal(onboardingDisplayName.data);
+    await context.showModal(onboarding1.data);
   },
 
   onError(e) {
     log({
       header: "Button Error",
-      processName: "Onboarding1Button",
+      processName: "Onboarding0Button",
       payload: e,
       type: "Error",
     });

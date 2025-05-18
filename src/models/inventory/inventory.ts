@@ -1,4 +1,4 @@
-import deepInstantiate from "../../utils/deepInstantiate.js";
+import hardMerge from "../../utils/hardMerge.js";
 import ItemReference from "../item/utils/itemReference.js";
 
 export interface IInventory {
@@ -27,7 +27,7 @@ export default class Inventory implements IInventory {
     }
 
     this._entries = this._entries.map((entry: ItemReference) => {
-      entry = deepInstantiate(new ItemReference(), entry);
+      entry = hardMerge(new ItemReference(), entry);
       return entry;
     });
 

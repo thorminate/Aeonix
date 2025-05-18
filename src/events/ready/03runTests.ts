@@ -1,5 +1,5 @@
+import BackpackItem from "../../items/BackpackItem.js";
 import Event, { EventParams } from "../../models/core/event.js";
-import BackpackItem from "../../models/item/content/BackpackItem.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 
@@ -74,6 +74,23 @@ export default new Event({
       });
       test = false;
     }
+
+    const thor = await Player.find("539166043009056794");
+
+    if (!thor) {
+      log({
+        header: "Test Error, could not find Thor",
+        processName: "TestRunner",
+        type: "Error",
+      });
+      return;
+    }
+
+    thor.inventory.clear();
+
+    thor.inventory.add(item.toItemReference());
+
+    await thor.save();
 
     log({
       header: test ? "Tests passed" : "A test failed, check logs",

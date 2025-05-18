@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
-import { IPlayer } from "../player.js";
+import PlayerDocument from "./playerDocument.js";
 
-export default new Schema<IPlayer>({
+export default new Schema<PlayerDocument>({
   _id: { type: String, required: true },
   name: { type: String, required: true, unique: true },
   displayName: { type: String, required: true },

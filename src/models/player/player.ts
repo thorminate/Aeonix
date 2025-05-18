@@ -1,23 +1,40 @@
 import Saveable from "../core/saveable.js";
-import deepInstantiate from "../../utils/deepInstantiate.js";
-import { APIEmbed, EmbedBuilder, TextChannel, User } from "discord.js";
-import { Document, Model } from "mongoose";
+import hardMerge from "../../utils/hardMerge.js";
+import {
+  APIEmbed,
+  EmbedBuilder,
+  GuildChannel,
+  OverwriteType,
+  TextChannel,
+  User,
+} from "discord.js";
 import Stats from "../status/status.js";
 import Inventory from "../inventory/inventory.js";
 import calculateXpRequirement from "../status/utils/calculateXpRequirement.js";
 import aeonix from "../../aeonix.js";
 import playerModel from "./utils/playerModel.js";
 import environmentIdToChannelId from "../environment/utils/environmentIdToChannelId.js";
+import log from "../../utils/log.js";
+import PlayerDocument from "./utils/playerDocument.js";
+import Environment from "../environment/environment.js";
 
-export interface IPlayer extends Document {
-  _id: string;
-  name: string;
-  displayName: string;
-  _status: Stats;
-  _inventory: Inventory;
+function logAllProperties(obj: any) {
+  const seen = new Set();
+  while (obj && obj !== Object.prototype) {
+    const props = Object.getOwnPropertyNames(obj);
+    props.forEach((prop) => {
+      if (!seen.has(prop)) {
+        seen.add(prop);
+        const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+        const isFunction = typeof descriptor!.value === "function";
+        console.log(`${isFunction ? "Method" : "Property"}: ${prop}`);
+      }
+    });
+    obj = Object.getPrototypeOf(obj);
+  }
 }
 
-export default class Player extends Saveable<IPlayer> {
+export default class Player extends Saveable<PlayerDocument> {
   _id: string;
   name: string;
   displayName: string;
@@ -26,7 +43,7 @@ export default class Player extends Saveable<IPlayer> {
   private _status: Stats;
 
   public get status(): Stats {
-    return deepInstantiate(new Stats(), this._status, {}) as Stats;
+    return hardMerge(new Stats(), this._status, {}) as Stats;
   }
 
   public set status(value: Stats) {
@@ -36,7 +53,7 @@ export default class Player extends Saveable<IPlayer> {
   public get inventory(): Inventory {
     if (this._inventory instanceof Inventory) return this._inventory;
 
-    this._inventory = deepInstantiate(new Inventory(), this._inventory, {});
+    this._inventory = hardMerge(new Inventory(), this._inventory, {});
 
     return this._inventory;
   }
@@ -50,7 +67,7 @@ export default class Player extends Saveable<IPlayer> {
   }
 
   async fetchUserChannelOverrides(guildId: string) {
-    const guild = await aeonix.guilds.cache.get(guildId);
+    const guild = aeonix.guilds.cache.get(guildId);
 
     if (!guild) return;
 
@@ -61,6 +78,63 @@ export default class Player extends Saveable<IPlayer> {
     if (!channel || !(channel instanceof TextChannel)) return;
 
     return channel.permissionOverwrites.cache.get(this._id);
+  }
+
+  async fetchEnvironment() {
+    return aeonix.environments.get(this.location);
+  }
+
+  async moveTo(location: string): Promise<undefined | Environment> {
+    const environment = aeonix.environments.get(location);
+
+    logAllProperties(environment);
+
+    if (!environment) {
+      log({
+        header: "Invalid location",
+        processName: "Player.moveTo",
+        payload: location,
+        type: "Warn",
+      });
+      return;
+    }
+
+    if (this.location === location) return;
+
+    const channel = await environment.fetchChannel();
+
+    if (!channel || !(channel instanceof GuildChannel)) return;
+
+    await channel.permissionOverwrites
+      .create(
+        this._id,
+        {
+          ViewChannel: true,
+        },
+        {
+          reason: "Onboarding",
+          type: OverwriteType.Member,
+        }
+      )
+      .catch(() => {
+        log({
+          header: "Failed to create permission overwrite",
+          processName: "Player.moveTo",
+          type: "Warn",
+        });
+      });
+
+    const oldEnvironment = await this.fetchEnvironment();
+
+    if (oldEnvironment) {
+      oldEnvironment.leave(this);
+    }
+
+    environment.join(this);
+
+    this.location = location;
+
+    return environment;
   }
 
   levelUp(amount: number = 1, resetXp: boolean = true) {
@@ -126,11 +200,11 @@ export default class Player extends Saveable<IPlayer> {
     };
   }
 
-  protected getModel(): Model<IPlayer> {
+  protected getModel() {
     return playerModel;
   }
 
-  static getModel(): Model<IPlayer> {
+  static getModel() {
     return playerModel;
   }
 

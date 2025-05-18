@@ -48,6 +48,12 @@ export default new Event({
 
     if (!button) return;
 
+    if (button.acknowledge) {
+      await context.deferReply({
+        flags: button.ephemeral ? MessageFlags.Ephemeral : undefined,
+      });
+    }
+
     if (!context.inGuild()) {
       log({
         header: "Interaction is not in a guild",
@@ -56,12 +62,6 @@ export default new Event({
         type: "Error",
       });
       return;
-    }
-
-    if (button.acknowledge) {
-      await context.deferReply({
-        flags: button.ephemeral ? MessageFlags.Ephemeral : undefined,
-      });
     }
 
     if (!context.member) {

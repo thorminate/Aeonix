@@ -1,5 +1,5 @@
 import { model } from "mongoose";
-import { IPlayer } from "../player.js";
 import playerSchema from "./playerSchema.js";
+import PlayerDocument from "./playerDocument.js";
 
-export default model<IPlayer>("Player", playerSchema);
+export default model<PlayerDocument>("Player", playerSchema);

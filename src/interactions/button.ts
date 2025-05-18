@@ -1,6 +1,6 @@
 import { ButtonBuilder, ButtonInteraction, CacheType } from "discord.js";
 import Player from "../models/player/player.js";
-import deepInstantiate from "../utils/deepInstantiate.js";
+import hardMerge from "../utils/hardMerge.js";
 import log from "../utils/log.js";
 
 export type ButtonContext = Omit<
@@ -57,6 +57,6 @@ export default class Button<A extends boolean, P extends boolean>
   };
 
   constructor(buttonObject: IButton<A, P>) {
-    return deepInstantiate(this, buttonObject);
+    return hardMerge(this, buttonObject);
   }
 }

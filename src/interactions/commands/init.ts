@@ -35,7 +35,7 @@ export default new Command({
 
     const components = componentWrapper(
       new ButtonBuilder()
-        .setCustomId("onboarding1")
+        .setCustomId("onboarding0")
         .setLabel("Begin")
         .setStyle(ButtonStyle.Primary)
         .setEmoji("👋")

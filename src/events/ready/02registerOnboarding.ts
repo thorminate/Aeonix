@@ -64,7 +64,7 @@ export default new Event({
 
     const components = componentWrapper(
       new ButtonBuilder()
-        .setCustomId("onboarding1")
+        .setCustomId("onboarding0")
         .setLabel("Begin")
         .setStyle(ButtonStyle.Primary)
         .setEmoji("👋")

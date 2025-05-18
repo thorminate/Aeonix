@@ -4,7 +4,7 @@ import {
   UserSelectMenuInteraction,
 } from "discord.js";
 import Player from "../models/player/player.js";
-import deepInstantiate from "../utils/deepInstantiate.js";
+import hardMerge from "../utils/hardMerge.js";
 import log from "../utils/log.js";
 
 export type UserSelectMenuContext = Omit<
@@ -67,6 +67,6 @@ export default class UserSelectMenu<A extends boolean, P extends boolean>
   };
 
   constructor(userSelectMenuObject: IUserSelectMenu<A, P>) {
-    return deepInstantiate(this, userSelectMenuObject);
+    return hardMerge(this, userSelectMenuObject);
   }
 }

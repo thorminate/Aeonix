@@ -4,7 +4,7 @@ import {
   MentionableSelectMenuInteraction,
 } from "discord.js";
 import Player from "../models/player/player.js";
-import deepInstantiate from "../utils/deepInstantiate.js";
+import hardMerge from "../utils/hardMerge.js";
 import log from "../utils/log.js";
 
 export type MentionableSelectMenuContext = Omit<
@@ -67,6 +67,6 @@ export default class MentionableSelectMenu<A extends boolean, P extends boolean>
   };
 
   constructor(mentionableSelectMenuObject: IMentionableSelectMenu<A, P>) {
-    return deepInstantiate(this, mentionableSelectMenuObject);
+    return hardMerge(this, mentionableSelectMenuObject);
   }
 }

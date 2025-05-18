@@ -4,7 +4,7 @@ import url from "url";
 import Environment from "../environment.js";
 
 export default async function fetchAllEnvironments() {
-  const files = await getAllFiles("../content/", false);
+  const files = getAllFiles("../../../../environments", false);
 
   const environments = [];
 

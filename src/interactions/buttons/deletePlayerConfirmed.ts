@@ -21,7 +21,7 @@ export default new Button({
       return;
     }
 
-    await Player.delete(context.user.username);
+    await Player.delete(context.user.id);
 
     await context.update({
       content: "Your persona has been deleted.",

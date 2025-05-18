@@ -1,8 +1,8 @@
-import ItemReference from "../utils/itemReference.js";
-import Item from "../item.js";
-import ItemEventResult from "../utils/itemEventResult.js";
-import ItemUsageContext from "../utils/itemUsageContext.js";
-import ItemUsageResult from "../utils/itemUsageResult.js";
+import Item from "../models/item/item.js";
+import ItemEventResult from "../models/item/utils/itemEventResult.js";
+import ItemReference from "../models/item/utils/itemReference.js";
+import ItemUsageContext from "../models/item/utils/itemUsageContext.js";
+import ItemUsageResult from "../models/item/utils/itemUsageResult.js";
 
 export interface IBackpackData {
   capacity: number;

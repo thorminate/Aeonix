@@ -1,48 +1,85 @@
 import aeonix from "../../aeonix.js";
+import Saveable from "../core/saveable.js";
 import ItemReference from "../item/utils/itemReference.js";
 import Player from "../player/player.js";
+import EnvironmentDocument from "./utils/environmentDocument.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
+import environmentModel from "./utils/environmentModel.js";
+
+export class SaveableEnvironment extends Saveable<EnvironmentDocument> {
+  id = "";
+  channelId = "";
+  name = "";
+  description = "";
+  players: string[] = [];
+  adjacentEnvironments: string[] = [];
+  items: ItemReference[] = [];
+
+  override _id: string = this.id;
+
+  protected override getModel() {
+    return environmentModel;
+  }
+  protected override getClassMap(): Record<string, object> {
+    return {};
+  }
+
+  static getModel() {
+    return environmentModel;
+  }
+
+  constructor() {
+    super();
+  }
+}
 
 export default abstract class Environment {
   abstract id: string;
   abstract channelId: string;
   abstract name: string;
   abstract description: string;
-  abstract players: string[];
-  abstract adjacentEnvironments: string[];
-  abstract items: ItemReference[];
+  players: string[] = [];
+  adjacentEnvironments: string[] = [];
+  items: ItemReference[] = [];
 
-  join(player: Player) {
-    player.location = this.id;
-    this.players.push(player._id);
-
-    player.save();
-    return player;
-  }
-
+  // Methods
   async fetchChannel() {
     return await aeonix.channels.fetch(this.channelId);
   }
 
-  onEnter(context: EnvironmentEventContext): EnvironmentEventResult {
-    context.player.location = this.id;
-    return new EnvironmentEventResult("You enter " + this.name, true);
+  leave(player: Player) {
+    if (this.onLeave) this.onLeave({ eventType: "leave", player });
+
+    this.players = this.players.filter((p) => p !== player._id);
   }
 
-  onItemDrop(
-    context: EnvironmentEventContext<ItemReference>
-  ): EnvironmentEventResult {
-    return new EnvironmentEventResult("" + context.extraContext.name, true);
-  }
-}
+  join(player: Player) {
+    if (this.onJoin) this.onJoin({ eventType: "join", player });
 
-export class TemplateEnvironment extends Environment {
-  id: string = "";
-  channelId: string = "";
-  name: string = "";
-  description: string = "";
-  players: string[] = [];
-  adjacentEnvironments: string[] = [];
-  items: ItemReference[] = [];
+    this.players.push(player._id);
+  }
+
+  dropItem(player: Player, item: ItemReference) {
+    if (this.onItemDrop) this.onItemDrop({ eventType: "drop", player, item });
+
+    this.items.push(item);
+  }
+
+  pickUpItem(player: Player, item: ItemReference) {
+    if (this.onItemPickup)
+      this.onItemPickup({ eventType: "pickup", player, item });
+
+    this.items = this.items.filter((i) => i.id !== item.id);
+  }
+
+  // Hooks & Events
+
+  onJoin?(context: EnvironmentEventContext): EnvironmentEventResult;
+
+  onLeave?(context: EnvironmentEventContext): EnvironmentEventResult;
+
+  onItemDrop?(context: EnvironmentEventContext): EnvironmentEventResult;
+
+  onItemPickup?(context: EnvironmentEventContext): EnvironmentEventResult;
 }

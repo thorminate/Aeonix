@@ -1,6 +1,6 @@
 import { CacheType, ModalBuilder, ModalSubmitInteraction } from "discord.js";
 import Player from "../models/player/player.js";
-import deepInstantiate from "../utils/deepInstantiate.js";
+import hardMerge from "../utils/hardMerge.js";
 import log from "../utils/log.js";
 
 export type ModalContext = Omit<
@@ -60,6 +60,6 @@ export default class Modal<A extends boolean, P extends boolean>
   };
 
   constructor(modalObject: IModal<A, P>) {
-    return deepInstantiate(this, modalObject);
+    return hardMerge(this, modalObject);
   }
 }

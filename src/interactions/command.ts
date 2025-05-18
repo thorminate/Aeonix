@@ -1,6 +1,12 @@
-import { CacheType, CommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  CacheType,
+  CommandInteraction,
+  SlashCommandBuilder,
+  SlashCommandOptionsOnlyBuilder,
+  SlashCommandSubcommandsOnlyBuilder,
+} from "discord.js";
 import Player from "../models/player/player.js";
-import deepInstantiate from "../utils/deepInstantiate.js";
+import hardMerge from "../utils/hardMerge.js";
 import log from "../utils/log.js";
 
 export type CommandContext = Omit<
@@ -17,7 +23,10 @@ type CommandCallback<A extends boolean, P extends boolean> = A extends true
   : (context: CommandInteraction<CacheType>) => Promise<void>;
 
 export interface ICommand<A extends boolean, P extends boolean> {
-  data: SlashCommandBuilder;
+  data:
+    | SlashCommandBuilder
+    | SlashCommandOptionsOnlyBuilder
+    | SlashCommandSubcommandsOnlyBuilder;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
   acknowledge: A;
@@ -55,6 +64,6 @@ export default class Command<A extends boolean, P extends boolean>
   };
 
   constructor(commandObject: ICommand<A, P>) {
-    return deepInstantiate(this, commandObject, { data: SlashCommandBuilder });
+    return hardMerge(this, commandObject, { data: SlashCommandBuilder });
   }
 }

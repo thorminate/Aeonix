@@ -27,18 +27,18 @@ export default new Event({
     // if commandObject does not exist, return
     if (!command) return;
 
-    if (!context.inGuild()) {
-      await context.reply({
-        content: "Invalid command.",
-        flags: command.ephemeral ? MessageFlags.Ephemeral : undefined,
-      });
-      return;
-    }
-
     if (command.acknowledge) {
       await context.deferReply({
         flags: command.ephemeral ? MessageFlags.Ephemeral : undefined,
       });
+    }
+
+    if (!context.inGuild()) {
+      await context.reply({
+        content: "Bot needs to be in a guild to function properly",
+        flags: command.ephemeral ? MessageFlags.Ephemeral : undefined,
+      });
+      return;
     }
 
     if (!context.member) {

@@ -1,9 +1,7 @@
 import {
   ActionRowBuilder,
-  GuildChannel,
   GuildMemberRoleManager,
   ModalBuilder,
-  OverwriteType,
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
@@ -17,7 +15,7 @@ import aeonix from "../../aeonix.js";
 export default new Modal({
   data: new ModalBuilder()
     .setTitle("Step 1/1 - Display Name")
-    .setCustomId("onboardingDisplayName")
+    .setCustomId("onboarding1")
     .addComponents(
       new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
@@ -30,7 +28,7 @@ export default new Modal({
           .setMinLength(2)
       )
     ),
-  customId: "onboardingDisplayName",
+  customId: "onboarding1",
   ephemeral: true,
   passPlayer: false,
   acknowledge: true,
@@ -51,12 +49,10 @@ export default new Modal({
 
     const player = new Player(context.user, displayName);
 
-    await player.save();
-
     if (!context.member) {
       log({
         header: "Interaction member is falsy",
-        processName: "OnboardingDisplayNameModal",
+        processName: "Onboarding1Modal",
         payload: context,
         type: "Error",
       });
@@ -68,7 +64,7 @@ export default new Modal({
     if (!playerRole) {
       log({
         header: "Player role not found in environment variables",
-        processName: "OnboardingDisplayNameModal",
+        processName: "Onboarding1Modal",
         type: "Error",
       });
       return;
@@ -79,7 +75,7 @@ export default new Modal({
       .catch((e) => {
         log({
           header: "Start channel not found",
-          processName: "OnboardingDisplayNameModal",
+          processName: "Onboarding1Modal",
           payload: e,
           type: "Error",
         });
@@ -88,7 +84,7 @@ export default new Modal({
     if (!startChannel) {
       log({
         header: "Start channel not found",
-        processName: "OnboardingDisplayNameModal",
+        processName: "Onboarding1Modal",
         type: "Error",
       });
       return;
@@ -97,24 +93,17 @@ export default new Modal({
     if (!startChannel.isTextBased()) {
       log({
         header: "Start channel is not a text channel",
-        processName: "OnboardingDisplayNameModal",
+        processName: "Onboarding1Modal",
         type: "Error",
       });
       return;
     }
 
-    (startChannel as GuildChannel).permissionOverwrites.create(
-      context.user,
-      {
-        ViewChannel: true,
-      },
-      {
-        reason: "Onboarding",
-        type: OverwriteType.Member,
-      }
-    );
-
     await (context.member.roles as GuildMemberRoleManager).add(playerRole);
+
+    player.moveTo("start");
+
+    player.save();
 
     await context.editReply({
       content: "1/1 - Your persona has been created.",
@@ -124,7 +113,7 @@ export default new Modal({
   onError: (e) => {
     log({
       header: "Modal Error",
-      processName: "OnboardingDisplayNameModal",
+      processName: "Onboarding1Modal",
       payload: e,
       type: "Error",
     });

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export default function deepInstantiate<T extends object>(
+export default function hardMerge<T extends object>(
   target: T,
   source: any,
   classMap: Record<string, new (...args: any[]) => any> = {}
@@ -15,7 +15,7 @@ export default function deepInstantiate<T extends object>(
       (target as Record<string, unknown>)[key] = sourceValue.map(
         (item: unknown) =>
           typeof item === "object" && item
-            ? deepInstantiate(new ClassFromMap!(), item, classMap)
+            ? hardMerge(new ClassFromMap!(), item, classMap)
             : item
       );
     } else if (
@@ -24,13 +24,13 @@ export default function deepInstantiate<T extends object>(
       targetHasProperty
     ) {
       if (classExistsInMap) {
-        (target as Record<string, any>)[key] = deepInstantiate(
+        (target as Record<string, any>)[key] = hardMerge(
           new ClassFromMap!(),
           sourceValue,
           classMap
         );
       } else {
-        (target as Record<string, any>)[key] = deepInstantiate(
+        (target as Record<string, any>)[key] = hardMerge(
           (target as Record<string, any>)[key] !== undefined
             ? (target as Record<string, any>)[key]
             : Array.isArray(sourceValue)

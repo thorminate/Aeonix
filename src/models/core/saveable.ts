@@ -1,13 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Document, Model } from "mongoose";
-import deepInstantiate from "../../utils/deepInstantiate.js";
-
-/**
- * Takes in a target object and a source object, and assigns the source values to the target object recursively.
- * @param target The target object
- * @param source
- * @param classMap
- * @returns
- */
+import hardMerge from "../../utils/hardMerge.js";
 
 // Define a specialized interface for the constructor
 export interface SaveableConstructor<T extends Document, TInstance> {
@@ -16,19 +9,22 @@ export interface SaveableConstructor<T extends Document, TInstance> {
 }
 
 export default abstract class Saveable<T extends Document> {
+  abstract _id: string;
   protected abstract getModel(): Model<T>;
   protected abstract getClassMap(): Record<string, object>;
-  protected abstract getIdentifier(): {
-    key: string;
-    value: string;
-  };
+
+  toObject(): Record<string, any> {
+    const obj = { ...structuredClone(this) };
+    delete (obj as any)._id;
+    return obj;
+  }
 
   async save(): Promise<void> {
-    const { key, value } = this.getIdentifier();
+    const thisCopy = this.toObject();
 
     await this.getModel().findOneAndUpdate(
-      { [key]: value } as Record<string, string>,
-      this,
+      { _id: this._id } as Record<string, string>,
+      thisCopy,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
   }
@@ -42,12 +38,12 @@ export default abstract class Saveable<T extends Document> {
     const model = this.getModel();
 
     const query = {
-      [this.prototype.getIdentifier().key]: identifier,
+      _id: identifier,
     };
     const doc = await model.findOne(query as Record<string, string>);
     if (!doc) return undefined;
 
-    const instance = deepInstantiate(
+    const instance = hardMerge(
       new this() as TInstance,
       doc.toObject(),
       this.prototype.getClassMap()
@@ -61,7 +57,7 @@ export default abstract class Saveable<T extends Document> {
   ): Promise<void> {
     const model = this.getModel();
     await model.findOneAndDelete({
-      [this.prototype.getIdentifier().key]: identifier,
+      _id: identifier,
     } as Record<string, string>);
   }
 }

@@ -13,7 +13,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import deepInstantiate from "./deepInstantiate.js";
+import hardMerge from "./hardMerge.js";
 import log from "./log.js";
 import { CommandContext } from "../interactions/command.js";
 
@@ -36,7 +36,7 @@ async function paginate(
   getContent: GetterOrLiteral,
   isSearch = false
 ): Promise<InteractionResponse> {
-  const newPage = deepInstantiate(
+  const newPage = hardMerge(
     new ActionRowBuilder<ButtonBuilder>(),
     pages[currentPage],
     { components: ButtonBuilder }

@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import Item, { TemplateItem } from "../item.js";
-import deepInstantiate from "../../../utils/deepInstantiate.js";
+import hardMerge from "../../../utils/hardMerge.js";
 import log from "../../../utils/log.js";
 
 export interface IItemReference {
@@ -39,13 +39,13 @@ export default class ItemReference implements IItemReference {
   async toItem(): Promise<Item | undefined> {
     if (!this.type) return undefined;
 
-    const modulePath = `../../Item/content/${this.type}.js`;
+    const modulePath = `../../../items/${this.type}.js`;
     try {
       const module = await import(modulePath);
 
       const ItemClass: typeof TemplateItem = module.default;
 
-      return deepInstantiate(new ItemClass(), {
+      return hardMerge(new ItemClass(), {
         name: this.name,
         id: this.id,
         weight: this.weight,

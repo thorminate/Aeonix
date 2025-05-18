@@ -106,7 +106,7 @@ export default (options: LogOptions) => {
 
   if (!doNotPrompt) {
     import("../aeonix.js").then((module: { default: Aeonix }) => {
-      const aeonix: Aeonix = module.default;
+      const aeonix = module.default;
       if (aeonix) aeonix.rl.prompt();
     });
   }

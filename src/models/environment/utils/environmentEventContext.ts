@@ -1,13 +1,18 @@
+import ItemReference from "../../item/utils/itemReference.js";
 import Player from "../../player/player.js";
 
-export default class EnvironmentEventContext<ExtraContext = undefined> {
+interface ExtraContext {
+  item?: ItemReference;
+}
+
+export default class EnvironmentEventContext {
   eventType: string = "base";
   player: Player;
-  extraContext: ExtraContext;
+  item?: ItemReference;
 
-  constructor(eventType: string, player: Player, extraContext: ExtraContext) {
+  constructor(eventType: string, player: Player, opts?: ExtraContext) {
     this.eventType = eventType;
     this.player = player;
-    this.extraContext = extraContext;
+    this.item = opts?.item;
   }
 }
