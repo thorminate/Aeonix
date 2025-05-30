@@ -75,22 +75,27 @@ export default new Event({
       test = false;
     }
 
-    const thor = await Player.find("539166043009056794");
+    // #region Environments
 
-    if (!thor) {
+    let startEnvironment;
+
+    startEnvironment = await event.aeonix.environments.get("start");
+
+    if (!startEnvironment) {
       log({
-        header: "Test Error, could not find Thor",
+        header: "Test Error, start environment is falsy",
         processName: "TestRunner",
+        payload: await event.aeonix.environments.getAll(),
         type: "Error",
       });
-      return;
+      test = false;
     }
 
-    thor.inventory.clear();
-
-    thor.inventory.add(item.toItemReference());
-
-    await thor.save();
+    log({
+      header: "Start Environment",
+      processName: "TestRunner",
+      payload: startEnvironment,
+    });
 
     log({
       header: test ? "Tests passed" : "A test failed, check logs",

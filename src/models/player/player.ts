@@ -18,29 +18,16 @@ import log from "../../utils/log.js";
 import PlayerDocument from "./utils/playerDocument.js";
 import Environment from "../environment/environment.js";
 
-function logAllProperties(obj: any) {
-  const seen = new Set();
-  while (obj && obj !== Object.prototype) {
-    const props = Object.getOwnPropertyNames(obj);
-    props.forEach((prop) => {
-      if (!seen.has(prop)) {
-        seen.add(prop);
-        const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-        const isFunction = typeof descriptor!.value === "function";
-        console.log(`${isFunction ? "Method" : "Property"}: ${prop}`);
-      }
-    });
-    obj = Object.getPrototypeOf(obj);
-  }
-}
-
 export default class Player extends Saveable<PlayerDocument> {
+  // Identifiers
   _id: string;
   name: string;
-  displayName: string;
-  location: string = "start";
+
+  // Persona Information
+  persona = { name: "", avatarURL: "" };
   private _inventory: Inventory;
   private _status: Stats;
+  location: string = "start";
 
   public get status(): Stats {
     return hardMerge(new Stats(), this._status, {}) as Stats;
@@ -85,9 +72,7 @@ export default class Player extends Saveable<PlayerDocument> {
   }
 
   async moveTo(location: string): Promise<undefined | Environment> {
-    const environment = aeonix.environments.get(location);
-
-    logAllProperties(environment);
+    const environment = await aeonix.environments.get(location);
 
     if (!environment) {
       log({
@@ -128,11 +113,14 @@ export default class Player extends Saveable<PlayerDocument> {
 
     if (oldEnvironment) {
       oldEnvironment.leave(this);
+      oldEnvironment.save();
     }
 
     environment.join(this);
 
     this.location = location;
+
+    await environment.save();
 
     return environment;
   }
@@ -178,7 +166,7 @@ export default class Player extends Saveable<PlayerDocument> {
     return new EmbedBuilder()
       .setTitle(
         `${welcomeOptions[Math.floor(Math.random() * welcomeOptions.length)]} ${
-          this.displayName
+          this.persona.name
         }!`
       )
       .setDescription(
@@ -200,7 +188,7 @@ export default class Player extends Saveable<PlayerDocument> {
     };
   }
 
-  protected getModel() {
+  getModel() {
     return playerModel;
   }
 
@@ -215,12 +203,20 @@ export default class Player extends Saveable<PlayerDocument> {
     };
   }
 
-  constructor(user?: User, displayName?: string, location?: string) {
+  constructor(
+    user?: User,
+    displayName?: string,
+    location?: string,
+    personaAvatar?: string
+  ) {
     super();
     // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
 
     this.name = user ? user.username : "";
-    this.displayName = displayName || "";
+    this.persona = {
+      name: displayName || "",
+      avatarURL: personaAvatar || "",
+    };
     this._id = user ? user.id : "";
     this.location = location ?? "Start";
 

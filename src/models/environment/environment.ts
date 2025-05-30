@@ -1,38 +1,10 @@
+import { TextChannel } from "discord.js";
 import aeonix from "../../aeonix.js";
-import Saveable from "../core/saveable.js";
 import ItemReference from "../item/utils/itemReference.js";
 import Player from "../player/player.js";
-import EnvironmentDocument from "./utils/environmentDocument.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
-
-export class SaveableEnvironment extends Saveable<EnvironmentDocument> {
-  id = "";
-  channelId = "";
-  name = "";
-  description = "";
-  players: string[] = [];
-  adjacentEnvironments: string[] = [];
-  items: ItemReference[] = [];
-
-  override _id: string = this.id;
-
-  protected override getModel() {
-    return environmentModel;
-  }
-  protected override getClassMap(): Record<string, object> {
-    return {};
-  }
-
-  static getModel() {
-    return environmentModel;
-  }
-
-  constructor() {
-    super();
-  }
-}
 
 export default abstract class Environment {
   abstract id: string;
@@ -43,9 +15,48 @@ export default abstract class Environment {
   adjacentEnvironments: string[] = [];
   items: ItemReference[] = [];
 
+  toObject(): Record<string, any> {
+    const plain = {} as Record<string, any>;
+
+    for (const key of Object.keys(this)) {
+      const value = (this as any)[key];
+      if (typeof value !== "function") {
+        plain[key] = value;
+      }
+    }
+
+    return plain;
+  }
+
+  get _id() {
+    return this.id;
+  }
+
+  async save(): Promise<void> {
+    await environmentModel.findByIdAndUpdate(this.id, this.toObject(), {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    });
+  }
+
   // Methods
   async fetchChannel() {
-    return await aeonix.channels.fetch(this.channelId);
+    return (await aeonix.channels.fetch(this.channelId)) || undefined;
+  }
+
+  async init() {
+    // Make sure channel has a webhook
+
+    const channel = await this.fetchChannel();
+
+    const webhook = await (channel as TextChannel).fetchWebhooks();
+
+    if (webhook.size === 0) {
+      await (channel as TextChannel).createWebhook({
+        name: this.name,
+      });
+    }
   }
 
   leave(player: Player) {

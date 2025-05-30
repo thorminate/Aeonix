@@ -16,12 +16,9 @@ import { config } from "@dotenvx/dotenvx";
 import { blue, blueBright, green, magenta, redBright } from "ansis";
 import { execSync } from "child_process";
 import path from "path";
-import Environment, {
-  SaveableEnvironment,
-} from "./models/environment/environment.js";
-import { glob } from "glob";
-import { fileURLToPath } from "url";
-import mergeEnvironments from "./models/environment/utils/mergeEnvironments.js";
+import environmentModel from "./models/environment/utils/environmentModel.js";
+import loadEnvironmentClassById from "./models/environment/utils/loadEnvironmentClassById.js";
+import softMerge from "./utils/softMerge.js";
 
 interface PackageJson {
   name: string;
@@ -59,6 +56,7 @@ const rl = readline.createInterface({
   historySize: 10,
   prompt: `${magenta("Aeonix")} ${green(">>")} `,
 });
+
 // Make sure the .env file exists
 if (!existsSync("./.env")) {
   // If the .env file doesn't exist, we create it.
@@ -98,87 +96,36 @@ if (!existsSync("./.env")) {
 // Load environment variables
 config();
 
-export class EnvironmentManager {
-  private staticEnvs: Record<string, Environment> = {};
-  private saveableEnvs: Record<string, SaveableEnvironment> = {};
+class EnvironmentManager {
+  async get(location: string) {
+    const [classInstance, dbData] = await Promise.all([
+      loadEnvironmentClassById(location),
+      environmentModel.findById(location).lean().exec(),
+    ]);
 
-  constructor() {}
+    if (!dbData) return classInstance;
 
-  async init(): Promise<EnvironmentManager> {
-    this.staticEnvs = await this.loadStaticEnvs();
-    for (const id of Object.keys(this.staticEnvs)) {
-      const saveable = await SaveableEnvironment.find(id);
-      if (saveable) {
-        this.saveableEnvs[id] = saveable;
-      } else {
-        const newEnv = new SaveableEnvironment();
-        newEnv.id = id;
-        await newEnv.save();
-        this.saveableEnvs[id] = newEnv;
-      }
-    }
-
-    return this;
+    return softMerge(classInstance, dbData);
   }
+  async getAll() {
+    const allDocs = await environmentModel.find().lean().exec();
 
-  get(id: string): Environment | undefined {
-    const staticEnv = this.staticEnvs[id];
-    const saveableEnv = this.saveableEnvs[id];
-    if (staticEnv && saveableEnv) {
-      return mergeEnvironments(staticEnv, saveableEnv);
-    }
-    return;
-  }
-
-  getAll(): Array<Environment> {
-    return Object.keys(this.staticEnvs).map((id) => this.get(id)!);
-  }
-
-  // HELPER FUNCTIONS
-  private async loadStaticEnvs(): Promise<Record<string, Environment>> {
-    log({
-      header: "Loading environments",
-      processName: "EnvironmentManager",
-      type: "Info",
-    });
-
-    const files = await glob(
-      `${path.dirname(
-        fileURLToPath(import.meta.url)
-      )}/environments/*Environment.@(js|ts)`
+    return Promise.all(
+      allDocs.map(async (doc) => {
+        await this.get((doc._id as string) || "");
+      })
     );
-
-    const envs: Record<string, Environment> = {};
-
-    for (const file of files) {
-      const mod = await import("./" + file.replace("\\", "/").substring(4));
-
-      const Cls = mod.default;
-
-      if (typeof Cls !== "function") {
-        continue;
-      }
-
-      const instance = new Cls();
-
-      if (!instance.id) {
-        continue;
-      }
-
-      envs[instance.id] = instance;
-    }
-
-    return envs;
   }
 }
 
-// Define Aeonix
 export class Aeonix extends Client {
-  environments: EnvironmentManager = new EnvironmentManager();
-  rl: readline.Interface = rl;
+  rl = rl;
+  environments = new EnvironmentManager();
+
   packageJson: PackageJson = JSON.parse(
     readFileSync("./package.json").toString()
   );
+
   activities = [
     "Reading through the archives",
     "Manipulating physical forces",
@@ -488,8 +435,6 @@ export class Aeonix extends Client {
       ],
     });
 
-    this.environments.init();
-
     this.rl.on("line", async (input: string) => {
       const inputArr: string[] = input.split(" ");
       const firstOptionIndex: number = inputArr.findIndex((arg) =>
@@ -694,7 +639,7 @@ export class Aeonix extends Client {
         await mongoose.connect(mdbToken).then(() => {
           log({
             header: "Linked to DB",
-            processName: "AeonixConstructor",
+            processName: "NetworkingHandler",
             type: "Info",
           });
 
@@ -706,15 +651,15 @@ export class Aeonix extends Client {
         eventHandler(this);
 
         log({
-          header: "Event handler initialized",
-          processName: "AeonixConstructor",
+          header: "Event handler ready to rumble!",
+          processName: "EventHandler",
           type: "Info",
         });
 
         await this.login(dscToken).then(() => {
           log({
             header: "Connected to Discord",
-            processName: "AeonixConstructor",
+            processName: "NetworkingHandler",
             type: "Info",
           });
         });
@@ -722,7 +667,7 @@ export class Aeonix extends Client {
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",
-          processName: "AeonixConstructor",
+          processName: "ErrorSuppressant",
           payload: e,
           type: "Fatal",
         });

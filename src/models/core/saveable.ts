@@ -10,13 +10,22 @@ export interface SaveableConstructor<T extends Document, TInstance> {
 
 export default abstract class Saveable<T extends Document> {
   abstract _id: string;
-  protected abstract getModel(): Model<T>;
+  abstract getModel(): Model<T>;
   protected abstract getClassMap(): Record<string, object>;
 
   toObject(): Record<string, any> {
-    const obj = { ...structuredClone(this) };
-    delete (obj as any)._id;
-    return obj;
+    const plain: Record<string, any> = {};
+
+    for (const key of Object.keys(this)) {
+      const value = (this as any)[key];
+      if (typeof value !== "function") {
+        plain[key] = value;
+      }
+    }
+
+    delete plain._id;
+
+    return plain;
   }
 
   async save(): Promise<void> {

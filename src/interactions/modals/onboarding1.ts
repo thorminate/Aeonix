@@ -70,16 +70,9 @@ export default new Modal({
       return;
     }
 
-    const startChannel = await aeonix.channels
-      .fetch(process.env.START_ENV_CHANNEL || "")
-      .catch((e) => {
-        log({
-          header: "Start channel not found",
-          processName: "Onboarding1Modal",
-          payload: e,
-          type: "Error",
-        });
-      });
+    const startChannel = await (
+      await aeonix.environments.get("start")
+    )?.fetchChannel();
 
     if (!startChannel) {
       log({

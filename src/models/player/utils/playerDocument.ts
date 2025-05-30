@@ -5,7 +5,7 @@ import Stats from "../../status/status.js";
 export default interface PlayerDocument extends Document {
   _id: string;
   name: string;
-  displayName: string;
+  persona: { name: string; avatarURL: string };
   _status: Stats;
   _inventory: Inventory;
 }

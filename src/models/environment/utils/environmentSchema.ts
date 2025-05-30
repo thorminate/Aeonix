@@ -1,7 +1,6 @@
 import { Schema } from "mongoose";
-import EnvironmentDocument from "./environmentDocument.js";
 
-export default new Schema<EnvironmentDocument>({
+export default new Schema({
   _id: String,
   channelId: { type: String, required: true },
   name: { type: String, required: true },
