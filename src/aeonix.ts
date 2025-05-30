@@ -98,14 +98,27 @@ config();
 
 class EnvironmentManager {
   async get(location: string) {
-    const [classInstance, dbData] = await Promise.all([
+    let [classInstance, dbData] = await Promise.all([
       loadEnvironmentClassById(location),
       environmentModel.findById(location).lean().exec(),
     ]);
 
-    if (!dbData) return classInstance;
+    if (!classInstance) {
+      log({
+        header: "Invalid location",
+        processName: "EnvironmentManager.get",
+        payload: location,
+        type: "Warn",
+      });
+      return;
+    }
 
-    return softMerge(classInstance, dbData);
+    if (!dbData) {
+      await classInstance.save();
+      return softMerge(classInstance, {}, classInstance.getFullClassMap());
+    }
+
+    return softMerge(classInstance, dbData, classInstance.getFullClassMap());
   }
   async getAll() {
     const allDocs = await environmentModel.find().lean().exec();

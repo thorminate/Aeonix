@@ -8,4 +8,5 @@ export default interface PlayerDocument extends Document {
   persona: { name: string; avatarURL: string };
   _status: Stats;
   _inventory: Inventory;
+  location: string;
 }

@@ -15,48 +15,16 @@ export default abstract class Environment {
   adjacentEnvironments: string[] = [];
   items: ItemReference[] = [];
 
-  toObject(): Record<string, any> {
-    const plain = {} as Record<string, any>;
-
-    for (const key of Object.keys(this)) {
-      const value = (this as any)[key];
-      if (typeof value !== "function") {
-        plain[key] = value;
-      }
-    }
-
-    return plain;
-  }
-
-  get _id() {
-    return this.id;
-  }
-
   async save(): Promise<void> {
-    await environmentModel.findByIdAndUpdate(this.id, this.toObject(), {
+    await environmentModel.findByIdAndUpdate(this.id, this.toSaveablePOJO(), {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,
     });
   }
 
-  // Methods
   async fetchChannel() {
     return (await aeonix.channels.fetch(this.channelId)) || undefined;
-  }
-
-  async init() {
-    // Make sure channel has a webhook
-
-    const channel = await this.fetchChannel();
-
-    const webhook = await (channel as TextChannel).fetchWebhooks();
-
-    if (webhook.size === 0) {
-      await (channel as TextChannel).createWebhook({
-        name: this.name,
-      });
-    }
   }
 
   leave(player: Player) {
@@ -93,4 +61,70 @@ export default abstract class Environment {
   onItemDrop?(context: EnvironmentEventContext): EnvironmentEventResult;
 
   onItemPickup?(context: EnvironmentEventContext): EnvironmentEventResult;
+
+  // Utility Methods
+
+  async init() {
+    // Make sure channel has a webhook
+
+    const channel = await this.fetchChannel();
+
+    const webhook = await (channel as TextChannel).fetchWebhooks();
+
+    if (webhook.size === 0) {
+      await (channel as TextChannel).createWebhook({
+        name: this.name,
+      });
+    }
+  }
+
+  toSaveablePOJO(): Record<string, any> {
+    const result: Record<string, any> = {};
+    let current: any = this;
+
+    while (current && current !== Object.prototype) {
+      for (const key of Object.getOwnPropertyNames(current)) {
+        if (
+          key === "constructor" ||
+          typeof (this as any)[key] === "function" ||
+          key.startsWith("_")
+        ) {
+          continue;
+        }
+
+        if (!(key in result)) {
+          result[key] = (this as any)[key];
+        }
+      }
+
+      current = Object.getPrototypeOf(current);
+    }
+
+    delete result.id;
+
+    return result;
+  }
+
+  _getClassMap(): Record<string, new (...args: any) => any> {
+    return {
+      items: ItemReference,
+    };
+  }
+
+  abstract getClassMap(): Record<string, new (...args: any) => any>;
+
+  getFullClassMap(): Record<string, new (...args: any) => any> {
+    return {
+      ...this._getClassMap(),
+      ...this.getClassMap(),
+    };
+  }
+
+  get _id() {
+    return this.id;
+  }
+
+  set _id(id: string) {
+    this.id = id;
+  }
 }

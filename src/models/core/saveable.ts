@@ -11,7 +11,7 @@ export interface SaveableConstructor<T extends Document, TInstance> {
 export default abstract class Saveable<T extends Document> {
   abstract _id: string;
   abstract getModel(): Model<T>;
-  protected abstract getClassMap(): Record<string, object>;
+  protected abstract getClassMap(): Record<string, new (...args: any) => any>;
 
   toObject(): Record<string, any> {
     const plain: Record<string, any> = {};

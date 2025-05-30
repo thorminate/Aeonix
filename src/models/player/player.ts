@@ -196,7 +196,7 @@ export default class Player extends Saveable<PlayerDocument> {
     return playerModel;
   }
 
-  protected getClassMap(): Record<string, object> {
+  protected getClassMap(): Record<string, new (...args: any) => any> {
     return {
       _inventory: Inventory,
       _status: Stats,
@@ -218,7 +218,7 @@ export default class Player extends Saveable<PlayerDocument> {
       avatarURL: personaAvatar || "",
     };
     this._id = user ? user.id : "";
-    this.location = location ?? "Start";
+    this.location = location ?? "start";
 
     this._status = new Stats();
     this._inventory = new Inventory();

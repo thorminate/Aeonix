@@ -22,7 +22,7 @@ export default new Event({
 
     let test = true;
 
-    // #region Item conversion
+    // #region Item
 
     if (item.name !== item2.name) {
       log({
@@ -51,7 +51,7 @@ export default new Event({
       });
       test = false;
     }
-    // #region Inventory mutability
+    // #region Inventory
 
     player.inventory.clear();
 
@@ -75,7 +75,7 @@ export default new Event({
       test = false;
     }
 
-    // #region Environments
+    // #region Environment
 
     let startEnvironment;
 
@@ -90,12 +90,6 @@ export default new Event({
       });
       test = false;
     }
-
-    log({
-      header: "Start Environment",
-      processName: "TestRunner",
-      payload: startEnvironment,
-    });
 
     log({
       header: test ? "Tests passed" : "A test failed, check logs",

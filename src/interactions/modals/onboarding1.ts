@@ -94,9 +94,9 @@ export default new Modal({
 
     await (context.member.roles as GuildMemberRoleManager).add(playerRole);
 
-    player.moveTo("start");
+    await player.moveTo("start");
 
-    player.save();
+    await player.save();
 
     await context.editReply({
       content: "1/1 - Your persona has been created.",

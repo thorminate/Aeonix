@@ -6,4 +6,9 @@ export default class StartEnvironment extends Environment {
   name: string = "Start";
   description: string =
     "The environment you start in at the beginning of your journey.";
+  newValue: string = "start";
+
+  getClassMap(): Record<string, new (...args: any) => any> {
+    return {};
+  }
 }

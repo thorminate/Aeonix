@@ -14,13 +14,16 @@ export default new Command({
     ),
   passPlayer: true,
   acknowledge: true,
+  ephemeral: true,
   callback: async (context, player) => {
     const locationOption = context.options.get("location", true)
       .value as string;
 
-    await context.editReply("Traveling...");
-
     await player.moveTo(locationOption);
+
+    await context.editReply({
+      content: `You have moved to ${locationOption}.`,
+    });
   },
   onError(e) {
     log({
