@@ -203,12 +203,7 @@ export default class Player extends Saveable<PlayerDocument> {
     };
   }
 
-  constructor(
-    user?: User,
-    displayName?: string,
-    location?: string,
-    personaAvatar?: string
-  ) {
+  constructor(user?: User, displayName?: string, personaAvatar?: string) {
     super();
     // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
 
@@ -218,7 +213,6 @@ export default class Player extends Saveable<PlayerDocument> {
       avatarURL: personaAvatar || "",
     };
     this._id = user ? user.id : "";
-    this.location = location ?? "start";
 
     this._status = new Stats();
     this._inventory = new Inventory();

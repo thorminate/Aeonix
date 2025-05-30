@@ -12,6 +12,21 @@ import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
 import aeonix from "../../aeonix.js";
 
+async function isImageUrl(url: string) {
+  try {
+    const response = await fetch(url, { method: "HEAD" });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const contentType = response.headers.get("content-type");
+    return contentType && contentType.startsWith("image/");
+  } catch (error) {
+    return false;
+  }
+}
+
 export default new Modal({
   data: new ModalBuilder()
     .setTitle("Step 1/1 - Display Name")
@@ -20,12 +35,20 @@ export default new Modal({
       new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
           .setCustomId("display-name")
-          .setLabel("Display name/Character Name")
+          .setLabel("Display/Character Name")
           .setPlaceholder("Name of your character within this world.")
           .setStyle(TextInputStyle.Short)
           .setRequired(true)
           .setMaxLength(32)
           .setMinLength(2)
+      ),
+      new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+          .setCustomId("avatar-url")
+          .setLabel("Avatar URL")
+          .setPlaceholder("https://example.com/avatar.png")
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true)
       )
     ),
   customId: "onboarding1",
@@ -34,8 +57,6 @@ export default new Modal({
   acknowledge: true,
 
   callback: async (context) => {
-    const displayName = context.fields.getTextInputValue("display-name");
-
     if (await Player.find(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 
@@ -47,7 +68,33 @@ export default new Modal({
       return;
     }
 
-    const player = new Player(context.user, displayName);
+    const displayName = context.fields.getTextInputValue("display-name");
+
+    const avatarUrl = context.fields.getTextInputValue("avatar-url");
+
+    if (!displayName) {
+      await context.editReply({
+        content: "Please enter a display name.",
+      });
+      return;
+    }
+
+    if (!avatarUrl) {
+      await context.editReply({
+        content: "Please enter an avatar URL.",
+      });
+      return;
+    }
+
+    if (!(await isImageUrl(avatarUrl))) {
+      await context.editReply({
+        content:
+          "Please enter a valid image URL. (Has to include a valid image extension like .png, .jpg, .jpeg, etc.)",
+      });
+      return;
+    }
+
+    const player = new Player(context.user, displayName, avatarUrl);
 
     if (!context.member) {
       log({

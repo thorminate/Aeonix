@@ -113,6 +113,8 @@ class EnvironmentManager {
       return;
     }
 
+    await classInstance.init();
+
     if (!dbData) {
       await classInstance.save();
       return softMerge(classInstance, {}, classInstance.getFullClassMap());

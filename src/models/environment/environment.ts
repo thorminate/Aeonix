@@ -23,8 +23,11 @@ export default abstract class Environment {
     });
   }
 
-  async fetchChannel() {
-    return (await aeonix.channels.fetch(this.channelId)) || undefined;
+  async fetchChannel(): Promise<TextChannel | null> {
+    return (
+      ((await aeonix.channels.fetch(this.channelId)) as TextChannel | null) ||
+      null
+    );
   }
 
   leave(player: Player) {
