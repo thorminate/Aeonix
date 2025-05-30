@@ -6,7 +6,7 @@ import {
   TextChannel,
 } from "discord.js";
 import log from "../../utils/log.js";
-import Event, { EventParams } from "../../models/core/event.js";
+import Event from "../../models/core/event.js";
 import componentWrapper from "../../utils/componentWrapper.js";
 
 // turn on word wrap to see the full message
@@ -22,7 +22,7 @@ By pressing 'Begin', you agree to the [Terms of Service](<https://github.com/tho
 export const welcomeImage = new AttachmentBuilder("./assets/welcome.png");
 
 export default new Event({
-  callback: async (event: EventParams) => {
+  callback: async ({ aeonix }) => {
     const onboardingChannelId = process.env.ONBOARDING_CHANNEL;
 
     if (!onboardingChannelId) {
@@ -35,9 +35,7 @@ export default new Event({
       return;
     }
 
-    const onboardingChannel = await event.aeonix.channels.fetch(
-      onboardingChannelId
-    );
+    const onboardingChannel = await aeonix.channels.fetch(onboardingChannelId);
 
     if (!onboardingChannel || !(onboardingChannel instanceof TextChannel)) {
       log({

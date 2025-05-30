@@ -3,7 +3,7 @@ import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
 
 export default new Event({
-  async callback({ aeonix, context }) {
+  async callback({ context }) {
     if (!(context instanceof Message)) return;
 
     if (context.author.bot) return;
@@ -29,13 +29,14 @@ export default new Event({
 
     if (!webhook) throw new Error("Webhook not found");
 
-    await webhook.send({
-      content: context.content,
-      username: player.persona.name,
-      avatarURL: player.persona.avatarURL,
-    });
-
-    await context.delete();
+    await Promise.all([
+      await webhook.send({
+        content: context.content,
+        username: player.persona.name,
+        avatarURL: player.persona.avatarURL,
+      }),
+      await context.delete(),
+    ]);
   },
   async onError(e) {},
 });
