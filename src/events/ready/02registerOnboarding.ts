@@ -17,7 +17,10 @@ You are currently not able to see any channels other than a few for the onboardi
   
 When you have read through the information, please press the button below, and Aeonix will validate your persona's existence in the database, thereafter giving you the <@&1270791621289578607> role.
   
-By pressing 'Begin', you agree to the [Terms of Service](<https://github.com/thorminate/Aeonix/wiki/Terms-of-Service>) and [Privacy Policy](<https://github.com/thorminate/Aeonix/wiki/Privacy-Policy>).`;
+By pressing 'Begin', you agree to the [Terms of Service](<https://github.com/thorminate/Aeonix/wiki/Terms-of-Service>) and [Privacy Policy](<https://github.com/thorminate/Aeonix/wiki/Privacy-Policy>).
+
+If the Begin button doesn't work (like 'this interaction failed'), you can run \`\`/init\`\` to refresh the prompt.
+`;
 
 export const welcomeImage = new AttachmentBuilder("./assets/welcome.png");
 

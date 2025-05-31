@@ -1,11 +1,11 @@
 import Environment from "../models/environment/environment.js";
 
 export default class StartEnvironment extends Environment {
-  id: string = "start";
-  channelId: string = "1289589923510489118";
-  name: string = "Start";
+  id: string = "template";
+  channelId: string = "uhh numbers ig";
+  name: string = "Template";
   description: string =
-    "The environment you start in at the beginning of your journey.";
+    "A placeholder environment that you can use as a template.";
 
   getClassMap(): Record<string, new (...args: any) => any> {
     return {};

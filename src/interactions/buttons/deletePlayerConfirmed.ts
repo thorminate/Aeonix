@@ -1,7 +1,7 @@
 import Player from "../../models/player/player.js";
 import Button from "../button.js";
 import log from "../../utils/log.js";
-import { ButtonBuilder, ButtonStyle } from "discord.js";
+import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
 
 export default new Button({
   data: new ButtonBuilder()
@@ -11,15 +11,19 @@ export default new Button({
   customId: "deletePlayerConfirmed",
   ephemeral: true,
   acknowledge: false,
-  passPlayer: false,
+  passPlayer: true,
 
-  callback: async (context) => {
-    if (!(await Player.find(context.user.id))) {
-      await context.update({
-        content: "You don't exist in the DB, therefore you cannot be deleted.",
-      });
-      return;
-    }
+  callback: async (context, player) => {
+    await (context.member?.roles as GuildMemberRoleManager).remove(
+      process.env.PLAYER_ROLE || "",
+      "Player deleted"
+    );
+
+    const channel = await player.fetchEnvironmentChannel(context.guildId || "");
+
+    if (!channel) return;
+
+    await channel.permissionOverwrites.delete(context.user.id);
 
     await Player.delete(context.user.id);
 

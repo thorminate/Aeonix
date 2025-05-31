@@ -1,3 +1,4 @@
+import log from "../../../utils/log.js";
 import Environment from "../environment.js";
 
 const classCache = new Map<string, any>();
@@ -9,7 +10,16 @@ export default async function loadEnvironmentClass(
 
   if (classCache.has(id)) return new (classCache.get(id))();
 
-  const module = (await import(fileName)).default;
+  const module = (
+    await import(fileName).catch(() => {
+      log({
+        header: "Error loading environment class",
+        processName: "loadEnvironmentClass",
+        payload: fileName || " ",
+      });
+      return;
+    })
+  ).default;
 
   if (!module) return;
 

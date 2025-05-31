@@ -21,6 +21,8 @@ export default new Command({
 
     await player.moveTo(locationOption);
 
+    await player.save();
+
     await context.editReply({
       content: `You have moved to ${locationOption}.`,
     });

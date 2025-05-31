@@ -13,7 +13,6 @@ import Inventory from "../inventory/inventory.js";
 import calculateXpRequirement from "../status/utils/calculateXpRequirement.js";
 import aeonix from "../../aeonix.js";
 import playerModel from "./utils/playerModel.js";
-import environmentIdToChannelId from "../environment/utils/environmentIdToChannelId.js";
 import log from "../../utils/log.js";
 import PlayerDocument from "./utils/playerDocument.js";
 import Environment from "../environment/environment.js";
@@ -27,7 +26,7 @@ export default class Player extends Saveable<PlayerDocument> {
   persona = { name: "", avatarURL: "" };
   private _inventory: Inventory;
   private _status: Stats;
-  location: string = "start";
+  location: string = "";
 
   public get status(): Stats {
     return hardMerge(new Stats(), this._status, {}) as Stats;
@@ -53,25 +52,30 @@ export default class Player extends Saveable<PlayerDocument> {
     return aeonix.users.cache.get(this._id);
   }
 
-  async fetchUserChannelOverrides(guildId: string) {
+  async fetchEnvironmentChannel(guildId: string) {
     const guild = aeonix.guilds.cache.get(guildId);
 
     if (!guild) return;
 
-    const channel = guild.channels.cache.get(
-      await environmentIdToChannelId(this.location)
-    );
+    const env = await this.fetchEnvironment();
 
-    if (!channel || !(channel instanceof TextChannel)) return;
+    if (!env) return;
 
-    return channel.permissionOverwrites.cache.get(this._id);
+    const channelId = env.channelId;
+
+    return guild.channels.cache.get(channelId) as TextChannel;
   }
 
   async fetchEnvironment() {
     return aeonix.environments.get(this.location);
   }
 
-  async moveTo(location: string): Promise<undefined | Environment> {
+  async moveTo(
+    location: string,
+    acceptNonAdjacent = false,
+    disregardAlreadyHere = false,
+    disregardOldEnvironment = false
+  ): Promise<string | Environment> {
     const environment = await aeonix.environments.get(location);
 
     if (!environment) {
@@ -81,14 +85,30 @@ export default class Player extends Saveable<PlayerDocument> {
         payload: location,
         type: "Warn",
       });
-      return;
+      return "invalid location";
     }
 
-    if (this.location === location) return;
+    if (this.location === location && !disregardAlreadyHere)
+      return "already here";
+
+    let oldEnvironment;
+    if (!disregardOldEnvironment)
+      oldEnvironment = await this.fetchEnvironment();
+
+    if (!acceptNonAdjacent && !oldEnvironment) {
+      log({
+        header: "Not an adjacent location",
+        processName: "Player.moveTo",
+        payload: location,
+        type: "Warn",
+      });
+      return "invalid location";
+    }
 
     const channel = await environment.fetchChannel();
 
-    if (!channel || !(channel instanceof GuildChannel)) return;
+    if (!channel || !(channel instanceof GuildChannel))
+      return "invalid location";
 
     await channel.permissionOverwrites
       .create(
@@ -109,10 +129,23 @@ export default class Player extends Saveable<PlayerDocument> {
         });
       });
 
-    const oldEnvironment = await this.fetchEnvironment();
+    // TODO: Remove permission overrides once someone leaves an environment.
 
     if (oldEnvironment) {
       oldEnvironment.leave(this);
+
+      const oldChannel = await oldEnvironment.fetchChannel();
+
+      if (oldChannel && oldChannel instanceof GuildChannel) {
+        await oldChannel.permissionOverwrites.delete(this._id).catch(() => {
+          log({
+            header: "Failed to delete permission overwrite",
+            processName: "Player.moveTo",
+            type: "Warn",
+          });
+        });
+      }
+
       oldEnvironment.save();
     }
 

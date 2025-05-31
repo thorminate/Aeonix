@@ -141,7 +141,7 @@ export default new Modal({
 
     await (context.member.roles as GuildMemberRoleManager).add(playerRole);
 
-    await player.moveTo("start");
+    await player.moveTo("start", true, true, true);
 
     await player.save();
 
