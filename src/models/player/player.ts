@@ -15,7 +15,7 @@ import aeonix from "../../aeonix.js";
 import playerModel from "./utils/playerModel.js";
 import log from "../../utils/log.js";
 import PlayerDocument from "./utils/playerDocument.js";
-import Environment from "../environment/environment.js";
+import PlayerMoveToResult from "./utils/playerMoveToResult.js";
 
 export default class Player extends Saveable<PlayerDocument> {
   // Identifiers
@@ -72,43 +72,47 @@ export default class Player extends Saveable<PlayerDocument> {
 
   async moveTo(
     location: string,
-    acceptNonAdjacent = false,
+    disregardAdjacents = false,
     disregardAlreadyHere = false,
     disregardOldEnvironment = false
-  ): Promise<string | Environment> {
+  ): Promise<PlayerMoveToResult> {
     const environment = await aeonix.environments.get(location);
 
-    if (!environment) {
-      log({
-        header: "Invalid location",
-        processName: "Player.moveTo",
-        payload: location,
-        type: "Warn",
-      });
-      return "invalid location";
-    }
+    if (!environment) return "invalid location";
 
     if (this.location === location && !disregardAlreadyHere)
       return "already here";
 
-    let oldEnvironment;
-    if (!disregardOldEnvironment)
-      oldEnvironment = await this.fetchEnvironment();
+    const oldEnvironment = await this.fetchEnvironment().catch(() => undefined);
 
-    if (!acceptNonAdjacent && !oldEnvironment) {
-      log({
-        header: "Not an adjacent location",
-        processName: "Player.moveTo",
-        payload: location,
-        type: "Warn",
-      });
-      return "invalid location";
+    if (oldEnvironment) {
+      if (!oldEnvironment.adjacentTo(environment) && !disregardAdjacents)
+        return "not adjacent";
+
+      oldEnvironment.leave(this);
+
+      const oldChannel = await oldEnvironment.fetchChannel();
+
+      if (oldChannel && oldChannel instanceof GuildChannel) {
+        await oldChannel.permissionOverwrites.delete(this._id).catch((e) => {
+          log({
+            header: "Failed to delete permission overwrite",
+            processName: "Player.moveTo",
+            payload: e,
+            type: "Warn",
+          });
+        });
+      }
+
+      oldEnvironment.save();
+    } else if (!disregardOldEnvironment) {
+      return "no old environment";
     }
 
     const channel = await environment.fetchChannel();
 
     if (!channel || !(channel instanceof GuildChannel))
-      return "invalid location";
+      return "location channel not found";
 
     await channel.permissionOverwrites
       .create(
@@ -129,31 +133,13 @@ export default class Player extends Saveable<PlayerDocument> {
         });
       });
 
-    // TODO: Remove permission overrides once someone leaves an environment.
-
-    if (oldEnvironment) {
-      oldEnvironment.leave(this);
-
-      const oldChannel = await oldEnvironment.fetchChannel();
-
-      if (oldChannel && oldChannel instanceof GuildChannel) {
-        await oldChannel.permissionOverwrites.delete(this._id).catch(() => {
-          log({
-            header: "Failed to delete permission overwrite",
-            processName: "Player.moveTo",
-            type: "Warn",
-          });
-        });
-      }
-
-      oldEnvironment.save();
-    }
-
     environment.join(this);
 
     this.location = location;
 
     await environment.save();
+
+    await this.save();
 
     return environment;
   }

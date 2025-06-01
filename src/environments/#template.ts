@@ -6,6 +6,7 @@ export default class StartEnvironment extends Environment {
   name: string = "Template";
   description: string =
     "A placeholder environment that you can use as a template.";
+  adjacentEnvironments: string[] = [];
 
   getClassMap(): Record<string, new (...args: any) => any> {
     return {};

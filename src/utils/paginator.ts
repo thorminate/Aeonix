@@ -18,7 +18,7 @@ import log from "./log.js";
 import { CommandContext } from "../interactions/command.js";
 
 type Page = ActionRowBuilder<ButtonBuilder>;
-type GetterOrLiteral = string | ((currentPage: Page) => string);
+type GetterOrLiteral = string | ((currentPage: Page | undefined) => string);
 
 function toLiteral(
   value: GetterOrLiteral,
@@ -350,16 +350,6 @@ export default async (
 
     if (!getContent) getContent = "";
 
-    if (pages.length === 0) {
-      log({
-        header: "No buttons found",
-        processName: "Paginator",
-        payload: buttons,
-        type: "Error",
-      });
-      return;
-    }
-
     if (pages.length === 1) {
       return context.editReply({
         content: toLiteral(
@@ -376,10 +366,12 @@ export default async (
           getContent,
           pages[0] as ActionRowBuilder<ButtonBuilder>
         ),
-        components: [
-          pages[0] as ActionRowBuilder<ButtonBuilder>,
-          paginationRow(0, pages.length - 1),
-        ],
+        components: pages[0]
+          ? [
+              pages[0] as ActionRowBuilder<ButtonBuilder>,
+              paginationRow(0, pages.length - 1),
+            ]
+          : [],
       }),
       pages,
       buttons,

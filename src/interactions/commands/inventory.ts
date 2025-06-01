@@ -236,17 +236,12 @@ export default new Command({
     }
     const unsanitizedButtons = getButtonsFromEntries(player.inventory.entries);
 
-    if (unsanitizedButtons.length === 0) {
-      await context.editReply("You have no items in your inventory.");
-      return;
-    }
-
     const buttons = scrambleDuplicates(unsanitizedButtons, player);
 
-    const message = await paginator(
-      context,
-      buttons,
-      `**Inventory:**\n-# (select an item to see more details)`
+    const message = await paginator(context, buttons, (pg) =>
+      pg
+        ? "`**Inventory:**\n-# (select an item to see more details)`"
+        : "You have no items in your inventory."
     );
 
     if (!message) {

@@ -5,6 +5,7 @@ export default class StartEnvironment extends Environment {
   channelId: string = "1373366311765278793";
   name: string = "Somewhere";
   description: string = "A place somewhere. You have no idea what it is. >:)";
+  adjacentEnvironments: string[] = ["start"];
 
   getClassMap(): Record<string, new (...args: any) => any> {
     return {};

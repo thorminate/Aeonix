@@ -103,15 +103,7 @@ class EnvironmentManager {
       environmentModel.findById(location).lean().exec(),
     ]);
 
-    if (!classInstance) {
-      log({
-        header: "Invalid location",
-        processName: "EnvironmentManager.get",
-        payload: location,
-        type: "Warn",
-      });
-      return;
-    }
+    if (!classInstance) return;
 
     await classInstance.init();
 

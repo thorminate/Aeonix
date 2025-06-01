@@ -11,8 +11,8 @@ export default abstract class Environment {
   abstract channelId: string;
   abstract name: string;
   abstract description: string;
+  abstract adjacentEnvironments: string[];
   players: string[] = [];
-  adjacentEnvironments: string[] = [];
   items: ItemReference[] = [];
 
   async save(): Promise<void> {
@@ -27,6 +27,12 @@ export default abstract class Environment {
     return (
       ((await aeonix.channels.fetch(this.channelId)) as TextChannel | null) ||
       null
+    );
+  }
+
+  adjacentTo(environment: Environment | string): boolean {
+    return this.adjacentEnvironments.includes(
+      typeof environment === "string" ? environment : environment.id
     );
   }
 
