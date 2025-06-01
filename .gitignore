@@ -1,4 +1,10 @@
+# Generics
+
 dist/
 logs/
 node_modules/
-pnpm-lock.yaml
+
+# Anti-Spoilers
+
+src/environments/
+src/items/
