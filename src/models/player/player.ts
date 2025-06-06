@@ -27,6 +27,7 @@ export default class Player extends Saveable<PlayerDocument> {
   private _inventory: Inventory;
   private _status: Stats;
   location: string = "";
+  locationChannelId: string = "";
 
   public get status(): Stats {
     return hardMerge(new Stats(), this._status, {}) as Stats;
@@ -136,6 +137,8 @@ export default class Player extends Saveable<PlayerDocument> {
     environment.join(this);
 
     this.location = location;
+
+    this.locationChannelId = channel.id;
 
     await environment.save();
 

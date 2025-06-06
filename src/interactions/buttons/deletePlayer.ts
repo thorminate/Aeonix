@@ -15,6 +15,8 @@ export default new Button({
   ephemeral: true,
   acknowledge: false,
   passPlayer: false,
+  environmentOnly: false,
+  passEnvironment: false,
 
   callback: async (context) => {
     if (!(await Player.find(context.user.id))) {

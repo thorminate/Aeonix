@@ -14,40 +14,54 @@ export type CommandContext = Omit<
   "reply" | "deferReply" | "showModal"
 >;
 
-type CommandCallback<A extends boolean, P extends boolean> = A extends true
-  ? P extends true
+type CommandCallback<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> = Acknowledge extends true
+  ? PassPlayer extends true
     ? (context: CommandContext, player: Player) => Promise<void>
     : (context: CommandContext) => Promise<void>
-  : P extends true
+  : PassPlayer extends true
   ? (context: CommandInteraction<CacheType>, player: Player) => Promise<void>
   : (context: CommandInteraction<CacheType>) => Promise<void>;
 
-export interface ICommand<A extends boolean, P extends boolean> {
+type EnvironmentOnly<PassPlayer extends boolean> = PassPlayer extends true
+  ? boolean
+  : false;
+
+export interface ICommand<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> {
   data:
     | SlashCommandBuilder
     | SlashCommandOptionsOnlyBuilder
     | SlashCommandSubcommandsOnlyBuilder;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge: A;
+  acknowledge: Acknowledge;
   deleted?: boolean;
-  passPlayer: P;
+  passPlayer: PassPlayer;
+  environmentOnly: EnvironmentOnly<PassPlayer>;
   ephemeral?: boolean;
-  callback: CommandCallback<A, P>;
+  callback: CommandCallback<Acknowledge, PassPlayer>;
   onError: (e: unknown) => void;
 }
 
-export default class Command<A extends boolean, P extends boolean>
-  implements ICommand<A, P>
+export default class Command<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> implements ICommand<Acknowledge, PassPlayer>
 {
   data: SlashCommandBuilder = new SlashCommandBuilder();
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
-  acknowledge: A = true as A;
+  acknowledge: Acknowledge = true as Acknowledge;
   deleted?: boolean = false;
-  passPlayer: P = false as P;
+  passPlayer: PassPlayer = false as PassPlayer;
+  environmentOnly: EnvironmentOnly<PassPlayer> = false;
   ephemeral?: boolean = true;
-  callback: CommandCallback<A, P> = async () =>
+  callback: CommandCallback<Acknowledge, PassPlayer> = async () =>
     log({
       header: "Command callback not implemented",
       processName: "CommandHandler",
@@ -63,7 +77,7 @@ export default class Command<A extends boolean, P extends boolean>
     });
   };
 
-  constructor(commandObject: ICommand<A, P>) {
+  constructor(commandObject: ICommand<Acknowledge, PassPlayer>) {
     return hardMerge(this, commandObject, { data: SlashCommandBuilder });
   }
 }

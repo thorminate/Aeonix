@@ -12,6 +12,8 @@ export default new Button({
   ephemeral: true,
   acknowledge: false,
   passPlayer: true,
+  environmentOnly: false,
+  passEnvironment: false,
 
   callback: async (context, player) => {
     await (context.member?.roles as GuildMemberRoleManager).remove(

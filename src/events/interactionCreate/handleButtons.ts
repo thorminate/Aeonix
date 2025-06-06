@@ -1,19 +1,26 @@
 import {
   ButtonInteraction,
+  CacheType,
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
-import Button from "../../interactions/button.js";
+import Button, {
+  ButtonContext,
+  SeeButtonErrorPropertyForMoreDetails_1,
+  SeeButtonErrorPropertyForMoreDetails_2,
+  SeeButtonErrorPropertyForMoreDetails_3,
+} from "../../interactions/button.js";
 import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
+import Environment from "../../models/environment/environment.js";
 
 async function findLocalButtons() {
-  const localButtons: Button<boolean, boolean>[] = [];
+  const localButtons: Button<boolean, boolean, boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -24,7 +31,7 @@ async function findLocalButtons() {
   for (const buttonFile of buttonFiles) {
     const filePath = path.resolve(buttonFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const buttonObject: Button<boolean, boolean> = (
+    const buttonObject: Button<boolean, boolean, boolean, boolean> = (
       await import(fileUrl.toString())
     ).default;
 
@@ -40,11 +47,21 @@ export default new Event({
 
     if (!context.isButton()) return;
 
+    if (!context.inGuild()) {
+      await context.reply({
+        content: "Bot needs to be in a guild to function properly",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const localButtons = await findLocalButtons();
 
-    const button: Button<boolean, boolean> | undefined = localButtons.find(
-      (button: Button<boolean, boolean>) => button.customId === context.customId
-    );
+    const button: Button<boolean, boolean, boolean, boolean> | undefined =
+      localButtons.find(
+        (button: Button<boolean, boolean, boolean, boolean>) =>
+          button.customId === context.customId
+      );
 
     if (!button) return;
 
@@ -52,16 +69,6 @@ export default new Event({
       await context.deferReply({
         flags: button.ephemeral ? MessageFlags.Ephemeral : undefined,
       });
-    }
-
-    if (!context.inGuild()) {
-      log({
-        header: "Interaction is not in a guild",
-        processName: "ButtonHandler",
-        payload: context,
-        type: "Error",
-      });
-      return;
     }
 
     if (!context.member) {
@@ -116,6 +123,8 @@ export default new Event({
 
     let player: Player | undefined;
 
+    let environment: Environment | undefined;
+
     if (button.passPlayer) {
       player = await Player.find(context.user.id);
 
@@ -132,20 +141,50 @@ export default new Event({
           return;
         }
       }
+
+      if (button.environmentOnly) {
+        if (player.locationChannelId !== context.channelId) {
+          if (button.acknowledge) {
+            await context.editReply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          } else {
+            await context.reply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          }
+        }
+      }
+
+      if (button.passEnvironment) {
+        environment = await player.fetchEnvironment();
+      }
     }
 
-    await button.callback(context, player as Player).catch((e: unknown) => {
-      try {
-        button.onError(e);
-      } catch (e) {
-        log({
-          header: "Error in button error handler",
-          processName: "ButtonHandler",
-          payload: e,
-          type: "Error",
-        });
-      }
-    });
+    await button
+      .callback(
+        context as ButtonInteraction<CacheType> &
+          ButtonContext &
+          SeeButtonErrorPropertyForMoreDetails_3 &
+          SeeButtonErrorPropertyForMoreDetails_2 &
+          SeeButtonErrorPropertyForMoreDetails_1,
+        player as Player,
+        environment as Environment
+      )
+      .catch((e: unknown) => {
+        try {
+          button.onError(e);
+        } catch (e) {
+          log({
+            header: "Error in button error handler",
+            processName: "ButtonHandler",
+            payload: e,
+            type: "Error",
+          });
+        }
+      });
   },
   onError: async (e) =>
     log({

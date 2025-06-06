@@ -40,6 +40,14 @@ export default new Event({
 
     if (!context.isStringSelectMenu()) return;
 
+    if (!context.inGuild()) {
+      await context.reply({
+        content: "Bot needs to be in a guild to function properly",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const localStringSelectMenus = await findLocalStringSelectMenus();
 
     const stringSelectMenu: StringSelectMenu<boolean, boolean> | undefined =
@@ -49,16 +57,6 @@ export default new Event({
       );
 
     if (!stringSelectMenu) return;
-
-    if (!context.inGuild()) {
-      log({
-        header: "Interaction is not in a guild",
-        processName: "StringSelectMenuHandler",
-        payload: context,
-        type: "Error",
-      });
-      return;
-    }
 
     if (stringSelectMenu.acknowledge) {
       await context.deferReply({
@@ -132,6 +130,22 @@ export default new Event({
             content: "You aren't a player. Register with the /init command.",
           });
           return;
+        }
+      }
+
+      if (stringSelectMenu.environmentOnly) {
+        if (player.locationChannelId !== context.channelId) {
+          if (stringSelectMenu.acknowledge) {
+            await context.editReply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          } else {
+            await context.reply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          }
         }
       }
     }

@@ -9,4 +9,5 @@ export default interface PlayerDocument extends Document {
   _status: Stats;
   _inventory: Inventory;
   location: string;
+  locationChannelId: string;
 }

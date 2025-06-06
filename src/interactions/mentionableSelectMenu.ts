@@ -13,50 +13,62 @@ export type MentionableSelectMenuContext = Omit<
 >;
 
 type MentionableSelectMenuCallback<
-  A extends boolean,
-  P extends boolean
-> = A extends true
-  ? P extends true
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> = Acknowledge extends true
+  ? PassPlayer extends true
     ? (context: MentionableSelectMenuContext, player: Player) => Promise<void>
     : (context: MentionableSelectMenuContext) => Promise<void>
-  : P extends true
+  : PassPlayer extends true
   ? (
       context: MentionableSelectMenuInteraction<CacheType>,
       player: Player
     ) => Promise<void>
   : (context: MentionableSelectMenuInteraction<CacheType>) => Promise<void>;
 
-export interface IMentionableSelectMenu<A extends boolean, P extends boolean> {
+type EnvironmentOnly<PassPlayer extends boolean> = PassPlayer extends true
+  ? boolean
+  : false;
+
+export interface IMentionableSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> {
   data: MentionableSelectMenuBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge: A;
+  acknowledge: Acknowledge;
   ephemeral?: boolean;
+  environmentOnly: EnvironmentOnly<PassPlayer>;
   deleted?: boolean;
-  passPlayer: P;
-  callback: MentionableSelectMenuCallback<A, P>;
+  passPlayer: PassPlayer;
+  callback: MentionableSelectMenuCallback<Acknowledge, PassPlayer>;
   onError: (e: unknown) => void;
 }
 
-export default class MentionableSelectMenu<A extends boolean, P extends boolean>
-  implements IMentionableSelectMenu<A, P>
+export default class MentionableSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> implements IMentionableSelectMenu<Acknowledge, PassPlayer>
 {
   data: MentionableSelectMenuBuilder = new MentionableSelectMenuBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
-  acknowledge: A = true as A;
+  acknowledge: Acknowledge = true as Acknowledge;
   ephemeral?: boolean = true;
+  environmentOnly: EnvironmentOnly<PassPlayer> = false;
   deleted?: boolean = false;
-  passPlayer: P = false as P;
-  callback: MentionableSelectMenuCallback<A, P> = async () => {
-    log({
-      header: "Select menu callback not implemented",
-      processName: "MentionableSelectMenu",
-      type: "Error",
-    });
-  };
+  passPlayer: PassPlayer = false as PassPlayer;
+  callback: MentionableSelectMenuCallback<Acknowledge, PassPlayer> =
+    async () => {
+      log({
+        header: "Select menu callback not implemented",
+        processName: "MentionableSelectMenu",
+        type: "Error",
+      });
+    };
   onError: (e: unknown) => void = (e) => {
     log({
       header: "Select menu Error (error handler not implemented!)",
@@ -66,7 +78,9 @@ export default class MentionableSelectMenu<A extends boolean, P extends boolean>
     });
   };
 
-  constructor(mentionableSelectMenuObject: IMentionableSelectMenu<A, P>) {
+  constructor(
+    mentionableSelectMenuObject: IMentionableSelectMenu<Acknowledge, PassPlayer>
+  ) {
     return hardMerge(this, mentionableSelectMenuObject);
   }
 }

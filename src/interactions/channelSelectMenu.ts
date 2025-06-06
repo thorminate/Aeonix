@@ -13,44 +13,55 @@ export type ChannelSelectMenuContext = Omit<
 >;
 
 type ChannelSelectMenuCallback<
-  A extends boolean,
-  P extends boolean
-> = A extends true
-  ? P extends true
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> = Acknowledge extends true
+  ? PassPlayer extends true
     ? (context: ChannelSelectMenuContext, player: Player) => Promise<void>
     : (context: ChannelSelectMenuContext) => Promise<void>
-  : P extends true
+  : PassPlayer extends true
   ? (
       context: ChannelSelectMenuInteraction<CacheType>,
       player: Player
     ) => Promise<void>
   : (context: ChannelSelectMenuInteraction<CacheType>) => Promise<void>;
 
-export interface IChannelSelectMenu<A extends boolean, P extends boolean> {
+type EnvironmentOnly<PassPlayer extends boolean> = PassPlayer extends true
+  ? boolean
+  : false;
+
+export interface IChannelSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> {
   data: ChannelSelectMenuBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge: A;
+  acknowledge: Acknowledge;
   ephemeral?: boolean;
+  environmentOnly: EnvironmentOnly<PassPlayer>;
   deleted?: boolean;
-  passPlayer: P;
-  callback: ChannelSelectMenuCallback<A, P>;
+  passPlayer: PassPlayer;
+  callback: ChannelSelectMenuCallback<Acknowledge, PassPlayer>;
   onError: (e: unknown) => void;
 }
 
-export default class ChannelSelectMenu<A extends boolean, P extends boolean>
-  implements IChannelSelectMenu<A, P>
+export default class ChannelSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> implements IChannelSelectMenu<Acknowledge, PassPlayer>
 {
   data: ChannelSelectMenuBuilder = new ChannelSelectMenuBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
-  acknowledge: A = true as A;
+  acknowledge: Acknowledge = true as Acknowledge;
   ephemeral?: boolean = true;
+  environmentOnly: EnvironmentOnly<PassPlayer> = false;
   deleted?: boolean = false;
-  passPlayer: P = false as P;
-  callback: ChannelSelectMenuCallback<A, P> = async () => {
+  passPlayer: PassPlayer = false as PassPlayer;
+  callback: ChannelSelectMenuCallback<Acknowledge, PassPlayer> = async () => {
     log({
       header: "Channel select menu callback not implemented",
       processName: "ChannelSelectMenuHandler",
@@ -66,7 +77,9 @@ export default class ChannelSelectMenu<A extends boolean, P extends boolean>
     });
   };
 
-  constructor(channelSelectMenuObject: IChannelSelectMenu<A, P>) {
+  constructor(
+    channelSelectMenuObject: IChannelSelectMenu<Acknowledge, PassPlayer>
+  ) {
     return hardMerge(this, channelSelectMenuObject);
   }
 }

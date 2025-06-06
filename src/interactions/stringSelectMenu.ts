@@ -13,44 +13,55 @@ export type StringSelectMenuContext = Omit<
 >;
 
 type StringSelectMenuCallback<
-  A extends boolean,
-  P extends boolean
-> = A extends true
-  ? P extends true
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> = Acknowledge extends true
+  ? PassPlayer extends true
     ? (context: StringSelectMenuContext, player: Player) => Promise<void>
     : (context: StringSelectMenuContext) => Promise<void>
-  : P extends true
+  : PassPlayer extends true
   ? (
       context: StringSelectMenuInteraction<CacheType>,
       player: Player
     ) => Promise<void>
   : (context: StringSelectMenuInteraction<CacheType>) => Promise<void>;
 
-export interface IStringSelectMenu<A extends boolean, P extends boolean> {
+type EnvironmentOnly<PassPlayer extends boolean> = PassPlayer extends true
+  ? boolean
+  : false;
+
+export interface IStringSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> {
   data: StringSelectMenuBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge: A;
+  acknowledge: Acknowledge;
   ephemeral?: boolean;
+  environmentOnly: EnvironmentOnly<PassPlayer>;
   deleted?: boolean;
-  passPlayer: P;
-  callback: StringSelectMenuCallback<A, P>;
+  passPlayer: PassPlayer;
+  callback: StringSelectMenuCallback<Acknowledge, PassPlayer>;
   onError: (e: unknown) => void;
 }
 
-export default class StringSelectMenu<A extends boolean, P extends boolean>
-  implements IStringSelectMenu<A, P>
+export default class StringSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> implements IStringSelectMenu<Acknowledge, PassPlayer>
 {
   data: StringSelectMenuBuilder = new StringSelectMenuBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
-  acknowledge: A = true as A;
+  acknowledge: Acknowledge = true as Acknowledge;
   ephemeral?: boolean = true;
+  environmentOnly: EnvironmentOnly<PassPlayer> = false;
   deleted?: boolean = false;
-  passPlayer: P = false as P;
-  callback: StringSelectMenuCallback<A, P> = async () => {
+  passPlayer: PassPlayer = false as PassPlayer;
+  callback: StringSelectMenuCallback<Acknowledge, PassPlayer> = async () => {
     log({
       header: "String select menu callback not implemented",
       processName: "StringSelectMenuHandler",
@@ -66,7 +77,9 @@ export default class StringSelectMenu<A extends boolean, P extends boolean>
     });
   };
 
-  constructor(stringSelectMenuObject: IStringSelectMenu<A, P>) {
+  constructor(
+    stringSelectMenuObject: IStringSelectMenu<Acknowledge, PassPlayer>
+  ) {
     return hardMerge(this, stringSelectMenuObject);
   }
 }

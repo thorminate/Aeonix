@@ -13,44 +13,55 @@ export type RoleSelectMenuContext = Omit<
 >;
 
 type RoleSelectMenuCallback<
-  A extends boolean,
-  P extends boolean
-> = A extends true
-  ? P extends true
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> = Acknowledge extends true
+  ? PassPlayer extends true
     ? (context: RoleSelectMenuContext, player: Player) => Promise<void>
     : (context: RoleSelectMenuContext) => Promise<void>
-  : P extends true
+  : PassPlayer extends true
   ? (
       context: RoleSelectMenuInteraction<CacheType>,
       player: Player
     ) => Promise<void>
   : (context: RoleSelectMenuInteraction<CacheType>) => Promise<void>;
 
-export interface IRoleSelectMenu<A extends boolean, P extends boolean> {
+type EnvironmentOnly<PassPlayer extends boolean> = PassPlayer extends true
+  ? boolean
+  : false;
+
+export interface IRoleSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> {
   data: RoleSelectMenuBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge: A;
+  acknowledge: Acknowledge;
   ephemeral?: boolean;
+  environmentOnly: EnvironmentOnly<PassPlayer>;
   deleted?: boolean;
-  passPlayer: P;
-  callback: RoleSelectMenuCallback<A, P>;
+  passPlayer: PassPlayer;
+  callback: RoleSelectMenuCallback<Acknowledge, PassPlayer>;
   onError: (e: unknown) => void;
 }
 
-export default class RoleSelectMenu<A extends boolean, P extends boolean>
-  implements IRoleSelectMenu<A, P>
+export default class RoleSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> implements IRoleSelectMenu<Acknowledge, PassPlayer>
 {
   data: RoleSelectMenuBuilder = new RoleSelectMenuBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
-  acknowledge: A = true as A;
+  acknowledge: Acknowledge = true as Acknowledge;
   ephemeral?: boolean = true;
+  environmentOnly: EnvironmentOnly<PassPlayer> = false;
   deleted?: boolean = false;
-  passPlayer: P = false as P;
-  callback: RoleSelectMenuCallback<A, P> = async () => {
+  passPlayer: PassPlayer = false as PassPlayer;
+  callback: RoleSelectMenuCallback<Acknowledge, PassPlayer> = async () => {
     log({
       header: "Role select menu callback not implemented",
       processName: "RoleSelectMenuHandler",
@@ -66,7 +77,7 @@ export default class RoleSelectMenu<A extends boolean, P extends boolean>
     });
   };
 
-  constructor(roleSelectMenuObject: IRoleSelectMenu<A, P>) {
+  constructor(roleSelectMenuObject: IRoleSelectMenu<Acknowledge, PassPlayer>) {
     return hardMerge(this, roleSelectMenuObject);
   }
 }

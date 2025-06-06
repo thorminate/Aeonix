@@ -1,21 +1,52 @@
 import {
-  CacheType,
   CommandInteraction,
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
+import path from "path";
+import url from "url";
+import getAllFiles from "../../utils/getAllFiles.js";
 import log from "../../utils/log.js";
 import Command from "../../interactions/command.js";
 import Player from "../../models/player/player.js";
 import Event, { EventParams } from "../../models/core/event.js";
-import { findLocalCommands } from "../ready/01registerCommands.js";
+
+export async function findLocalCommands() {
+  const localCommands: Command<boolean, boolean>[] = [];
+
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+  const commandFiles = getAllFiles(
+    path.join(__dirname, "..", "..", "interactions", "commands")
+  );
+
+  for (const commandFile of commandFiles) {
+    const filePath = path.resolve(commandFile);
+    const fileUrl = url.pathToFileURL(filePath);
+    const commandObject: Command<boolean, boolean> = (
+      await import(fileUrl.toString())
+    ).default;
+
+    localCommands.push(commandObject);
+  }
+
+  return localCommands;
+}
 
 export default new Event({
   callback: async (event: EventParams) => {
-    const context = event.context as CommandInteraction<CacheType>;
+    const context = event.context as CommandInteraction;
 
     if (!context.isChatInputCommand()) return;
+
+    if (!context.inGuild()) {
+      await context.reply({
+        content: "Bot needs to be in a guild to function properly",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
 
     const localCommands = await findLocalCommands();
 
@@ -31,14 +62,6 @@ export default new Event({
       await context.deferReply({
         flags: command.ephemeral ? MessageFlags.Ephemeral : undefined,
       });
-    }
-
-    if (!context.inGuild()) {
-      await context.reply({
-        content: "Bot needs to be in a guild to function properly",
-        flags: command.ephemeral ? MessageFlags.Ephemeral : undefined,
-      });
-      return;
     }
 
     if (!context.member) {
@@ -83,7 +106,7 @@ export default new Event({
             });
             return;
           } else {
-            context.reply({
+            await context.reply({
               content: "You don't have permissions to run this command.",
             });
             return;
@@ -104,10 +127,26 @@ export default new Event({
           });
           return;
         } else {
-          context.reply({
+          await context.reply({
             content: "You aren't a player. Register with the /init command.",
           });
           return;
+        }
+      }
+
+      if (command.environmentOnly) {
+        if (player.locationChannelId !== context.channelId) {
+          if (command.acknowledge) {
+            await context.editReply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          } else {
+            await context.reply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          }
         }
       }
     }

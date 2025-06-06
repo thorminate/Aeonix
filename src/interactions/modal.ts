@@ -8,42 +8,56 @@ export type ModalContext = Omit<
   "reply" | "deferReply" | "update" | "deferUpdate"
 >;
 
-type ModalCallback<A extends boolean, P extends boolean> = A extends true
-  ? P extends true
+type ModalCallback<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> = Acknowledge extends true
+  ? PassPlayer extends true
     ? (context: ModalContext, player: Player) => Promise<void>
     : (context: ModalContext) => Promise<void>
-  : P extends true
+  : PassPlayer extends true
   ? (
       context: ModalSubmitInteraction<CacheType>,
       player: Player
     ) => Promise<void>
   : (context: ModalSubmitInteraction<CacheType>) => Promise<void>;
 
-export interface IModal<A extends boolean, P extends boolean> {
+type EnvironmentOnly<PassPlayer extends boolean> = PassPlayer extends true
+  ? boolean
+  : false;
+
+export interface IModal<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> {
   data: ModalBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge: A;
+  acknowledge: Acknowledge;
   ephemeral?: boolean;
+  environmentOnly: EnvironmentOnly<PassPlayer>;
   deleted?: boolean;
-  passPlayer: P;
-  callback: ModalCallback<A, P>;
+  passPlayer: PassPlayer;
+  callback: ModalCallback<Acknowledge, PassPlayer>;
   onError: (e: unknown) => void;
 }
 
-export default class Modal<A extends boolean, P extends boolean>
-  implements IModal<A, P>
+export default class Modal<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> implements IModal<Acknowledge, PassPlayer>
 {
   data: ModalBuilder = new ModalBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
-  acknowledge: A = true as A;
+  acknowledge: Acknowledge = true as Acknowledge;
   ephemeral?: boolean = true;
+  environmentOnly: EnvironmentOnly<PassPlayer> = false;
   deleted?: boolean = false;
-  passPlayer: P = false as P;
-  callback: ModalCallback<A, P> = async () => {
+  passPlayer: PassPlayer = false as PassPlayer;
+  callback: ModalCallback<Acknowledge, PassPlayer> = async () => {
     log({
       header: "Modal callback not implemented",
       processName: "ModalHandler",
@@ -59,7 +73,7 @@ export default class Modal<A extends boolean, P extends boolean>
     });
   };
 
-  constructor(modalObject: IModal<A, P>) {
+  constructor(modalObject: IModal<Acknowledge, PassPlayer>) {
     return hardMerge(this, modalObject);
   }
 }

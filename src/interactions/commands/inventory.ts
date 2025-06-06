@@ -224,6 +224,7 @@ export default new Command({
   ephemeral: true,
   acknowledge: true,
   passPlayer: true,
+  environmentOnly: true,
 
   callback: async (context, player): Promise<void> => {
     if (!player) {

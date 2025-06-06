@@ -43,6 +43,14 @@ export default new Event({
 
     const localMentionableSelectMenus = await findLocalMentionableSelectMenus();
 
+    if (!context.inGuild()) {
+      await context.reply({
+        content: "Bot needs to be in a guild to function properly",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const mentionableSelectMenu:
       | MentionableSelectMenu<boolean, boolean>
       | undefined = localMentionableSelectMenus.find(
@@ -51,16 +59,6 @@ export default new Event({
     );
 
     if (!mentionableSelectMenu) return;
-
-    if (!context.inGuild()) {
-      log({
-        header: "Interaction is not in a guild",
-        processName: "MentionableSelectMenuHandler",
-        payload: context,
-        type: "Error",
-      });
-      return;
-    }
 
     if (mentionableSelectMenu.acknowledge) {
       await context.deferReply({
@@ -136,6 +134,22 @@ export default new Event({
             content: "You aren't a player. Register with the /init command.",
           });
           return;
+        }
+      }
+
+      if (mentionableSelectMenu.environmentOnly) {
+        if (player.locationChannelId !== context.channelId) {
+          if (mentionableSelectMenu.acknowledge) {
+            await context.editReply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          } else {
+            await context.reply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          }
         }
       }
     }

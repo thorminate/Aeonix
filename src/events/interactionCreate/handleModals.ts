@@ -39,6 +39,14 @@ export default new Event({
 
     if (!context.isModalSubmit()) return;
 
+    if (!context.inGuild()) {
+      await context.reply({
+        content: "Bot needs to be in a guild to function properly",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const localModals = await findLocalModals();
 
     const modal: Modal<boolean, boolean> | undefined = localModals.find(
@@ -46,16 +54,6 @@ export default new Event({
     );
 
     if (!modal) return;
-
-    if (!context.inGuild()) {
-      log({
-        header: "Modal submit interaction not in guild",
-        processName: "ModalHandler",
-        payload: context,
-        type: "Error",
-      });
-      return;
-    }
 
     if (modal.acknowledge) {
       await context.deferReply({
@@ -129,6 +127,22 @@ export default new Event({
             content: "You aren't a player. Register with the /init command.",
           });
           return;
+        }
+      }
+
+      if (modal.environmentOnly) {
+        if (player.locationChannelId !== context.channelId) {
+          if (modal.acknowledge) {
+            await context.editReply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          } else {
+            await context.reply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          }
         }
       }
     }

@@ -10,6 +10,7 @@ export default new Command({
   passPlayer: true,
   acknowledge: true,
   ephemeral: true,
+  environmentOnly: true,
 
   callback: async (context, player) => {
     if (!player) {

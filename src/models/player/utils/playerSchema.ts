@@ -11,4 +11,5 @@ export default new Schema<PlayerDocument>({
   },
   _inventory: { type: Object, default: { capacity: 0, entries: [] } },
   location: { type: String, default: "start" },
+  locationChannelId: { type: String, default: "" },
 });

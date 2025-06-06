@@ -13,44 +13,55 @@ export type UserSelectMenuContext = Omit<
 >;
 
 type UserSelectMenuCallback<
-  A extends boolean,
-  P extends boolean
-> = A extends true
-  ? P extends true
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> = Acknowledge extends true
+  ? PassPlayer extends true
     ? (context: UserSelectMenuContext, player: Player) => Promise<void>
     : (context: UserSelectMenuContext) => Promise<void>
-  : P extends true
+  : PassPlayer extends true
   ? (
       context: UserSelectMenuInteraction<CacheType>,
       player: Player
     ) => Promise<void>
   : (context: UserSelectMenuInteraction<CacheType>) => Promise<void>;
 
-export interface IUserSelectMenu<A extends boolean, P extends boolean> {
+type EnvironmentOnly<PassPlayer extends boolean> = PassPlayer extends true
+  ? boolean
+  : false;
+
+export interface IUserSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> {
   data: UserSelectMenuBuilder;
   customId: string;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge: A;
+  acknowledge: Acknowledge;
   ephemeral?: boolean;
+  environmentOnly: EnvironmentOnly<PassPlayer>;
   deleted?: boolean;
-  passPlayer: P;
-  callback: UserSelectMenuCallback<A, P>;
+  passPlayer: PassPlayer;
+  callback: UserSelectMenuCallback<Acknowledge, PassPlayer>;
   onError: (e: unknown) => void;
 }
 
-export default class UserSelectMenu<A extends boolean, P extends boolean>
-  implements IUserSelectMenu<A, P>
+export default class UserSelectMenu<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean
+> implements IUserSelectMenu<Acknowledge, PassPlayer>
 {
   data: UserSelectMenuBuilder = new UserSelectMenuBuilder();
   customId: string = "";
   permissionsRequired?: Array<bigint> = [];
   adminOnly?: boolean = false;
-  acknowledge: A = true as A;
+  acknowledge: Acknowledge = true as Acknowledge;
   ephemeral?: boolean = true;
+  environmentOnly: EnvironmentOnly<PassPlayer> = false;
   deleted?: boolean = false;
-  passPlayer: P = false as P;
-  callback: UserSelectMenuCallback<A, P> = async () => {
+  passPlayer: PassPlayer = false as PassPlayer;
+  callback: UserSelectMenuCallback<Acknowledge, PassPlayer> = async () => {
     log({
       header: "User select menu callback not implemented",
       processName: "UserSelectMenuHandler",
@@ -66,7 +77,7 @@ export default class UserSelectMenu<A extends boolean, P extends boolean>
     });
   };
 
-  constructor(userSelectMenuObject: IUserSelectMenu<A, P>) {
+  constructor(userSelectMenuObject: IUserSelectMenu<Acknowledge, PassPlayer>) {
     return hardMerge(this, userSelectMenuObject);
   }
 }

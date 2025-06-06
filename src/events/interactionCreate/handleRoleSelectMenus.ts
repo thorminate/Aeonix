@@ -40,6 +40,14 @@ export default new Event({
 
     if (!context.isRoleSelectMenu()) return;
 
+    if (!context.inGuild()) {
+      await context.reply({
+        content: "Bot needs to be in a guild to function properly",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const localRoleSelectMenus = await findLocalRoleSelectMenus();
 
     const roleSelectMenu: RoleSelectMenu<boolean, boolean> | undefined =
@@ -49,16 +57,6 @@ export default new Event({
       );
 
     if (!roleSelectMenu) return;
-
-    if (!context.inGuild()) {
-      log({
-        header: "Interaction is not in a guild",
-        processName: "RoleSelectMenuHandler",
-        payload: context,
-        type: "Error",
-      });
-      return;
-    }
 
     if (roleSelectMenu.acknowledge) {
       await context.deferReply({
@@ -132,6 +130,22 @@ export default new Event({
             content: "You aren't a player. Register with the /init command.",
           });
           return;
+        }
+      }
+
+      if (roleSelectMenu.environmentOnly) {
+        if (player.locationChannelId !== context.channelId) {
+          if (roleSelectMenu.acknowledge) {
+            await context.editReply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          } else {
+            await context.reply({
+              content: "You must be in your environment channel to run this.",
+            });
+            return;
+          }
         }
       }
     }
