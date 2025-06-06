@@ -1,4 +1,5 @@
 import {
+  CacheType,
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
@@ -10,10 +11,21 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import RoleSelectMenu from "../../interactions/roleSelectMenu.js";
+import RoleSelectMenu, {
+  RoleSelectMenuContext,
+  SeeRoleSelectMenuErrorPropertyForMoreDetails_1,
+  SeeRoleSelectMenuErrorPropertyForMoreDetails_2,
+  SeeRoleSelectMenuErrorPropertyForMoreDetails_3,
+} from "../../interactions/roleSelectMenu.js";
+import Environment from "../../models/environment/environment.js";
 
 async function findLocalRoleSelectMenus() {
-  const localRoleSelectMenus: RoleSelectMenu<boolean, boolean>[] = [];
+  const localRoleSelectMenus: RoleSelectMenu<
+    boolean,
+    boolean,
+    boolean,
+    boolean
+  >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -24,7 +36,7 @@ async function findLocalRoleSelectMenus() {
   for (const roleSelectMenuFile of roleSelectMenuFiles) {
     const filePath = path.resolve(roleSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const roleSelectMenu: RoleSelectMenu<boolean, boolean> = (
+    const roleSelectMenu: RoleSelectMenu<boolean, boolean, boolean, boolean> = (
       await import(fileUrl.toString())
     ).default;
 
@@ -50,11 +62,12 @@ export default new Event({
 
     const localRoleSelectMenus = await findLocalRoleSelectMenus();
 
-    const roleSelectMenu: RoleSelectMenu<boolean, boolean> | undefined =
-      localRoleSelectMenus.find(
-        (roleSelectMenu: RoleSelectMenu<boolean, boolean>) =>
-          roleSelectMenu.customId === context.customId
-      );
+    const roleSelectMenu:
+      | RoleSelectMenu<boolean, boolean, boolean, boolean>
+      | undefined = localRoleSelectMenus.find(
+      (roleSelectMenu: RoleSelectMenu<boolean, boolean, boolean, boolean>) =>
+        roleSelectMenu.customId === context.customId
+    );
 
     if (!roleSelectMenu) return;
 
@@ -116,6 +129,8 @@ export default new Event({
 
     let player: Player | undefined;
 
+    let environment: Environment | undefined;
+
     if (roleSelectMenu.passPlayer) {
       player = await Player.find(context.user.id);
 
@@ -148,10 +163,22 @@ export default new Event({
           }
         }
       }
+
+      if (roleSelectMenu.passEnvironment) {
+        environment = await player.fetchEnvironment();
+      }
     }
 
     await roleSelectMenu
-      .callback(context, player as Player)
+      .callback(
+        context as RoleSelectMenuInteraction<CacheType> &
+          RoleSelectMenuContext &
+          SeeRoleSelectMenuErrorPropertyForMoreDetails_3 &
+          SeeRoleSelectMenuErrorPropertyForMoreDetails_2 &
+          SeeRoleSelectMenuErrorPropertyForMoreDetails_1,
+        player as Player,
+        environment as Environment
+      )
       .catch((e: unknown) => {
         try {
           roleSelectMenu.onError(e);

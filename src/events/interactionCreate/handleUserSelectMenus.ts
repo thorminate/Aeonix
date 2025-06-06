@@ -1,4 +1,5 @@
 import {
+  CacheType,
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
@@ -10,10 +11,21 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import UserSelectMenu from "../../interactions/userSelectMenu.js";
+import UserSelectMenu, {
+  SeeUserSelectMenuErrorPropertyForMoreDetails_1,
+  SeeUserSelectMenuErrorPropertyForMoreDetails_2,
+  SeeUserSelectMenuErrorPropertyForMoreDetails_3,
+  UserSelectMenuContext,
+} from "../../interactions/userSelectMenu.js";
+import Environment from "../../models/environment/environment.js";
 
 async function findLocalUserSelectMenus() {
-  const localUserSelectMenus: UserSelectMenu<boolean, boolean>[] = [];
+  const localUserSelectMenus: UserSelectMenu<
+    boolean,
+    boolean,
+    boolean,
+    boolean
+  >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -24,7 +36,7 @@ async function findLocalUserSelectMenus() {
   for (const userSelectMenuFile of userSelectMenuFiles) {
     const filePath = path.resolve(userSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const userSelectMenu: UserSelectMenu<boolean, boolean> = (
+    const userSelectMenu: UserSelectMenu<boolean, boolean, boolean, boolean> = (
       await import(fileUrl.toString())
     ).default;
 
@@ -50,11 +62,12 @@ export default new Event({
 
     const localUserSelectMenus = await findLocalUserSelectMenus();
 
-    const userSelectMenu: UserSelectMenu<boolean, boolean> | undefined =
-      localUserSelectMenus.find(
-        (userSelectMenu: UserSelectMenu<boolean, boolean>) =>
-          userSelectMenu.customId === context.customId
-      );
+    const userSelectMenu:
+      | UserSelectMenu<boolean, boolean, boolean, boolean>
+      | undefined = localUserSelectMenus.find(
+      (userSelectMenu: UserSelectMenu<boolean, boolean, boolean, boolean>) =>
+        userSelectMenu.customId === context.customId
+    );
 
     if (!userSelectMenu) return;
 
@@ -116,6 +129,8 @@ export default new Event({
 
     let player: Player | undefined;
 
+    let environment: Environment | undefined;
+
     if (userSelectMenu.passPlayer) {
       player = await Player.find(context.user.id);
 
@@ -148,10 +163,22 @@ export default new Event({
           }
         }
       }
+
+      if (userSelectMenu.passEnvironment) {
+        environment = await player.fetchEnvironment();
+      }
     }
 
     await userSelectMenu
-      .callback(context, player as Player)
+      .callback(
+        context as UserSelectMenuInteraction<CacheType> &
+          UserSelectMenuContext &
+          SeeUserSelectMenuErrorPropertyForMoreDetails_3 &
+          SeeUserSelectMenuErrorPropertyForMoreDetails_2 &
+          SeeUserSelectMenuErrorPropertyForMoreDetails_1,
+        player as Player,
+        environment as Environment
+      )
       .catch((e: unknown) => {
         try {
           userSelectMenu.onError(e);

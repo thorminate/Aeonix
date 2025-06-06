@@ -1,4 +1,5 @@
 import {
+  CacheType,
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
@@ -10,10 +11,21 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import StringSelectMenu from "../../interactions/stringSelectMenu.js";
+import StringSelectMenu, {
+  SeeStringSelectMenuErrorPropertyForMoreDetails_1,
+  SeeStringSelectMenuErrorPropertyForMoreDetails_2,
+  SeeStringSelectMenuErrorPropertyForMoreDetails_3,
+  StringSelectMenuContext,
+} from "../../interactions/stringSelectMenu.js";
+import Environment from "../../models/environment/environment.js";
 
 async function findLocalStringSelectMenus() {
-  const localStringSelectMenus: StringSelectMenu<boolean, boolean>[] = [];
+  const localStringSelectMenus: StringSelectMenu<
+    boolean,
+    boolean,
+    boolean,
+    boolean
+  >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -24,9 +36,12 @@ async function findLocalStringSelectMenus() {
   for (const stringSelectMenuFile of stringSelectMenuFiles) {
     const filePath = path.resolve(stringSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const stringSelectMenu: StringSelectMenu<boolean, boolean> = (
-      await import(fileUrl.toString())
-    ).default;
+    const stringSelectMenu: StringSelectMenu<
+      boolean,
+      boolean,
+      boolean,
+      boolean
+    > = (await import(fileUrl.toString())).default;
 
     localStringSelectMenus.push(stringSelectMenu);
   }
@@ -50,11 +65,13 @@ export default new Event({
 
     const localStringSelectMenus = await findLocalStringSelectMenus();
 
-    const stringSelectMenu: StringSelectMenu<boolean, boolean> | undefined =
-      localStringSelectMenus.find(
-        (stringSelectMenu: StringSelectMenu<boolean, boolean>) =>
-          stringSelectMenu.customId === context.customId
-      );
+    const stringSelectMenu:
+      | StringSelectMenu<boolean, boolean, boolean, boolean>
+      | undefined = localStringSelectMenus.find(
+      (
+        stringSelectMenu: StringSelectMenu<boolean, boolean, boolean, boolean>
+      ) => stringSelectMenu.customId === context.customId
+    );
 
     if (!stringSelectMenu) return;
 
@@ -116,6 +133,8 @@ export default new Event({
 
     let player: Player | undefined;
 
+    let environment: Environment | undefined;
+
     if (stringSelectMenu.passPlayer) {
       player = await Player.find(context.user.id);
 
@@ -148,10 +167,22 @@ export default new Event({
           }
         }
       }
+
+      if (stringSelectMenu.passEnvironment) {
+        environment = await player.fetchEnvironment();
+      }
     }
 
     await stringSelectMenu
-      .callback(context, player as Player)
+      .callback(
+        context as StringSelectMenuInteraction<CacheType> &
+          StringSelectMenuContext &
+          SeeStringSelectMenuErrorPropertyForMoreDetails_3 &
+          SeeStringSelectMenuErrorPropertyForMoreDetails_2 &
+          SeeStringSelectMenuErrorPropertyForMoreDetails_1,
+        player as Player,
+        environment as Environment
+      )
       .catch((e: unknown) => {
         try {
           stringSelectMenu.onError(e);
