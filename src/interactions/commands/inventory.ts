@@ -225,6 +225,7 @@ export default new Command({
   acknowledge: true,
   passPlayer: true,
   environmentOnly: true,
+  passEnvironment: false,
 
   callback: async (context, player): Promise<void> => {
     if (!player) {

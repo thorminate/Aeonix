@@ -5,7 +5,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import Player from "../../models/player/player.js";
-import Command from "../command.js";
+import Command, { CommandContext } from "../command.js";
 import {
   welcomeImage,
   welcomeMessage,
@@ -21,8 +21,9 @@ export default new Command({
   passPlayer: false,
   acknowledge: true,
   environmentOnly: false,
+  passEnvironment: false,
 
-  callback: async (context) => {
+  callback: async (context: CommandContext) => {
     if (await Player.find(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 

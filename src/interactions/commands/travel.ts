@@ -67,15 +67,15 @@ export default new Command({
   acknowledge: true,
   ephemeral: true,
   environmentOnly: true,
+  passEnvironment: true,
 
-  callback: async (context, player) => {
+  callback: async (context, player, environment) => {
     const buttons =
-      (await player.fetchEnvironment())?.adjacentEnvironments.map(
-        (env: string) =>
-          new ButtonBuilder()
-            .setCustomId(`#travel-${env}`)
-            .setLabel(env)
-            .setStyle(ButtonStyle.Primary)
+      environment?.adjacentEnvironments.map((env: string) =>
+        new ButtonBuilder()
+          .setCustomId(`#travel-${env}`)
+          .setLabel(env)
+          .setStyle(ButtonStyle.Primary)
       ) || [];
 
     const message = await paginator(context, buttons, (pg) => {

@@ -1,4 +1,5 @@
 import {
+  CacheType,
   CommandInteraction,
   MessageFlags,
   PermissionFlagsBits,
@@ -8,12 +9,18 @@ import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
 import log from "../../utils/log.js";
-import Command from "../../interactions/command.js";
+import Command, {
+  CommandContext,
+  SeeCommandErrorPropertyForMoreDetails_1,
+  SeeCommandErrorPropertyForMoreDetails_2,
+  SeeCommandErrorPropertyForMoreDetails_3,
+} from "../../interactions/command.js";
 import Player from "../../models/player/player.js";
 import Event, { EventParams } from "../../models/core/event.js";
+import Environment from "../../models/environment/environment.js";
 
 export async function findLocalCommands() {
-  const localCommands: Command<boolean, boolean>[] = [];
+  const localCommands: Command<boolean, boolean, boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -24,7 +31,7 @@ export async function findLocalCommands() {
   for (const commandFile of commandFiles) {
     const filePath = path.resolve(commandFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const commandObject: Command<boolean, boolean> = (
+    const commandObject: Command<boolean, boolean, boolean, boolean> = (
       await import(fileUrl.toString())
     ).default;
 
@@ -51,9 +58,11 @@ export default new Event({
     const localCommands = await findLocalCommands();
 
     // check if command name is in localCommands
-    const command: Command<boolean, boolean> | undefined = localCommands.find(
-      (cmd: Command<boolean, boolean>) => cmd.data.name === context.commandName
-    );
+    const command: Command<boolean, boolean, boolean, boolean> | undefined =
+      localCommands.find(
+        (cmd: Command<boolean, boolean, boolean, boolean>) =>
+          cmd.data.name === context.commandName
+      );
 
     // if commandObject does not exist, return
     if (!command) return;
@@ -117,6 +126,8 @@ export default new Event({
 
     let player: Player | undefined = undefined;
 
+    let environment: Environment | undefined = undefined;
+
     if (command.passPlayer) {
       player = await Player.find(context.user.id);
 
@@ -149,21 +160,35 @@ export default new Event({
           }
         }
       }
+
+      if (command.passEnvironment) {
+        environment = await player.fetchEnvironment().catch(() => undefined);
+      }
     }
 
     // if all goes well, run the commands callback function.
-    await command.callback(context, player as Player).catch((e) => {
-      try {
-        command.onError(e);
-      } catch (e) {
-        log({
-          header: "Error in command error handler",
-          processName: "CommandHandler",
-          payload: e,
-          type: "Error",
-        });
-      }
-    });
+    await command
+      .callback(
+        context as CommandInteraction<CacheType> &
+          CommandContext &
+          SeeCommandErrorPropertyForMoreDetails_3 &
+          SeeCommandErrorPropertyForMoreDetails_2 &
+          SeeCommandErrorPropertyForMoreDetails_1,
+        player as Player,
+        environment as Environment
+      )
+      .catch((e) => {
+        try {
+          command.onError(e);
+        } catch (e) {
+          log({
+            header: "Error in command error handler",
+            processName: "CommandHandler",
+            payload: e,
+            type: "Error",
+          });
+        }
+      });
   },
   onError: async (e) => {
     log({

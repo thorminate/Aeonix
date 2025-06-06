@@ -1,4 +1,5 @@
 import {
+  CacheType,
   ChannelSelectMenuInteraction,
   MessageFlags,
   PermissionFlagsBits,
@@ -10,10 +11,21 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import ChannelSelectMenu from "../../interactions/channelSelectMenu.js";
+import ChannelSelectMenu, {
+  ChannelSelectMenuContext,
+  SeeChannelSelectMenuErrorPropertyForMoreDetails_1,
+  SeeChannelSelectMenuErrorPropertyForMoreDetails_2,
+  SeeChannelSelectMenuErrorPropertyForMoreDetails_3,
+} from "../../interactions/channelSelectMenu.js";
+import Environment from "../../models/environment/environment.js";
 
 async function findLocalChannelSelectMenus() {
-  const localChannelSelectMenus: ChannelSelectMenu<boolean, boolean>[] = [];
+  const localChannelSelectMenus: ChannelSelectMenu<
+    boolean,
+    boolean,
+    boolean,
+    boolean
+  >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -24,9 +36,12 @@ async function findLocalChannelSelectMenus() {
   for (const channelSelectMenuFile of channelSelectMenuFiles) {
     const filePath = path.resolve(channelSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const channelSelectMenu: ChannelSelectMenu<boolean, boolean> = (
-      await import(fileUrl.toString())
-    ).default;
+    const channelSelectMenu: ChannelSelectMenu<
+      boolean,
+      boolean,
+      boolean,
+      boolean
+    > = (await import(fileUrl.toString())).default;
 
     localChannelSelectMenus.push(channelSelectMenu);
   }
@@ -50,11 +65,13 @@ export default new Event({
 
     const localChannelSelectMenus = await findLocalChannelSelectMenus();
 
-    const channelSelectMenu: ChannelSelectMenu<boolean, boolean> | undefined =
-      localChannelSelectMenus.find(
-        (channelSelectMenu: ChannelSelectMenu<boolean, boolean>) =>
-          channelSelectMenu.customId === context.customId
-      );
+    const channelSelectMenu:
+      | ChannelSelectMenu<boolean, boolean, boolean, boolean>
+      | undefined = localChannelSelectMenus.find(
+      (
+        channelSelectMenu: ChannelSelectMenu<boolean, boolean, boolean, boolean>
+      ) => channelSelectMenu.customId === context.customId
+    );
 
     if (!channelSelectMenu) return;
 
@@ -116,6 +133,8 @@ export default new Event({
 
     let player: Player | undefined;
 
+    let environment: Environment | undefined;
+
     if (channelSelectMenu.passPlayer) {
       player = await Player.find(context.user.id);
 
@@ -148,10 +167,22 @@ export default new Event({
           }
         }
       }
+
+      if (channelSelectMenu.passEnvironment) {
+        environment = await player.fetchEnvironment().catch(() => undefined);
+      }
     }
 
     await channelSelectMenu
-      .callback(context, player as Player)
+      .callback(
+        context as ChannelSelectMenuInteraction<CacheType> &
+          ChannelSelectMenuContext &
+          SeeChannelSelectMenuErrorPropertyForMoreDetails_3 &
+          SeeChannelSelectMenuErrorPropertyForMoreDetails_2 &
+          SeeChannelSelectMenuErrorPropertyForMoreDetails_1,
+        player as Player,
+        environment as Environment
+      )
       .catch((e: unknown) => {
         try {
           channelSelectMenu.onError(e);

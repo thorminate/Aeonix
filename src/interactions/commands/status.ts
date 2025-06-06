@@ -11,16 +11,9 @@ export default new Command({
   acknowledge: true,
   ephemeral: true,
   environmentOnly: true,
+  passEnvironment: false,
 
   callback: async (context, player) => {
-    if (!player) {
-      log({
-        header: "Player could not be passed to status command",
-        processName: "StatusCommand",
-        type: "Error",
-      });
-      return;
-    }
     await context.editReply({
       embeds: [await player.getStatusEmbed()],
     });

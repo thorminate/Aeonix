@@ -8,60 +8,125 @@ import {
 import Player from "../models/player/player.js";
 import hardMerge from "../utils/hardMerge.js";
 import log from "../utils/log.js";
+import Environment from "../models/environment/environment.js";
 
 export type CommandContext = Omit<
   CommandInteraction<CacheType>,
   "reply" | "deferReply" | "showModal"
 >;
 
+export interface SeeCommandErrorPropertyForMoreDetails_1 {
+  /**
+   * ❌ ERROR: `passPlayer` must be `true` if `environmentOnly` is `true`.
+   * Fix your arguments to the command constructor.
+   */
+  error: never;
+}
+
+export interface SeeCommandErrorPropertyForMoreDetails_2 {
+  /**
+   * ❌ ERROR: `passPlayer` must be `true` if `passEnvironment` is `true`.
+   * Fix your arguments to the command constructor.
+   */
+  error: never;
+}
+
+export interface SeeCommandErrorPropertyForMoreDetails_3 {
+  /**
+   * ❌ ERROR: `passPlayer` must be `true` if `passEnvironment` is `true` or `environmentOnly` is `true`.
+   * Fix your arguments to the command constructor.
+   */
+  error: never;
+}
+
+// im sorry for this abomination -- it does its job pretty well though
 type CommandCallback<
   Acknowledge extends boolean,
-  PassPlayer extends boolean
+  PassPlayer extends boolean,
+  PassEnvironment extends boolean,
+  EnvironmentOnly extends boolean
 > = Acknowledge extends true
   ? PassPlayer extends true
-    ? (context: CommandContext, player: Player) => Promise<void>
+    ? PassEnvironment extends true
+      ? (
+          context: CommandContext,
+          player: Player,
+          environment: Environment | undefined
+        ) => Promise<void>
+      : (context: CommandContext, player: Player) => Promise<void>
+    : PassEnvironment extends true
+    ? EnvironmentOnly extends true
+      ? (context: SeeCommandErrorPropertyForMoreDetails_3) => Promise<void>
+      : (context: SeeCommandErrorPropertyForMoreDetails_2) => Promise<void>
+    : EnvironmentOnly extends true
+    ? (context: SeeCommandErrorPropertyForMoreDetails_1) => Promise<void>
     : (context: CommandContext) => Promise<void>
   : PassPlayer extends true
-  ? (context: CommandInteraction<CacheType>, player: Player) => Promise<void>
+  ? PassEnvironment extends true
+    ? (
+        context: CommandInteraction<CacheType>,
+        player: Player,
+        environment: Environment | undefined
+      ) => Promise<void>
+    : (context: CommandInteraction<CacheType>, player: Player) => Promise<void>
+  : PassEnvironment extends true
+  ? EnvironmentOnly extends true
+    ? (context: SeeCommandErrorPropertyForMoreDetails_3) => Promise<void>
+    : (context: SeeCommandErrorPropertyForMoreDetails_2) => Promise<void>
+  : EnvironmentOnly extends true
+  ? (context: SeeCommandErrorPropertyForMoreDetails_1) => Promise<void>
   : (context: CommandInteraction<CacheType>) => Promise<void>;
-
-type EnvironmentOnly<PassPlayer extends boolean> = PassPlayer extends true
-  ? boolean
-  : false;
 
 export interface ICommand<
   Acknowledge extends boolean,
-  PassPlayer extends boolean
+  PassPlayer extends boolean,
+  PassEnvironment extends boolean,
+  EnvironmentOnly extends boolean
 > {
   data:
     | SlashCommandBuilder
     | SlashCommandOptionsOnlyBuilder
     | SlashCommandSubcommandsOnlyBuilder;
-  permissionsRequired?: Array<bigint>;
-  adminOnly?: boolean;
   acknowledge: Acknowledge;
-  deleted?: boolean;
   passPlayer: PassPlayer;
-  environmentOnly: EnvironmentOnly<PassPlayer>;
+  passEnvironment: PassEnvironment;
+  environmentOnly: EnvironmentOnly;
   ephemeral?: boolean;
-  callback: CommandCallback<Acknowledge, PassPlayer>;
+  adminOnly?: boolean;
+  permissionsRequired?: Array<bigint>;
+  deleted?: boolean;
+  callback: CommandCallback<
+    Acknowledge,
+    PassPlayer,
+    PassEnvironment,
+    EnvironmentOnly
+  >;
   onError: (e: unknown) => void;
 }
 
 export default class Command<
   Acknowledge extends boolean,
-  PassPlayer extends boolean
-> implements ICommand<Acknowledge, PassPlayer>
+  PassPlayer extends boolean,
+  PassEnvironment extends boolean,
+  EnvironmentOnly extends boolean
+> implements
+    ICommand<Acknowledge, PassPlayer, PassEnvironment, EnvironmentOnly>
 {
-  data: SlashCommandBuilder = new SlashCommandBuilder();
-  permissionsRequired?: Array<bigint> = [];
-  adminOnly?: boolean = false;
-  acknowledge: Acknowledge = true as Acknowledge;
-  deleted?: boolean = false;
-  passPlayer: PassPlayer = false as PassPlayer;
-  environmentOnly: EnvironmentOnly<PassPlayer> = false;
-  ephemeral?: boolean = true;
-  callback: CommandCallback<Acknowledge, PassPlayer> = async () =>
+  data = new SlashCommandBuilder();
+  acknowledge = true as Acknowledge;
+  passPlayer = false as PassPlayer;
+  passEnvironment = false as PassEnvironment;
+  environmentOnly = false as EnvironmentOnly;
+  ephemeral? = true;
+  adminOnly? = false;
+  permissionsRequired? = [];
+  deleted? = false;
+  callback: CommandCallback<
+    Acknowledge,
+    PassPlayer,
+    PassEnvironment,
+    EnvironmentOnly
+  > = async () =>
     log({
       header: "Command callback not implemented",
       processName: "CommandHandler",
@@ -77,7 +142,14 @@ export default class Command<
     });
   };
 
-  constructor(commandObject: ICommand<Acknowledge, PassPlayer>) {
+  constructor(
+    commandObject: ICommand<
+      Acknowledge,
+      PassPlayer,
+      PassEnvironment,
+      EnvironmentOnly
+    >
+  ) {
     return hardMerge(this, commandObject, { data: SlashCommandBuilder });
   }
 }

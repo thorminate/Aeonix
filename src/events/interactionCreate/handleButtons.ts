@@ -159,7 +159,7 @@ export default new Event({
       }
 
       if (button.passEnvironment) {
-        environment = await player.fetchEnvironment();
+        environment = await player.fetchEnvironment().catch(() => undefined);
       }
     }
 
