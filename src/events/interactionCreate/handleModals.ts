@@ -1,19 +1,26 @@
 import {
+  CacheType,
   MessageFlags,
   ModalSubmitInteraction,
   PermissionFlagsBits,
   PermissionsBitField,
 } from "discord.js";
 import Player from "../../models/player/player.js";
-import Modal from "../../interactions/modal.js";
+import Modal, {
+  ModalContext,
+  SeeModalErrorPropertyForMoreDetails_1,
+  SeeModalErrorPropertyForMoreDetails_2,
+  SeeModalErrorPropertyForMoreDetails_3,
+} from "../../interactions/modal.js";
 import log from "../../utils/log.js";
 import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
+import Environment from "../../models/environment/environment.js";
 
 async function findLocalModals() {
-  const localModals: Modal<boolean, boolean>[] = [];
+  const localModals: Modal<boolean, boolean, boolean, boolean>[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -24,8 +31,9 @@ async function findLocalModals() {
   for (const modalFile of modalFiles) {
     const filePath = path.resolve(modalFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const modal: Modal<boolean, boolean> = (await import(fileUrl.toString()))
-      .default;
+    const modal: Modal<boolean, boolean, boolean, boolean> = (
+      await import(fileUrl.toString())
+    ).default;
 
     localModals.push(modal);
   }
@@ -49,9 +57,11 @@ export default new Event({
 
     const localModals = await findLocalModals();
 
-    const modal: Modal<boolean, boolean> | undefined = localModals.find(
-      (modal: Modal<boolean, boolean>) => modal.customId === context.customId
-    );
+    const modal: Modal<boolean, boolean, boolean, boolean> | undefined =
+      localModals.find(
+        (modal: Modal<boolean, boolean, boolean, boolean>) =>
+          modal.customId === context.customId
+      );
 
     if (!modal) return;
 
@@ -113,6 +123,8 @@ export default new Event({
 
     let player: Player | undefined = undefined;
 
+    let environment: Environment | undefined = undefined;
+
     if (modal.passPlayer) {
       player = await Player.find(context.user.id);
 
@@ -145,20 +157,34 @@ export default new Event({
           }
         }
       }
+
+      if (modal.passEnvironment) {
+        environment = await player.fetchEnvironment();
+      }
     }
 
-    await modal.callback(context, player as Player).catch((e: unknown) => {
-      try {
-        modal.onError(e);
-      } catch (e) {
-        log({
-          header: "Error in modal error handler",
-          processName: "ModalHandler",
-          payload: e,
-          type: "Error",
-        });
-      }
-    });
+    await modal
+      .callback(
+        context as ModalSubmitInteraction<CacheType> &
+          ModalContext &
+          SeeModalErrorPropertyForMoreDetails_3 &
+          SeeModalErrorPropertyForMoreDetails_2 &
+          SeeModalErrorPropertyForMoreDetails_1,
+        player as Player,
+        environment as Environment
+      )
+      .catch((e: unknown) => {
+        try {
+          modal.onError(e);
+        } catch (e) {
+          log({
+            header: "Error in modal error handler",
+            processName: "ModalHandler",
+            payload: e,
+            type: "Error",
+          });
+        }
+      });
   },
   onError: async (e) => {
     log({

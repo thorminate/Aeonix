@@ -56,6 +56,7 @@ export default new Modal({
   passPlayer: false,
   acknowledge: true,
   environmentOnly: false,
+  passEnvironment: false,
 
   callback: async (context) => {
     if (await Player.find(context.user.id)) {
