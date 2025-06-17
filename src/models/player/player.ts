@@ -1,11 +1,17 @@
 import Saveable from "../core/saveable.js";
 import hardMerge from "../../utils/hardMerge.js";
 import {
-  APIEmbed,
-  EmbedBuilder,
+  APIContainerComponent,
+  ButtonBuilder,
+  ButtonStyle,
+  ContainerBuilder,
   GuildChannel,
   OverwriteType,
+  SectionBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
   TextChannel,
+  TextDisplayBuilder,
   User,
 } from "discord.js";
 import Stats from "../status/status.js";
@@ -49,7 +55,7 @@ export default class Player extends Saveable<PlayerDocument> {
     this._inventory = value;
   }
 
-  resolveUser(): User | undefined {
+  fetchUser(): User | undefined {
     return aeonix.users.cache.get(this._id);
   }
 
@@ -77,22 +83,21 @@ export default class Player extends Saveable<PlayerDocument> {
     disregardAlreadyHere = false,
     disregardOldEnvironment = false
   ): Promise<PlayerMoveToResult> {
-    const environment = await aeonix.environments.get(location);
+    const env = await aeonix.environments.get(location);
 
-    if (!environment) return "invalid location";
+    if (!env) return "invalid location";
 
     if (this.location === location && !disregardAlreadyHere)
       return "already here";
 
-    const oldEnvironment = await this.fetchEnvironment().catch(() => undefined);
+    const oldEnv = await this.fetchEnvironment().catch(() => undefined);
 
-    if (oldEnvironment) {
-      if (!oldEnvironment.adjacentTo(environment) && !disregardAdjacents)
-        return "not adjacent";
+    if (oldEnv) {
+      if (!oldEnv.adjacentTo(env) && !disregardAdjacents) return "not adjacent";
 
-      oldEnvironment.leave(this);
+      oldEnv.leave(this);
 
-      const oldChannel = await oldEnvironment.fetchChannel();
+      const oldChannel = await oldEnv.fetchChannel();
 
       if (oldChannel && oldChannel instanceof GuildChannel) {
         await oldChannel.permissionOverwrites.delete(this._id).catch((e) => {
@@ -105,12 +110,12 @@ export default class Player extends Saveable<PlayerDocument> {
         });
       }
 
-      oldEnvironment.save();
+      oldEnv.save();
     } else if (!disregardOldEnvironment) {
       return "no old environment";
     }
 
-    const channel = await environment.fetchChannel();
+    const channel = await env.fetchChannel();
 
     if (!channel || !(channel instanceof GuildChannel))
       return "location channel not found";
@@ -134,17 +139,47 @@ export default class Player extends Saveable<PlayerDocument> {
         });
       });
 
-    environment.join(this);
+    env.join(this);
 
     this.location = location;
 
     this.locationChannelId = channel.id;
 
-    await environment.save();
+    await env.save();
 
     await this.save();
 
-    return environment;
+    return env;
+  }
+
+  async isAdmin(): Promise<boolean> {
+    const guild = aeonix.guilds.cache.get(aeonix.guildId);
+
+    if (!guild) {
+      log({
+        header: "Unable to fetch master guild",
+        processName: "Player.isAdmin",
+        type: "Warn",
+      });
+      return false;
+    }
+
+    const masterRole = guild.roles.cache.get(aeonix.masterRoleId);
+
+    if (!masterRole) {
+      log({
+        header: "Unable to fetch master role",
+        processName: "Player.isAdmin",
+        type: "Warn",
+      });
+      return false;
+    }
+
+    const thisUser = this.fetchUser();
+
+    if (!thisUser) return false;
+
+    return masterRole.members?.has(thisUser.id) ?? false;
   }
 
   levelUp(amount: number = 1, resetXp: boolean = true) {
@@ -169,7 +204,7 @@ export default class Player extends Saveable<PlayerDocument> {
     this.giveXp(randomFromRange);
   }
 
-  async getStatusEmbed(): Promise<APIEmbed> {
+  async getStatusEmbed(): Promise<APIContainerComponent> {
     const welcomeOptions = [
       "Sup,",
       "Hello",
@@ -181,25 +216,47 @@ export default class Player extends Saveable<PlayerDocument> {
       "Hiya",
     ];
 
-    const user = await this.resolveUser();
+    const user = this.fetchUser();
 
-    if (!user) return new EmbedBuilder().toJSON();
+    if (!user) return new ContainerBuilder().toJSON();
 
-    return new EmbedBuilder()
-      .setTitle(
-        `${welcomeOptions[Math.floor(Math.random() * welcomeOptions.length)]} ${
-          this.persona.name
-        }!`
+    return new ContainerBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `${
+            welcomeOptions[Math.floor(Math.random() * welcomeOptions.length)]
+          } ***${this.persona.name}!***`
+        )
       )
-      .setDescription(
-        `You are level ${this.status.level} and have ${
-          this.status.xp
-        }/${calculateXpRequirement(this.status.level)} xp.`
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large)
       )
-      .setAuthor({
-        name: user.username,
-        iconURL: user.displayAvatarURL(),
-      })
+      .addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `**Level:** *${this.status.level}*\n**XP:** *${
+                this.status.xp
+              }/${calculateXpRequirement(this.status.level)}*`
+            )
+          )
+          .setButtonAccessory(
+            new ButtonBuilder()
+              .setCustomId("WIPTemplateButton")
+              .setLabel("See logs")
+              .setStyle(ButtonStyle.Secondary)
+          )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder()
+          .setSpacing(SeparatorSpacingSize.Small)
+          .setDivider(false)
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `**Strength:** *${this.status.strength}*\n**Will:** *${this.status.will}*\n**Cognition:** *${this.status.cognition}*`
+        )
+      )
       .toJSON();
   }
 

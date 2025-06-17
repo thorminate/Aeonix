@@ -2,6 +2,7 @@ import Player from "../../models/player/player.js";
 import Button from "../button.js";
 import log from "../../utils/log.js";
 import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
+import aeonix from "../../aeonix.js";
 
 export default new Button({
   data: new ButtonBuilder()
@@ -17,7 +18,7 @@ export default new Button({
 
   callback: async (context, player) => {
     await (context.member?.roles as GuildMemberRoleManager).remove(
-      process.env.PLAYER_ROLE || "",
+      aeonix.playerRoleId,
       "Player deleted"
     );
 

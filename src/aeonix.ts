@@ -19,6 +19,7 @@ import path from "path";
 import environmentModel from "./models/environment/utils/environmentModel.js";
 import loadEnvironmentClassById from "./models/environment/utils/loadEnvironmentClassById.js";
 import softMerge from "./utils/softMerge.js";
+import fetchAllEnvironments from "./models/environment/utils/fetchAllEnvironments.js";
 
 interface PackageJson {
   name: string;
@@ -97,6 +98,13 @@ if (!existsSync("./.env")) {
 config();
 
 class EnvironmentManager {
+  async init() {
+    const envs = await fetchAllEnvironments();
+
+    for (const env of envs) {
+      await env.init();
+    }
+  }
   async get(location: string) {
     let [classInstance, dbData] = await Promise.all([
       loadEnvironmentClassById(location),
@@ -109,7 +117,7 @@ class EnvironmentManager {
 
     if (!dbData) {
       await classInstance.save();
-      return softMerge(classInstance, {}, classInstance.getFullClassMap());
+      return classInstance;
     }
 
     return softMerge(classInstance, dbData, classInstance.getFullClassMap());
@@ -132,6 +140,12 @@ export class Aeonix extends Client {
   packageJson: PackageJson = JSON.parse(
     readFileSync("./package.json").toString()
   );
+
+  playerRoleId: string = process.env.PLAYER_ROLE || "";
+  guildId: string = process.env.GUILD_ID || "";
+  onboardingChannelId: string = process.env.ONBOARDING_CHANNEL || "";
+  rulesChannelId: string = process.env.RULES_CHANNEL || "";
+  masterRoleId: string = process.env.MASTER_ROLE || "";
 
   verbs = [
     "Learning about",
@@ -272,10 +286,20 @@ export class Aeonix extends Client {
   }
 
   async statusRefresh() {
+    if (!Array.isArray(this.verbs) || !Array.isArray(this.nouns)) {
+      log({
+        header: "Verbs or nouns are not arrays",
+        processName: "Aeonix.statusRefresh",
+        type: "Error",
+        payload: { verbs: this.verbs, nouns: this.nouns },
+      });
+      return;
+    }
+
     const randomChoice =
-      this.verbs[Math.floor(Math.random() * this.verbs.length)] +
+      this.verbs[Math.floor(Math.random() * (this.verbs?.length ?? 0))] +
       " " +
-      this.nouns[Math.floor(Math.random() * this.nouns.length)];
+      this.nouns[Math.floor(Math.random() * (this.nouns?.length ?? 0))];
     if (this.user) {
       this.user.setPresence({
         status: "online",
@@ -524,8 +548,8 @@ export class Aeonix extends Client {
     });
     this.rl.prompt();
 
-    const mdbToken = process.env["MONGODB_URI"];
-    const dscToken = process.env["DISCORD_TOKEN"];
+    const mdbToken = process.env.MONGODB_URI;
+    const dscToken = process.env.DISCORD_TOKEN;
 
     (async () => {
       try {
@@ -566,6 +590,8 @@ export class Aeonix extends Client {
           });
         });
         await this.statusRefresh();
+
+        await this.environments.init();
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",

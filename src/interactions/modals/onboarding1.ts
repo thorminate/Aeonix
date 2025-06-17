@@ -108,7 +108,7 @@ export default new Modal({
       return;
     }
 
-    const playerRole = process.env.PLAYER_ROLE;
+    const playerRole = aeonix.playerRoleId;
 
     if (!playerRole) {
       log({

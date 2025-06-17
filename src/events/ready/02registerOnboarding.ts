@@ -26,14 +26,21 @@ export const welcomeImage = new AttachmentBuilder("./assets/welcome.png");
 
 export default new Event({
   callback: async ({ aeonix }) => {
-    const onboardingChannelId = process.env.ONBOARDING_CHANNEL;
+    const onboardingChannelId = aeonix.onboardingChannelId;
 
     if (!onboardingChannelId) {
       log({
-        header: "Onboarding channel id not found in environment variables",
+        header: "Onboarding channel id not found in aeonix object",
         processName: "OnboardingSupervisor",
         type: "Error",
-        payload: [onboardingChannelId, process.env],
+        payload: [
+          "The onboarding channel id: ",
+          onboardingChannelId ?? "undefined",
+          "process.env: ",
+          process.env,
+          "Aeonix: ",
+          aeonix,
+        ],
       });
       return;
     }

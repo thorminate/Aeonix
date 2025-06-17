@@ -1,5 +1,5 @@
 // shows your status
-import { HTTPError, SlashCommandBuilder } from "discord.js";
+import { HTTPError, MessageFlags, SlashCommandBuilder } from "discord.js";
 import log from "../../utils/log.js";
 import Command from "../command.js";
 
@@ -15,7 +15,8 @@ export default new Command({
 
   callback: async (context, player) => {
     await context.editReply({
-      embeds: [await player.getStatusEmbed()],
+      components: [await player.getStatusEmbed()],
+      flags: MessageFlags.IsComponentsV2,
     });
   },
 
