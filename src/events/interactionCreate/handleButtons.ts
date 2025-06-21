@@ -7,20 +7,26 @@ import {
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
-import Button, {
-  ButtonContext,
-  SeeButtonErrorPropertyForMoreDetails_1,
-  SeeButtonErrorPropertyForMoreDetails_2,
-  SeeButtonErrorPropertyForMoreDetails_3,
-} from "../../interactions/button.js";
 import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
 import Environment from "../../models/environment/environment.js";
+import Interaction, {
+  ButtonContext,
+  SeeInteractionErrorPropertyForMoreDetails_1,
+  SeeInteractionErrorPropertyForMoreDetails_2,
+  SeeInteractionErrorPropertyForMoreDetails_3,
+} from "../../interactions/interaction.js";
 
 async function findLocalButtons() {
-  const localButtons: Button<boolean, boolean, boolean, boolean>[] = [];
+  const localButtons: Interaction<
+    boolean,
+    boolean,
+    boolean,
+    boolean,
+    "button"
+  >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -31,9 +37,13 @@ async function findLocalButtons() {
   for (const buttonFile of buttonFiles) {
     const filePath = path.resolve(buttonFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const buttonObject: Button<boolean, boolean, boolean, boolean> = (
-      await import(fileUrl.toString())
-    ).default;
+    const buttonObject: Interaction<
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      "button"
+    > = (await import(fileUrl.toString())).default;
 
     localButtons.push(buttonObject);
   }
@@ -57,11 +67,12 @@ export default new Event({
 
     const localButtons = await findLocalButtons();
 
-    const button: Button<boolean, boolean, boolean, boolean> | undefined =
-      localButtons.find(
-        (button: Button<boolean, boolean, boolean, boolean>) =>
-          button.customId === context.customId
-      );
+    const button:
+      | Interaction<boolean, boolean, boolean, boolean, "button">
+      | undefined = localButtons.find(
+      (button: Interaction<boolean, boolean, boolean, boolean, "button">) =>
+        button.customId === context.customId
+    );
 
     if (!button) return;
 
@@ -131,12 +142,12 @@ export default new Event({
       if (!player) {
         if (button.acknowledge) {
           await context.editReply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         } else {
           context.reply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         }
@@ -167,9 +178,9 @@ export default new Event({
       .callback(
         context as ButtonInteraction<CacheType> &
           ButtonContext &
-          SeeButtonErrorPropertyForMoreDetails_3 &
-          SeeButtonErrorPropertyForMoreDetails_2 &
-          SeeButtonErrorPropertyForMoreDetails_1,
+          SeeInteractionErrorPropertyForMoreDetails_3 &
+          SeeInteractionErrorPropertyForMoreDetails_2 &
+          SeeInteractionErrorPropertyForMoreDetails_1,
         player as Player,
         environment as Environment
       )

@@ -1,0 +1,304 @@
+import {
+  ButtonBuilder,
+  ButtonInteraction,
+  CacheType,
+  ChannelSelectMenuBuilder,
+  ChannelSelectMenuInteraction,
+  ChatInputCommandInteraction,
+  MentionableSelectMenuBuilder,
+  MentionableSelectMenuInteraction,
+  ModalBuilder,
+  ModalSubmitInteraction,
+  RoleSelectMenuBuilder,
+  RoleSelectMenuInteraction,
+  SlashCommandBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
+  UserSelectMenuBuilder,
+  UserSelectMenuInteraction,
+} from "discord.js";
+import Player from "../models/player/player.js";
+import hardMerge from "../utils/hardMerge.js";
+import log from "../utils/log.js";
+import Environment from "../models/environment/environment.js";
+
+export type ButtonContext = Omit<
+  ButtonInteraction<CacheType>,
+  "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
+>;
+
+export type ChannelSelectMenuContext = Omit<
+  ChannelSelectMenuInteraction<CacheType>,
+  "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
+>;
+
+export type CommandContext = Omit<
+  ChatInputCommandInteraction<CacheType>,
+  "reply" | "deferReply" | "showModal"
+>;
+
+export type MentionableSelectMenuContext = Omit<
+  MentionableSelectMenuInteraction<CacheType>,
+  "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
+>;
+
+export type ModalContext = Omit<
+  ModalSubmitInteraction<CacheType>,
+  "reply" | "deferReply" | "update" | "deferUpdate"
+>;
+
+export type RoleSelectMenuContext = Omit<
+  RoleSelectMenuInteraction<CacheType>,
+  "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
+>;
+
+export type StringSelectMenuContext = Omit<
+  StringSelectMenuInteraction<CacheType>,
+  "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
+>;
+
+export type UserSelectMenuContext = Omit<
+  UserSelectMenuInteraction<CacheType>,
+  "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
+>;
+
+type InteractionTypes =
+  | "button"
+  | "channelSelectMenu"
+  | "command"
+  | "mentionableSelectMenu"
+  | "modal"
+  | "roleSelectMenu"
+  | "stringSelectMenu"
+  | "userSelectMenu";
+
+type BuilderTypeFromInteractionType<T extends InteractionTypes> =
+  T extends "button"
+    ? ButtonBuilder
+    : T extends "channelSelectMenu"
+    ? ChannelSelectMenuBuilder
+    : T extends "command"
+    ? SlashCommandBuilder
+    : T extends "mentionableSelectMenu"
+    ? MentionableSelectMenuBuilder
+    : T extends "modal"
+    ? ModalBuilder
+    : T extends "roleSelectMenu"
+    ? RoleSelectMenuBuilder
+    : T extends "stringSelectMenu"
+    ? StringSelectMenuBuilder
+    : T extends "userSelectMenu"
+    ? UserSelectMenuBuilder
+    : never;
+
+type ContextTypeFromInteractionType<T extends InteractionTypes> =
+  T extends "button"
+    ? ButtonContext
+    : T extends "channelSelectMenu"
+    ? ChannelSelectMenuContext
+    : T extends "command"
+    ? CommandContext
+    : T extends "mentionableSelectMenu"
+    ? MentionableSelectMenuContext
+    : T extends "modal"
+    ? ModalContext
+    : T extends "roleSelectMenu"
+    ? RoleSelectMenuContext
+    : T extends "stringSelectMenu"
+    ? StringSelectMenuContext
+    : T extends "userSelectMenu"
+    ? UserSelectMenuContext
+    : never;
+
+type RawInteractionTypeFromInteractionType<T extends InteractionTypes> =
+  T extends "button"
+    ? ButtonInteraction<CacheType>
+    : T extends "channelSelectMenu"
+    ? ChannelSelectMenuInteraction<CacheType>
+    : T extends "command"
+    ? ChatInputCommandInteraction<CacheType>
+    : T extends "mentionableSelectMenu"
+    ? MentionableSelectMenuInteraction<CacheType>
+    : T extends "modal"
+    ? ModalSubmitInteraction<CacheType>
+    : T extends "roleSelectMenu"
+    ? RoleSelectMenuInteraction<CacheType>
+    : T extends "stringSelectMenu"
+    ? StringSelectMenuInteraction<CacheType>
+    : T extends "userSelectMenu"
+    ? UserSelectMenuInteraction<CacheType>
+    : never;
+
+type CustomIdTypeFromInteractionType<T extends InteractionTypes> =
+  T extends "command" ? string | undefined : string;
+
+export interface SeeInteractionErrorPropertyForMoreDetails_1 {
+  /**
+   * ❌ ERROR: `passPlayer` must be `true` if `environmentOnly` is `true`.
+   * Fix your arguments to the interaction constructor.
+   */
+  error: never;
+}
+
+export interface SeeInteractionErrorPropertyForMoreDetails_2 {
+  /**
+   * ❌ ERROR: `passPlayer` must be `true` if `passEnvironment` is `true`.
+   * Fix your arguments to the interaction constructor.
+   */
+  error: never;
+}
+
+export interface SeeInteractionErrorPropertyForMoreDetails_3 {
+  /**
+   * ❌ ERROR: `passPlayer` must be `true` if `passEnvironment` is `true` or `environmentOnly` is `true`.
+   * Fix your arguments to the interaction constructor.
+   */
+  error: never;
+}
+
+// im sorry for this abomination -- it does its job pretty well though
+type InteractionCallback<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean,
+  PassEnvironment extends boolean,
+  EnvironmentOnly extends boolean,
+  InteractionType extends InteractionTypes
+> = Acknowledge extends true
+  ? PassPlayer extends true
+    ? PassEnvironment extends true
+      ? (masterContext: {
+          context: ContextTypeFromInteractionType<InteractionType>;
+          player: Player;
+          environment: Environment;
+        }) => Promise<void>
+      : (masterContext: {
+          context: ContextTypeFromInteractionType<InteractionType>;
+          player: Player;
+        }) => Promise<void>
+    : PassEnvironment extends true
+    ? EnvironmentOnly extends true
+      ? (masterContext: {
+          error: SeeInteractionErrorPropertyForMoreDetails_3;
+        }) => Promise<void>
+      : (masterContext: {
+          error: SeeInteractionErrorPropertyForMoreDetails_2;
+        }) => Promise<void>
+    : EnvironmentOnly extends true
+    ? (masterContext: {
+        error: SeeInteractionErrorPropertyForMoreDetails_1;
+      }) => Promise<void>
+    : (masterContext: {
+        context: ContextTypeFromInteractionType<InteractionType>;
+      }) => Promise<void>
+  : PassPlayer extends true
+  ? PassEnvironment extends true
+    ? (masterContext: {
+        context: RawInteractionTypeFromInteractionType<InteractionType>;
+        player: Player;
+        environment: Environment;
+      }) => Promise<void>
+    : (masterContext: {
+        context: RawInteractionTypeFromInteractionType<InteractionType>;
+        player: Player;
+      }) => Promise<void>
+  : PassEnvironment extends true
+  ? EnvironmentOnly extends true
+    ? (masterContext: {
+        error: SeeInteractionErrorPropertyForMoreDetails_3;
+      }) => Promise<void>
+    : (masterContext: {
+        error: SeeInteractionErrorPropertyForMoreDetails_2;
+      }) => Promise<void>
+  : EnvironmentOnly extends true
+  ? (masterContext: {
+      error: SeeInteractionErrorPropertyForMoreDetails_1;
+    }) => Promise<void>
+  : (masterContext: {
+      context: RawInteractionTypeFromInteractionType<InteractionType>;
+    }) => Promise<void>;
+
+export type IInteraction<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean,
+  EnvironmentOnly extends boolean,
+  PassEnvironment extends boolean,
+  InteractionType extends InteractionTypes
+> = (InteractionType extends "command"
+  ? { customId?: CustomIdTypeFromInteractionType<InteractionType> }
+  : { customId: CustomIdTypeFromInteractionType<InteractionType> }) & {
+  interactionType: InteractionType;
+  data: BuilderTypeFromInteractionType<InteractionType>;
+  permissionsRequired?: Array<bigint>;
+  adminOnly?: boolean;
+  acknowledge: Acknowledge;
+  ephemeral?: boolean;
+  deleted?: boolean;
+  passPlayer: PassPlayer;
+  environmentOnly: EnvironmentOnly;
+  passEnvironment: PassEnvironment;
+  callback: InteractionCallback<
+    Acknowledge,
+    PassPlayer,
+    PassEnvironment,
+    EnvironmentOnly,
+    InteractionType
+  >;
+  onError: (e: unknown) => void;
+};
+
+// FIXME: There is no way to enforce that Interaction and IInteraction have the same properties.
+
+export default class Interaction<
+  Acknowledge extends boolean,
+  PassPlayer extends boolean,
+  EnvironmentOnly extends boolean,
+  PassEnvironment extends boolean,
+  InteractionType extends InteractionTypes
+> {
+  interactionType: InteractionType = "button" as InteractionType;
+  data: BuilderTypeFromInteractionType<InteractionType> =
+    new ButtonBuilder() as BuilderTypeFromInteractionType<InteractionType>;
+  customId?: CustomIdTypeFromInteractionType<InteractionType> =
+    "" as CustomIdTypeFromInteractionType<InteractionType>;
+  permissionsRequired?: Array<bigint> = [];
+  adminOnly?: boolean = false;
+  acknowledge: Acknowledge = true as Acknowledge;
+  ephemeral?: boolean = true;
+  deleted?: boolean = false;
+  passPlayer: PassPlayer = false as PassPlayer;
+  environmentOnly: EnvironmentOnly = false as EnvironmentOnly;
+  passEnvironment: PassEnvironment = false as PassEnvironment;
+  callback: InteractionCallback<
+    Acknowledge,
+    PassPlayer,
+    PassEnvironment,
+    EnvironmentOnly,
+    InteractionType
+  > = async () => {
+    log({
+      header: "Interaction callback not implemented",
+      processName: "InteractionHandler",
+      type: "Error",
+    });
+  };
+  onError: (e: unknown) => void = (e) => {
+    log({
+      header: "Interaction Error (error handler not implemented!)",
+      processName: "InteractionHandler",
+      payload: e,
+      type: "Error",
+    });
+  };
+
+  constructor(
+    interactionObject: IInteraction<
+      Acknowledge,
+      PassPlayer,
+      EnvironmentOnly,
+      PassEnvironment,
+      InteractionType
+    >
+  ) {
+    return hardMerge(this, interactionObject);
+  }
+}

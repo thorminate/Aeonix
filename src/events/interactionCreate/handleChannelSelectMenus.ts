@@ -11,20 +11,21 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import ChannelSelectMenu, {
+import Interaction, {
   ChannelSelectMenuContext,
-  SeeChannelSelectMenuErrorPropertyForMoreDetails_1,
-  SeeChannelSelectMenuErrorPropertyForMoreDetails_2,
-  SeeChannelSelectMenuErrorPropertyForMoreDetails_3,
-} from "../../interactions/channelSelectMenu.js";
+  SeeInteractionErrorPropertyForMoreDetails_1,
+  SeeInteractionErrorPropertyForMoreDetails_2,
+  SeeInteractionErrorPropertyForMoreDetails_3,
+} from "../../interactions/interaction.js";
 import Environment from "../../models/environment/environment.js";
 
 async function findLocalChannelSelectMenus() {
-  const localChannelSelectMenus: ChannelSelectMenu<
+  const localChannelSelectMenus: Interaction<
     boolean,
     boolean,
     boolean,
-    boolean
+    boolean,
+    "channelSelectMenu"
   >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -36,11 +37,12 @@ async function findLocalChannelSelectMenus() {
   for (const channelSelectMenuFile of channelSelectMenuFiles) {
     const filePath = path.resolve(channelSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const channelSelectMenu: ChannelSelectMenu<
+    const channelSelectMenu: Interaction<
       boolean,
       boolean,
       boolean,
-      boolean
+      boolean,
+      "channelSelectMenu"
     > = (await import(fileUrl.toString())).default;
 
     localChannelSelectMenus.push(channelSelectMenu);
@@ -66,10 +68,16 @@ export default new Event({
     const localChannelSelectMenus = await findLocalChannelSelectMenus();
 
     const channelSelectMenu:
-      | ChannelSelectMenu<boolean, boolean, boolean, boolean>
+      | Interaction<boolean, boolean, boolean, boolean, "channelSelectMenu">
       | undefined = localChannelSelectMenus.find(
       (
-        channelSelectMenu: ChannelSelectMenu<boolean, boolean, boolean, boolean>
+        channelSelectMenu: Interaction<
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+          "channelSelectMenu"
+        >
       ) => channelSelectMenu.customId === context.customId
     );
 
@@ -141,12 +149,12 @@ export default new Event({
       if (!player) {
         if (channelSelectMenu.acknowledge) {
           await context.editReply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         } else {
           context.reply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         }
@@ -177,9 +185,9 @@ export default new Event({
       .callback(
         context as ChannelSelectMenuInteraction<CacheType> &
           ChannelSelectMenuContext &
-          SeeChannelSelectMenuErrorPropertyForMoreDetails_3 &
-          SeeChannelSelectMenuErrorPropertyForMoreDetails_2 &
-          SeeChannelSelectMenuErrorPropertyForMoreDetails_1,
+          SeeInteractionErrorPropertyForMoreDetails_3 &
+          SeeInteractionErrorPropertyForMoreDetails_2 &
+          SeeInteractionErrorPropertyForMoreDetails_1,
         player as Player,
         environment as Environment
       )

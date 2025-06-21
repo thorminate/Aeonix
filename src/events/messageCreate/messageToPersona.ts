@@ -12,7 +12,7 @@ export default new Event({
 
     if (!player) {
       context.reply({
-        content: "You don't have a persona. Run ``/init`` to create one.",
+        content: "You don't have a persona. Run `/init` to create one.",
       });
       return;
     }

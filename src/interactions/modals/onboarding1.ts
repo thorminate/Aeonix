@@ -7,10 +7,10 @@ import {
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
-import Modal from "../modal.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
 import aeonix from "../../aeonix.js";
+import Interaction from "../interaction.js";
 
 async function isImageUrl(url: string) {
   try {
@@ -27,7 +27,7 @@ async function isImageUrl(url: string) {
   }
 }
 
-export default new Modal({
+export default new Interaction({
   data: new ModalBuilder()
     .setTitle("Step 1/1 - Display Name")
     .setCustomId("onboarding1")
@@ -51,6 +51,7 @@ export default new Modal({
           .setRequired(true)
       )
     ),
+  interactionType: "modal",
   customId: "onboarding1",
   ephemeral: true,
   passPlayer: false,
@@ -58,7 +59,7 @@ export default new Modal({
   environmentOnly: false,
   passEnvironment: false,
 
-  callback: async (context) => {
+  callback: async ({ context }) => {
     if (await Player.find(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 

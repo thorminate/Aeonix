@@ -1,16 +1,17 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
-import Button from "../button.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayerConfirmed from "./deletePlayerConfirmed.js";
 import componentWrapper from "../../utils/componentWrapper.js";
+import Interaction from "../interaction.js";
 
-export default new Button({
+export default new Interaction({
   data: new ButtonBuilder()
     .setCustomId("deletePlayer")
     .setLabel("Delete")
     .setStyle(ButtonStyle.Danger),
 
+  interactionType: "button",
   customId: "deletePlayer",
   ephemeral: true,
   acknowledge: false,
@@ -18,7 +19,7 @@ export default new Button({
   environmentOnly: false,
   passEnvironment: false,
 
-  callback: async (context) => {
+  callback: async ({ context }) => {
     if (!(await Player.find(context.user.id))) {
       await context.update({
         content: "You don't exist in the DB, therefore you cannot be deleted.",

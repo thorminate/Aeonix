@@ -8,13 +8,13 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Command from "../command.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import ItemReference from "../../models/item/utils/itemReference.js";
 import paginator, { paginateFromButton } from "../../utils/paginator.js";
 import { randomUUID } from "node:crypto";
 import componentWrapper from "../../utils/componentWrapper.js";
+import Interaction from "../interaction.js";
 
 function getButtonsFromEntries(entries: ItemReference[]): ButtonBuilder[] {
   return entries.map((entry: ItemReference): ButtonBuilder => {
@@ -217,17 +217,20 @@ function createCollectors(
   });
 }
 
-export default new Command({
+export default new Interaction({
+  interactionType: "command",
+
   data: new SlashCommandBuilder()
     .setName("inventory")
     .setDescription("Shows your inventory"),
+
   ephemeral: true,
   acknowledge: true,
   passPlayer: true,
   environmentOnly: true,
   passEnvironment: false,
 
-  callback: async (context, player): Promise<void> => {
+  callback: async ({ context, player }): Promise<void> => {
     if (!player) {
       log({
         header: "Player could not be passed to inventory command",

@@ -1,6 +1,6 @@
 import {
   CacheType,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   MessageFlags,
   PermissionFlagsBits,
   PermissionsBitField,
@@ -9,18 +9,24 @@ import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
 import log from "../../utils/log.js";
-import Command, {
-  CommandContext,
-  SeeCommandErrorPropertyForMoreDetails_1,
-  SeeCommandErrorPropertyForMoreDetails_2,
-  SeeCommandErrorPropertyForMoreDetails_3,
-} from "../../interactions/command.js";
 import Player from "../../models/player/player.js";
 import Event, { EventParams } from "../../models/core/event.js";
 import Environment from "../../models/environment/environment.js";
+import Interaction, {
+  CommandContext,
+  SeeInteractionErrorPropertyForMoreDetails_1,
+  SeeInteractionErrorPropertyForMoreDetails_2,
+  SeeInteractionErrorPropertyForMoreDetails_3,
+} from "../../interactions/interaction.js";
 
 export async function findLocalCommands() {
-  const localCommands: Command<boolean, boolean, boolean, boolean>[] = [];
+  const localCommands: Interaction<
+    boolean,
+    boolean,
+    boolean,
+    boolean,
+    "command"
+  >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -31,9 +37,13 @@ export async function findLocalCommands() {
   for (const commandFile of commandFiles) {
     const filePath = path.resolve(commandFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const commandObject: Command<boolean, boolean, boolean, boolean> = (
-      await import(fileUrl.toString())
-    ).default;
+    const commandObject: Interaction<
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      "command"
+    > = (await import(fileUrl.toString())).default;
 
     localCommands.push(commandObject);
   }
@@ -43,7 +53,7 @@ export async function findLocalCommands() {
 
 export default new Event({
   callback: async (event: EventParams) => {
-    const context = event.context as CommandInteraction;
+    const context = event.context as ChatInputCommandInteraction<CacheType>;
 
     if (!context.isChatInputCommand()) return;
 
@@ -58,11 +68,12 @@ export default new Event({
     const localCommands = await findLocalCommands();
 
     // check if command name is in localCommands
-    const command: Command<boolean, boolean, boolean, boolean> | undefined =
-      localCommands.find(
-        (cmd: Command<boolean, boolean, boolean, boolean>) =>
-          cmd.data.name === context.commandName
-      );
+    const command:
+      | Interaction<boolean, boolean, boolean, boolean, "command">
+      | undefined = localCommands.find(
+      (cmd: Interaction<boolean, boolean, boolean, boolean, "command">) =>
+        cmd.data.name === context.commandName
+    );
 
     // if commandObject does not exist, return
     if (!command) return;
@@ -134,12 +145,12 @@ export default new Event({
       if (!player) {
         if (command.acknowledge) {
           await context.editReply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         } else {
           await context.reply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         }
@@ -169,11 +180,11 @@ export default new Event({
     // if all goes well, run the commands callback function.
     await command
       .callback(
-        context as CommandInteraction<CacheType> &
+        context as ChatInputCommandInteraction<CacheType> &
           CommandContext &
-          SeeCommandErrorPropertyForMoreDetails_3 &
-          SeeCommandErrorPropertyForMoreDetails_2 &
-          SeeCommandErrorPropertyForMoreDetails_1,
+          SeeInteractionErrorPropertyForMoreDetails_1 &
+          SeeInteractionErrorPropertyForMoreDetails_2 &
+          SeeInteractionErrorPropertyForMoreDetails_3,
         player as Player,
         environment as Environment
       )

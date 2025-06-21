@@ -26,5 +26,5 @@
   },
   "compileOnSave": true,
   "exclude": ["node_modules/", "dist/"],
-  "include": ["src/"]
+  "include": ["src/", "src/interactions/mentionableSelectMenu.ts"]
 }

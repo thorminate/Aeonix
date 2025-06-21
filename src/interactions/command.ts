@@ -1,6 +1,6 @@
 import {
   CacheType,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   SlashCommandBuilder,
   SlashCommandOptionsOnlyBuilder,
   SlashCommandSubcommandsOnlyBuilder,
@@ -11,7 +11,7 @@ import log from "../utils/log.js";
 import Environment from "../models/environment/environment.js";
 
 export type CommandContext = Omit<
-  CommandInteraction<CacheType>,
+  ChatInputCommandInteraction<CacheType>,
   "reply" | "deferReply" | "showModal"
 >;
 
@@ -64,18 +64,21 @@ type CommandCallback<
   : PassPlayer extends true
   ? PassEnvironment extends true
     ? (
-        context: CommandInteraction<CacheType>,
+        context: ChatInputCommandInteraction<CacheType>,
         player: Player,
         environment: Environment | undefined
       ) => Promise<void>
-    : (context: CommandInteraction<CacheType>, player: Player) => Promise<void>
+    : (
+        context: ChatInputCommandInteraction<CacheType>,
+        player: Player
+      ) => Promise<void>
   : PassEnvironment extends true
   ? EnvironmentOnly extends true
     ? (context: SeeCommandErrorPropertyForMoreDetails_3) => Promise<void>
     : (context: SeeCommandErrorPropertyForMoreDetails_2) => Promise<void>
   : EnvironmentOnly extends true
   ? (context: SeeCommandErrorPropertyForMoreDetails_1) => Promise<void>
-  : (context: CommandInteraction<CacheType>) => Promise<void>;
+  : (context: ChatInputCommandInteraction<CacheType>) => Promise<void>;
 
 export interface ICommand<
   Acknowledge extends boolean,

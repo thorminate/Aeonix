@@ -1,13 +1,15 @@
 import { ButtonBuilder, MessageFlags } from "discord.js";
-import Button from "../button.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayer from "./deletePlayer.js";
 import onboarding1 from "../modals/onboarding1.js";
 import componentWrapper from "../../utils/componentWrapper.js";
+import Interaction from "../interaction.js";
 
-export default new Button({
+export default new Interaction({
   data: new ButtonBuilder(),
+
+  interactionType: "button",
   customId: "onboarding0",
   ephemeral: true,
   acknowledge: false,
@@ -15,7 +17,7 @@ export default new Button({
   environmentOnly: false,
   passEnvironment: false,
 
-  callback: async (context) => {
+  callback: async ({ context }) => {
     if (await Player.find(context.user.id)) {
       await context.reply({
         content:

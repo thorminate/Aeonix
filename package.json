@@ -9,13 +9,16 @@
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "keywords": [],
   "scripts": {
-    "dev": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/aeonix.js"
+    "dev": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/aeonix.js",
+    "start": "node --trace-warnings ./dist/aeonix.js",
+    "build": "node ./scripts/reset.js && tsc",
+    "lint": "eslint . --ext .ts"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.43.0",
     "@types/node": "^22.15.17",
     "ansis": "^3.17.0",
-    "discord.js": "^14.19.3",
+    "discord.js": "^14.20.0",
     "glob": "^11.0.2",
     "mongoose": "^8.14.1",
     "ts-node": "^10.9.2",

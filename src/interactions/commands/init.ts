@@ -5,7 +5,6 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import Player from "../../models/player/player.js";
-import Command, { CommandContext } from "../command.js";
 import {
   welcomeImage,
   welcomeMessage,
@@ -13,17 +12,20 @@ import {
 import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
+import Interaction from "../interaction.js";
 
-export default new Command({
+export default new Interaction({
   data: new SlashCommandBuilder()
     .setName("init")
     .setDescription("Initializes your persona"),
+
+  interactionType: "command",
   passPlayer: false,
   acknowledge: true,
   environmentOnly: false,
   passEnvironment: false,
 
-  callback: async (context: CommandContext) => {
+  callback: async ({ context }) => {
     if (await Player.find(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 

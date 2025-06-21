@@ -6,6 +6,8 @@ import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
 
+type ItemReferenceV2 = ItemReference | string;
+
 export default abstract class Environment {
   abstract id: string;
   abstract channelId: string;
@@ -54,11 +56,20 @@ export default abstract class Environment {
     this.items.push(item);
   }
 
-  pickUpItem(player: Player, item: ItemReference) {
-    if (this.onItemPickup)
-      this.onItemPickup({ eventType: "pickup", player, item });
+  pickUpItem(player: Player, id: ItemReferenceV2): ItemReference | undefined {
+    const item =
+      typeof id === "string" ? this.items.find((i) => i.id === id) : id;
 
-    this.items = this.items.filter((i) => i.id !== item.id);
+    if (item) {
+      if (this.onItemPickup)
+        this.onItemPickup({ eventType: "pickup", player, item });
+    }
+
+    this.items = this.items.filter(
+      (i) => i.id !== (typeof id === "string" ? id : id.id)
+    );
+
+    return item;
   }
 
   // Hooks & Events

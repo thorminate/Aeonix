@@ -6,10 +6,10 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import Command from "../command.js";
 import log from "../../utils/log.js";
 import Player from "../../models/player/player.js";
 import paginator from "../../utils/paginator.js";
+import Interaction from "../interaction.js";
 
 function createCollectors(message: Message, player: Player) {
   const collector = message.createMessageComponentCollector({
@@ -59,17 +59,19 @@ function createCollectors(message: Message, player: Player) {
   });
 }
 
-export default new Command({
+export default new Interaction({
   data: new SlashCommandBuilder()
     .setName("travel")
     .setDescription("Traverses to a new location"),
+
+  interactionType: "command",
   passPlayer: true,
   acknowledge: true,
   ephemeral: true,
   environmentOnly: true,
   passEnvironment: true,
 
-  callback: async (context, player, environment) => {
+  callback: async ({ context, player, environment }) => {
     const buttons =
       environment?.adjacentEnvironments.map((env: string) =>
         new ButtonBuilder()

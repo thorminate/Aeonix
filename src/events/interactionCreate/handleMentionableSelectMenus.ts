@@ -11,20 +11,23 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import MentionableSelectMenu, {
-  MentionableSelectMenuContext,
-  SeeMentionableSelectMenuErrorPropertyForMoreDetails_1,
-  SeeMentionableSelectMenuErrorPropertyForMoreDetails_2,
-  SeeMentionableSelectMenuErrorPropertyForMoreDetails_3,
-} from "../../interactions/mentionableSelectMenu.js";
 import Environment from "../../models/environment/environment.js";
+import Interaction, {
+  MentionableSelectMenuContext,
+} from "../../interactions/interaction.js";
+import {
+  SeeButtonErrorPropertyForMoreDetails_1,
+  SeeButtonErrorPropertyForMoreDetails_2,
+  SeeButtonErrorPropertyForMoreDetails_3,
+} from "../../interactions/button.js";
 
 async function findLocalMentionableSelectMenus() {
-  const localMentionableSelectMenus: MentionableSelectMenu<
+  const localMentionableSelectMenus: Interaction<
     boolean,
     boolean,
     boolean,
-    boolean
+    boolean,
+    "mentionableSelectMenu"
   >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -36,11 +39,12 @@ async function findLocalMentionableSelectMenus() {
   for (const mentionableSelectMenuFile of mentionableSelectMenuFiles) {
     const filePath = path.resolve(mentionableSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const mentionableSelectMenu: MentionableSelectMenu<
+    const mentionableSelectMenu: Interaction<
       boolean,
       boolean,
       boolean,
-      boolean
+      boolean,
+      "mentionableSelectMenu"
     > = (await import(fileUrl.toString())).default;
 
     localMentionableSelectMenus.push(mentionableSelectMenu);
@@ -66,14 +70,15 @@ export default new Event({
     }
 
     const mentionableSelectMenu:
-      | MentionableSelectMenu<boolean, boolean, boolean, boolean>
+      | Interaction<boolean, boolean, boolean, boolean, "mentionableSelectMenu">
       | undefined = localMentionableSelectMenus.find(
       (
-        mentionableSelectMenu: MentionableSelectMenu<
+        mentionableSelectMenu: Interaction<
           boolean,
           boolean,
           boolean,
-          boolean
+          boolean,
+          "mentionableSelectMenu"
         >
       ) => mentionableSelectMenu.customId === context.customId
     );
@@ -148,12 +153,12 @@ export default new Event({
       if (!player) {
         if (mentionableSelectMenu.acknowledge) {
           await context.editReply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         } else {
           context.reply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         }
@@ -183,9 +188,9 @@ export default new Event({
     await mentionableSelectMenu
       .callback(
         context as MentionableSelectMenuInteraction<CacheType> &
-          SeeMentionableSelectMenuErrorPropertyForMoreDetails_1 &
-          SeeMentionableSelectMenuErrorPropertyForMoreDetails_2 &
-          SeeMentionableSelectMenuErrorPropertyForMoreDetails_3 &
+          SeeButtonErrorPropertyForMoreDetails_1 &
+          SeeButtonErrorPropertyForMoreDetails_2 &
+          SeeButtonErrorPropertyForMoreDetails_3 &
           MentionableSelectMenuContext,
         player as Player,
         environment as Environment

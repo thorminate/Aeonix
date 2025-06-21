@@ -22,6 +22,7 @@ import playerModel from "./utils/playerModel.js";
 import log from "../../utils/log.js";
 import PlayerDocument from "./utils/playerDocument.js";
 import PlayerMoveToResult from "./utils/playerMoveToResult.js";
+import ItemReference from "../item/utils/itemReference.js";
 
 export default class Player extends Saveable<PlayerDocument> {
   // Identifiers
@@ -279,6 +280,7 @@ export default class Player extends Saveable<PlayerDocument> {
     return {
       _inventory: Inventory,
       _status: Stats,
+      "_inventory._entries": ItemReference,
     };
   }
 

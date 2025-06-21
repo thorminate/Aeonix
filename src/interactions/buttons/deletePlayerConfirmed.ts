@@ -1,14 +1,16 @@
 import Player from "../../models/player/player.js";
-import Button from "../button.js";
 import log from "../../utils/log.js";
 import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
 import aeonix from "../../aeonix.js";
+import Interaction from "../interaction.js";
 
-export default new Button({
+export default new Interaction({
   data: new ButtonBuilder()
     .setCustomId("deletePlayerConfirmed")
     .setLabel("Yes")
     .setStyle(ButtonStyle.Danger),
+
+  interactionType: "button",
   customId: "deletePlayerConfirmed",
   ephemeral: true,
   acknowledge: false,
@@ -16,7 +18,7 @@ export default new Button({
   environmentOnly: false,
   passEnvironment: false,
 
-  callback: async (context, player) => {
+  callback: async ({ context, player }) => {
     await (context.member?.roles as GuildMemberRoleManager).remove(
       aeonix.playerRoleId,
       "Player deleted"

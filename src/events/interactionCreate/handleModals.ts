@@ -6,12 +6,12 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import Player from "../../models/player/player.js";
-import Modal, {
+import Interaction, {
   ModalContext,
-  SeeModalErrorPropertyForMoreDetails_1,
-  SeeModalErrorPropertyForMoreDetails_2,
-  SeeModalErrorPropertyForMoreDetails_3,
-} from "../../interactions/modal.js";
+  SeeInteractionErrorPropertyForMoreDetails_3,
+  SeeInteractionErrorPropertyForMoreDetails_2,
+  SeeInteractionErrorPropertyForMoreDetails_1,
+} from "../../interactions/interaction.js";
 import log from "../../utils/log.js";
 import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
@@ -20,7 +20,13 @@ import getAllFiles from "../../utils/getAllFiles.js";
 import Environment from "../../models/environment/environment.js";
 
 async function findLocalModals() {
-  const localModals: Modal<boolean, boolean, boolean, boolean>[] = [];
+  const localModals: Interaction<
+    boolean,
+    boolean,
+    boolean,
+    boolean,
+    "modal"
+  >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -31,7 +37,7 @@ async function findLocalModals() {
   for (const modalFile of modalFiles) {
     const filePath = path.resolve(modalFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const modal: Modal<boolean, boolean, boolean, boolean> = (
+    const modal: Interaction<boolean, boolean, boolean, boolean, "modal"> = (
       await import(fileUrl.toString())
     ).default;
 
@@ -57,11 +63,12 @@ export default new Event({
 
     const localModals = await findLocalModals();
 
-    const modal: Modal<boolean, boolean, boolean, boolean> | undefined =
-      localModals.find(
-        (modal: Modal<boolean, boolean, boolean, boolean>) =>
-          modal.customId === context.customId
-      );
+    const modal:
+      | Interaction<boolean, boolean, boolean, boolean, "modal">
+      | undefined = localModals.find(
+      (modal: Interaction<boolean, boolean, boolean, boolean, "modal">) =>
+        modal.customId === context.customId
+    );
 
     if (!modal) return;
 
@@ -131,12 +138,12 @@ export default new Event({
       if (!player) {
         if (modal.acknowledge) {
           await context.editReply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         } else {
           context.reply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         }
@@ -167,9 +174,9 @@ export default new Event({
       .callback(
         context as ModalSubmitInteraction<CacheType> &
           ModalContext &
-          SeeModalErrorPropertyForMoreDetails_3 &
-          SeeModalErrorPropertyForMoreDetails_2 &
-          SeeModalErrorPropertyForMoreDetails_1,
+          SeeInteractionErrorPropertyForMoreDetails_3 &
+          SeeInteractionErrorPropertyForMoreDetails_2 &
+          SeeInteractionErrorPropertyForMoreDetails_1,
         player as Player,
         environment as Environment
       )

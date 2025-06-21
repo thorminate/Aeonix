@@ -19,7 +19,6 @@ import path from "path";
 import environmentModel from "./models/environment/utils/environmentModel.js";
 import loadEnvironmentClassById from "./models/environment/utils/loadEnvironmentClassById.js";
 import softMerge from "./utils/softMerge.js";
-import fetchAllEnvironments from "./models/environment/utils/fetchAllEnvironments.js";
 
 interface PackageJson {
   name: string;
@@ -95,16 +94,19 @@ if (!existsSync("./.env")) {
 }
 
 // Load environment variables
-config();
+const __dotenvx = config({
+  quiet: true,
+});
+
+log({
+  header: `Injecting env (${
+    Object.keys(__dotenvx.parsed ?? {}).length
+  }) from .env`,
+  processName: "Dotenvx",
+  type: "Info",
+});
 
 class EnvironmentManager {
-  async init() {
-    const envs = await fetchAllEnvironments();
-
-    for (const env of envs) {
-      await env.init();
-    }
-  }
   async get(location: string) {
     let [classInstance, dbData] = await Promise.all([
       loadEnvironmentClassById(location),
@@ -273,7 +275,7 @@ export class Aeonix extends Client {
         this.user.setPresence({ status: "invisible" });
       }
       await this.destroy();
-      process.exit(code);
+      process.exit(code); // Exit with the provided code
     } catch (e) {
       log({
         header: "Error while shutting down",
@@ -590,8 +592,6 @@ export class Aeonix extends Client {
           });
         });
         await this.statusRefresh();
-
-        await this.environments.init();
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",

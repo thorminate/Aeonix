@@ -1,9 +1,9 @@
 import log from "../../utils/log.js";
-import Command from "../../interactions/command.js";
 import Event from "../../models/core/event.js";
 import { Aeonix } from "../../aeonix.js";
 import { ApplicationCommand } from "discord.js";
 import { findLocalCommands } from "../interactionCreate/handleCommands.js";
+import Interaction from "../../interactions/interaction.js";
 
 async function getApplicationCommands(aeonix: Aeonix, guildId: string) {
   const applicationCommands = (await aeonix.guilds.fetch(guildId)).commands; // get global commands
@@ -65,7 +65,7 @@ function areOptionsDifferent(existingOptions: any[], localOptions: any[]) {
 
 function areCommandsDifferent(
   existingCommand: ApplicationCommand,
-  localCommand: Command<boolean, boolean, boolean, boolean>
+  localCommand: Interaction<boolean, boolean, boolean, boolean, "command">
 ) {
   if (
     existingCommand.description !== localCommand.data.description ||
@@ -84,8 +84,13 @@ function areCommandsDifferent(
 
 export default new Event({
   callback: async ({ aeonix }) => {
-    const localCommands: Command<boolean, boolean, boolean, boolean>[] =
-      await findLocalCommands();
+    const localCommands: Interaction<
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      "command"
+    >[] = await findLocalCommands();
     const applicationCommands = await getApplicationCommands(
       aeonix,
       "1267928656877977670"

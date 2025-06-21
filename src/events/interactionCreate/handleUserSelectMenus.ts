@@ -11,20 +11,21 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import UserSelectMenu, {
-  SeeUserSelectMenuErrorPropertyForMoreDetails_1,
-  SeeUserSelectMenuErrorPropertyForMoreDetails_2,
-  SeeUserSelectMenuErrorPropertyForMoreDetails_3,
+import Interaction, {
+  SeeInteractionErrorPropertyForMoreDetails_1,
+  SeeInteractionErrorPropertyForMoreDetails_2,
+  SeeInteractionErrorPropertyForMoreDetails_3,
   UserSelectMenuContext,
-} from "../../interactions/userSelectMenu.js";
+} from "../../interactions/interaction.js";
 import Environment from "../../models/environment/environment.js";
 
 async function findLocalUserSelectMenus() {
-  const localUserSelectMenus: UserSelectMenu<
+  const localUserSelectMenus: Interaction<
     boolean,
     boolean,
     boolean,
-    boolean
+    boolean,
+    "userSelectMenu"
   >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -36,9 +37,13 @@ async function findLocalUserSelectMenus() {
   for (const userSelectMenuFile of userSelectMenuFiles) {
     const filePath = path.resolve(userSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const userSelectMenu: UserSelectMenu<boolean, boolean, boolean, boolean> = (
-      await import(fileUrl.toString())
-    ).default;
+    const userSelectMenu: Interaction<
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      "userSelectMenu"
+    > = (await import(fileUrl.toString())).default;
 
     localUserSelectMenus.push(userSelectMenu);
   }
@@ -63,10 +68,17 @@ export default new Event({
     const localUserSelectMenus = await findLocalUserSelectMenus();
 
     const userSelectMenu:
-      | UserSelectMenu<boolean, boolean, boolean, boolean>
+      | Interaction<boolean, boolean, boolean, boolean, "userSelectMenu">
       | undefined = localUserSelectMenus.find(
-      (userSelectMenu: UserSelectMenu<boolean, boolean, boolean, boolean>) =>
-        userSelectMenu.customId === context.customId
+      (
+        userSelectMenu: Interaction<
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+          "userSelectMenu"
+        >
+      ) => userSelectMenu.customId === context.customId
     );
 
     if (!userSelectMenu) return;
@@ -137,12 +149,12 @@ export default new Event({
       if (!player) {
         if (userSelectMenu.acknowledge) {
           await context.editReply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         } else {
           context.reply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         }
@@ -173,9 +185,9 @@ export default new Event({
       .callback(
         context as UserSelectMenuInteraction<CacheType> &
           UserSelectMenuContext &
-          SeeUserSelectMenuErrorPropertyForMoreDetails_3 &
-          SeeUserSelectMenuErrorPropertyForMoreDetails_2 &
-          SeeUserSelectMenuErrorPropertyForMoreDetails_1,
+          SeeInteractionErrorPropertyForMoreDetails_1 &
+          SeeInteractionErrorPropertyForMoreDetails_2 &
+          SeeInteractionErrorPropertyForMoreDetails_3,
         player as Player,
         environment as Environment
       )

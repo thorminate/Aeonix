@@ -11,20 +11,21 @@ import Event, { EventParams } from "../../models/core/event.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import StringSelectMenu, {
-  SeeStringSelectMenuErrorPropertyForMoreDetails_1,
-  SeeStringSelectMenuErrorPropertyForMoreDetails_2,
-  SeeStringSelectMenuErrorPropertyForMoreDetails_3,
+import Interaction, {
+  SeeInteractionErrorPropertyForMoreDetails_1,
+  SeeInteractionErrorPropertyForMoreDetails_2,
+  SeeInteractionErrorPropertyForMoreDetails_3,
   StringSelectMenuContext,
-} from "../../interactions/stringSelectMenu.js";
+} from "../../interactions/interaction.js";
 import Environment from "../../models/environment/environment.js";
 
 async function findLocalStringSelectMenus() {
-  const localStringSelectMenus: StringSelectMenu<
+  const localStringSelectMenus: Interaction<
     boolean,
     boolean,
     boolean,
-    boolean
+    boolean,
+    "stringSelectMenu"
   >[] = [];
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -36,11 +37,12 @@ async function findLocalStringSelectMenus() {
   for (const stringSelectMenuFile of stringSelectMenuFiles) {
     const filePath = path.resolve(stringSelectMenuFile);
     const fileUrl = url.pathToFileURL(filePath);
-    const stringSelectMenu: StringSelectMenu<
+    const stringSelectMenu: Interaction<
       boolean,
       boolean,
       boolean,
-      boolean
+      boolean,
+      "stringSelectMenu"
     > = (await import(fileUrl.toString())).default;
 
     localStringSelectMenus.push(stringSelectMenu);
@@ -66,10 +68,16 @@ export default new Event({
     const localStringSelectMenus = await findLocalStringSelectMenus();
 
     const stringSelectMenu:
-      | StringSelectMenu<boolean, boolean, boolean, boolean>
+      | Interaction<boolean, boolean, boolean, boolean, "stringSelectMenu">
       | undefined = localStringSelectMenus.find(
       (
-        stringSelectMenu: StringSelectMenu<boolean, boolean, boolean, boolean>
+        stringSelectMenu: Interaction<
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+          "stringSelectMenu"
+        >
       ) => stringSelectMenu.customId === context.customId
     );
 
@@ -141,12 +149,12 @@ export default new Event({
       if (!player) {
         if (stringSelectMenu.acknowledge) {
           await context.editReply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         } else {
           context.reply({
-            content: "You aren't a player. Register with the /init command.",
+            content: "You aren't a player. Register with the `/init` command.",
           });
           return;
         }
@@ -177,9 +185,9 @@ export default new Event({
       .callback(
         context as StringSelectMenuInteraction<CacheType> &
           StringSelectMenuContext &
-          SeeStringSelectMenuErrorPropertyForMoreDetails_3 &
-          SeeStringSelectMenuErrorPropertyForMoreDetails_2 &
-          SeeStringSelectMenuErrorPropertyForMoreDetails_1,
+          SeeInteractionErrorPropertyForMoreDetails_1 &
+          SeeInteractionErrorPropertyForMoreDetails_2 &
+          SeeInteractionErrorPropertyForMoreDetails_3,
         player as Player,
         environment as Environment
       )

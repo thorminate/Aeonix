@@ -1,4 +1,40 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * @param subMemberName The name of the sub-member to filter by
+ * @param classMap The class map to filter from
+ * @returns A new class map containing only the sub-members that start with the given subMemberName
+ * @example
+ * getClassMapSubMembers("key", {
+ *  "key": Class,
+ *  "subMemberName.subKey": Class,
+ *  "subMemberName.subKey2": Class,
+ *  "key.subKey1": Class,
+ *  "key.subKey2butDifferent": Class,
+ * })
+ * returns {
+ *  "subKey1": Class,
+ *  "subKey2butDifferent": Class,
+ * }
+ */
+function getClassMapSubMembers(
+  subMemberName: string,
+  classMap: Record<string, new (...args: any[]) => any>
+) {
+  const subMembers: Record<string, new (...args: any[]) => any> = {};
+
+  for (const key of Object.keys(classMap)) {
+    if (key.startsWith(subMemberName + ".")) {
+      const subKey = key.slice(subMemberName.length + 1);
+      if (subKey.length !== 0) {
+        subMembers[subKey] = classMap[key]!;
+      }
+    }
+  }
+
+  return subMembers;
+}
+
 export default function hardMerge<T extends object>(
   target: T,
   source: any,
@@ -15,7 +51,11 @@ export default function hardMerge<T extends object>(
       (target as Record<string, unknown>)[key] = sourceValue.map(
         (item: unknown) =>
           typeof item === "object" && item
-            ? hardMerge(new ClassFromMap!(), item, classMap)
+            ? hardMerge(
+                new ClassFromMap!(),
+                item,
+                getClassMapSubMembers(key, classMap)
+              )
             : item
       );
     } else if (
@@ -27,7 +67,7 @@ export default function hardMerge<T extends object>(
         (target as Record<string, any>)[key] = hardMerge(
           new ClassFromMap!(),
           sourceValue,
-          classMap
+          getClassMapSubMembers(key, classMap)
         );
       } else {
         (target as Record<string, any>)[key] = hardMerge(
