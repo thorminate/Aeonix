@@ -2,7 +2,7 @@ import { Message } from "discord.js";
 import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
 
-export default new Event({
+export default new Event<Message>({
   async callback({ context }) {
     if (!(context instanceof Message)) return;
 

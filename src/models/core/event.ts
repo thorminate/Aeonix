@@ -1,7 +1,7 @@
 import { BaseInteraction } from "discord.js";
 import { Aeonix } from "../../aeonix.js";
 
-export class EventParams<T extends BaseInteraction | unknown = unknown> {
+export class EventParams<T extends BaseInteraction | unknown> {
   aeonix: Aeonix;
   context: T;
 
@@ -11,15 +11,17 @@ export class EventParams<T extends BaseInteraction | unknown = unknown> {
   }
 }
 
-export default class Event {
-  callback: (event: EventParams) => Promise<void>;
+export default class Event<
+  T extends BaseInteraction | unknown = BaseInteraction
+> {
+  callback: (event: EventParams<T>) => Promise<void>;
   onError: (e: unknown) => Promise<void>;
 
   constructor({
     callback,
     onError,
   }: {
-    callback: (event: EventParams) => Promise<void>;
+    callback: (event: EventParams<T>) => Promise<void>;
     onError: (e: unknown) => Promise<void>;
   }) {
     this.callback = callback;

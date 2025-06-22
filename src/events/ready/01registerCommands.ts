@@ -2,7 +2,7 @@ import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import { Aeonix } from "../../aeonix.js";
 import { ApplicationCommand } from "discord.js";
-import { findLocalCommands } from "../interactionCreate/handleCommands.js";
+import { findLocalCommands } from "../interactionCreate/handleInteractions.js";
 import Interaction from "../../interactions/interaction.js";
 
 async function getApplicationCommands(aeonix: Aeonix, guildId: string) {

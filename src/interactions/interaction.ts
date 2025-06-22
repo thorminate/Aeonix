@@ -61,7 +61,7 @@ export type UserSelectMenuContext = Omit<
   "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
 >;
 
-type InteractionTypes =
+export type InteractionTypes =
   | "button"
   | "channelSelectMenu"
   | "command"

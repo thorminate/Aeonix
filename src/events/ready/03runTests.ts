@@ -1,21 +1,21 @@
 import BackpackItem from "../../items/BackpackItem.js";
-import Event, { EventParams } from "../../models/core/event.js";
+import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 
 export default new Event({
-  callback: async (event: EventParams) => {
-    if (!event.aeonix.user) {
+  callback: async ({ aeonix }) => {
+    if (!aeonix.user) {
       log({
         header: "User is falsy",
         processName: "TestRunner",
-        payload: event.aeonix.user,
+        payload: aeonix.user,
         type: "Error",
       });
       return;
     }
 
-    const player = new Player(event.aeonix.user, event.aeonix.user.username);
+    const player = new Player(aeonix.user, aeonix.user.username);
 
     const item = new BackpackItem();
     const item2 = (await item.toItemReference().toItem()) as BackpackItem;
@@ -79,13 +79,13 @@ export default new Event({
 
     let startEnvironment;
 
-    startEnvironment = await event.aeonix.environments.get("start");
+    startEnvironment = await aeonix.environments.get("start");
 
     if (!startEnvironment) {
       log({
         header: "Test Error, start environment is falsy",
         processName: "TestRunner",
-        payload: await event.aeonix.environments.getAll(),
+        payload: await aeonix.environments.getAll(),
         type: "Error",
       });
       test = false;
