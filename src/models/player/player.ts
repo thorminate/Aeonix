@@ -14,15 +14,16 @@ import {
   TextDisplayBuilder,
   User,
 } from "discord.js";
-import Stats from "../status/status.js";
-import Inventory from "../inventory/inventory.js";
-import calculateXpRequirement from "../status/utils/calculateXpRequirement.js";
+import Stats from "./utils/status.js";
+import Inventory from "./utils/inventory.js";
+import calculateXpRequirement from "./utils/calculateXpRequirement.js";
 import aeonix from "../../aeonix.js";
 import playerModel from "./utils/playerModel.js";
 import log from "../../utils/log.js";
 import PlayerDocument from "./utils/playerDocument.js";
 import PlayerMoveToResult from "./utils/playerMoveToResult.js";
 import ItemReference from "../item/utils/itemReference.js";
+import StatusEffect from "./utils/statusEffect.js";
 
 export default class Player extends Saveable<PlayerDocument> {
   // Identifiers
@@ -31,10 +32,11 @@ export default class Player extends Saveable<PlayerDocument> {
 
   // Persona Information
   persona = { name: "", avatarURL: "" };
-  private _inventory: Inventory;
-  private _status: Stats;
   location: string = "";
   locationChannelId: string = "";
+  statusEffects: StatusEffect[] = [];
+  private _inventory: Inventory;
+  private _status: Stats;
 
   public get status(): Stats {
     return hardMerge(new Stats(), this._status, {}) as Stats;
@@ -280,6 +282,7 @@ export default class Player extends Saveable<PlayerDocument> {
     return {
       _inventory: Inventory,
       _status: Stats,
+      statusEffects: StatusEffect,
       "_inventory._entries": ItemReference,
     };
   }

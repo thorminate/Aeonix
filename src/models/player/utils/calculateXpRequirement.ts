@@ -1,5 +1,5 @@
 export default (currentLevel: number): number => {
-  const nextLevel = (currentLevel += 1);
+  const nextLevel = currentLevel + 1;
 
   if (nextLevel <= 0) return 1;
 

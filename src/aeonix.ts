@@ -143,6 +143,8 @@ export class Aeonix extends Client {
     readFileSync("./package.json").toString()
   );
 
+  private _currentTime = 1;
+
   playerRoleId: string = process.env.PLAYER_ROLE || "";
   guildId: string = process.env.GUILD_ID || "";
   onboardingChannelId: string = process.env.ONBOARDING_CHANNEL || "";
@@ -262,6 +264,32 @@ export class Aeonix extends Client {
     "cartography",
     "spatial analysis",
   ];
+
+  get currentTime() {
+    const now = this._currentTime;
+
+    if (now <= 0 || now > 24) {
+      log({
+        header: "Invalid current time, resetting to 1",
+        processName: "Aeonix.currentTime",
+        type: "Error",
+        payload: { currentTime: now },
+      });
+      this._currentTime = 1; // Reset to 1 if the time is invalid
+      return 1; // Default to 1 if the time is invalid
+    }
+
+    return now;
+  }
+
+  tick() {
+    this._currentTime += 1;
+    if (this._currentTime > 24) {
+      this._currentTime = 1; // Reset to 1 if the time exceeds 24
+    }
+
+    this.emit("tick");
+  }
 
   async exit(code: number = 0) {
     log({
@@ -602,7 +630,10 @@ export class Aeonix extends Client {
       }
     })();
 
-    setInterval(() => this.statusRefresh(), 60 * 1000);
+    setInterval(() => {
+      this.statusRefresh();
+      this.tick();
+    }, 60 * 1000);
   }
 }
 

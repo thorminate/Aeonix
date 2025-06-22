@@ -1,7 +1,7 @@
 import { Document } from "mongoose";
-import Inventory from "../../inventory/inventory.js";
-import Stats from "../../status/status.js";
-import Quest from "../../quests/quest.js";
+import Inventory from "./inventory.js";
+import Stats from "./status.js";
+import Quest from "./quest.js";
 
 export default interface PlayerDocument extends Document {
   _id: string;
@@ -14,6 +14,5 @@ export default interface PlayerDocument extends Document {
   quests: {
     pending: Quest[];
     completed: Quest[];
-    
-  }
+  };
 }

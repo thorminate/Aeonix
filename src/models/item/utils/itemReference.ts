@@ -39,7 +39,7 @@ export default class ItemReference implements IItemReference {
   async toItem(): Promise<Item | undefined> {
     if (!this.type) return undefined;
 
-    const modulePath = `../../../items/${this.type}.js`;
+    const modulePath = `../../../content/items/${this.type}.js`;
     try {
       const module = await import(modulePath);
 

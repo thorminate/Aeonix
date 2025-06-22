@@ -1,5 +1,5 @@
-import hardMerge from "../../utils/hardMerge.js";
-import ItemReference from "../item/utils/itemReference.js";
+import hardMerge from "../../../utils/hardMerge.js";
+import ItemReference from "../../item/utils/itemReference.js";
 
 export interface IInventory {
   capacity: number;

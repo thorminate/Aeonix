@@ -1,5 +1,7 @@
-import ItemReference from "../item/utils/itemReference.js";
-import Player from "../player/player.js";
+import ItemReference from "../../item/utils/itemReference.js";
+import Player from "../player.js";
+
+// ABANDONED UNTIL FURTHER NOTICE
 
 export default class Quest {
   public id: string = "";

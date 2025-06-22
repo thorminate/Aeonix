@@ -5,7 +5,7 @@ const classCache = new Map<string, any>();
 export default async function loadEnvironmentClass(
   id: string
 ): Promise<Environment | undefined> {
-  const fileName = `./../../../environments/${id}.js`;
+  const fileName = `./../../../content/environments/${id}.js`;
 
   if (classCache.has(id)) return new (classCache.get(id))();
 
