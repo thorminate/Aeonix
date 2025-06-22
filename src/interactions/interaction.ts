@@ -19,7 +19,6 @@ import {
 } from "discord.js";
 import Player from "../models/player/player.js";
 import hardMerge from "../utils/hardMerge.js";
-import log from "../utils/log.js";
 import Environment from "../models/environment/environment.js";
 
 export type ButtonContext = Omit<
@@ -255,40 +254,25 @@ export default class Interaction<
   PassEnvironment extends boolean,
   InteractionType extends InteractionTypes
 > {
-  interactionType: InteractionType = "button" as InteractionType;
-  data: BuilderTypeFromInteractionType<InteractionType> =
-    new ButtonBuilder() as BuilderTypeFromInteractionType<InteractionType>;
-  customId?: CustomIdTypeFromInteractionType<InteractionType> =
-    "" as CustomIdTypeFromInteractionType<InteractionType>;
-  permissionsRequired?: Array<bigint> = [];
-  adminOnly?: boolean = false;
-  acknowledge: Acknowledge = true as Acknowledge;
-  ephemeral?: boolean = true;
-  deleted?: boolean = false;
-  passPlayer: PassPlayer = false as PassPlayer;
-  environmentOnly: EnvironmentOnly = false as EnvironmentOnly;
-  passEnvironment: PassEnvironment = false as PassEnvironment;
-  callback: InteractionCallback<
+  interactionType!: InteractionType;
+  data!: BuilderTypeFromInteractionType<InteractionType>;
+  customId?: CustomIdTypeFromInteractionType<InteractionType>;
+  permissionsRequired?: Array<bigint>;
+  adminOnly?: boolean;
+  acknowledge!: Acknowledge;
+  ephemeral?: boolean;
+  deleted?: boolean;
+  passPlayer!: PassPlayer;
+  environmentOnly!: EnvironmentOnly;
+  passEnvironment!: PassEnvironment;
+  callback!: InteractionCallback<
     Acknowledge,
     PassPlayer,
     PassEnvironment,
     EnvironmentOnly,
     InteractionType
-  > = async () => {
-    log({
-      header: "Interaction callback not implemented",
-      processName: "InteractionHandler",
-      type: "Error",
-    });
-  };
-  onError: (e: unknown) => void = (e) => {
-    log({
-      header: "Interaction Error (error handler not implemented!)",
-      processName: "InteractionHandler",
-      payload: e,
-      type: "Error",
-    });
-  };
+  >;
+  onError!: (e: unknown) => void;
 
   constructor(
     interactionObject: IInteraction<
@@ -299,6 +283,19 @@ export default class Interaction<
       InteractionType
     >
   ) {
-    return hardMerge(this, interactionObject);
+    const interactionTypeToBuilderMap = {
+      button: ButtonBuilder,
+      channelSelectMenu: ChannelSelectMenuBuilder,
+      command: SlashCommandBuilder,
+      mentionableSelectMenu: MentionableSelectMenuBuilder,
+      modal: ModalBuilder,
+      roleSelectMenu: RoleSelectMenuBuilder,
+      stringSelectMenu: StringSelectMenuBuilder,
+      userSelectMenu: UserSelectMenuBuilder,
+    } as const;
+
+    return hardMerge(this, interactionObject, {
+      data: interactionTypeToBuilderMap[interactionObject.interactionType],
+    });
   }
 }

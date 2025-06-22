@@ -21,6 +21,7 @@ export default new Interaction({
 
   interactionType: "command",
   passPlayer: false,
+  ephemeral: true,
   acknowledge: true,
   environmentOnly: false,
   passEnvironment: false,

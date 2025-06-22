@@ -182,15 +182,20 @@ export default new Event({
     }
 
     await roleSelectMenu
-      .callback(
-        context as RoleSelectMenuInteraction<CacheType> &
+      .callback({
+        context,
+        player,
+        environment,
+      } as {
+        error: never;
+        context: RoleSelectMenuInteraction<CacheType> &
           RoleSelectMenuContext &
-          SeeInteractionErrorPropertyForMoreDetails_3 &
+          SeeInteractionErrorPropertyForMoreDetails_1 &
           SeeInteractionErrorPropertyForMoreDetails_2 &
-          SeeInteractionErrorPropertyForMoreDetails_1,
-        player as Player,
-        environment as Environment
-      )
+          SeeInteractionErrorPropertyForMoreDetails_3;
+        player: Player;
+        environment: Environment;
+      })
       .catch((e: unknown) => {
         try {
           roleSelectMenu.onError(e);

@@ -182,15 +182,20 @@ export default new Event({
     }
 
     await userSelectMenu
-      .callback(
-        context as UserSelectMenuInteraction<CacheType> &
+      .callback({
+        context,
+        player,
+        environment,
+      } as {
+        error: never;
+        context: UserSelectMenuInteraction<CacheType> &
           UserSelectMenuContext &
           SeeInteractionErrorPropertyForMoreDetails_1 &
           SeeInteractionErrorPropertyForMoreDetails_2 &
-          SeeInteractionErrorPropertyForMoreDetails_3,
-        player as Player,
-        environment as Environment
-      )
+          SeeInteractionErrorPropertyForMoreDetails_3;
+        player: Player;
+        environment: Environment;
+      })
       .catch((e: unknown) => {
         try {
           userSelectMenu.onError(e);

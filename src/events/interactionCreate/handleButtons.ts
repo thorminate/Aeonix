@@ -175,15 +175,20 @@ export default new Event({
     }
 
     await button
-      .callback(
-        context as ButtonInteraction<CacheType> &
+      .callback({
+        context,
+        player,
+        environment,
+      } as {
+        error: never;
+        context: ButtonInteraction<CacheType> &
           ButtonContext &
-          SeeInteractionErrorPropertyForMoreDetails_3 &
+          SeeInteractionErrorPropertyForMoreDetails_1 &
           SeeInteractionErrorPropertyForMoreDetails_2 &
-          SeeInteractionErrorPropertyForMoreDetails_1,
-        player as Player,
-        environment as Environment
-      )
+          SeeInteractionErrorPropertyForMoreDetails_3;
+        player: Player;
+        environment: Environment;
+      })
       .catch((e: unknown) => {
         try {
           button.onError(e);

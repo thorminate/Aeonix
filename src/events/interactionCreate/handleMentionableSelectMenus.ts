@@ -14,12 +14,10 @@ import getAllFiles from "../../utils/getAllFiles.js";
 import Environment from "../../models/environment/environment.js";
 import Interaction, {
   MentionableSelectMenuContext,
+  SeeInteractionErrorPropertyForMoreDetails_1,
+  SeeInteractionErrorPropertyForMoreDetails_2,
+  SeeInteractionErrorPropertyForMoreDetails_3,
 } from "../../interactions/interaction.js";
-import {
-  SeeButtonErrorPropertyForMoreDetails_1,
-  SeeButtonErrorPropertyForMoreDetails_2,
-  SeeButtonErrorPropertyForMoreDetails_3,
-} from "../../interactions/button.js";
 
 async function findLocalMentionableSelectMenus() {
   const localMentionableSelectMenus: Interaction<
@@ -186,15 +184,20 @@ export default new Event({
     }
 
     await mentionableSelectMenu
-      .callback(
-        context as MentionableSelectMenuInteraction<CacheType> &
-          SeeButtonErrorPropertyForMoreDetails_1 &
-          SeeButtonErrorPropertyForMoreDetails_2 &
-          SeeButtonErrorPropertyForMoreDetails_3 &
-          MentionableSelectMenuContext,
-        player as Player,
-        environment as Environment
-      )
+      .callback({
+        context,
+        player,
+        environment,
+      } as {
+        error: never;
+        context: MentionableSelectMenuInteraction<CacheType> &
+          MentionableSelectMenuContext &
+          SeeInteractionErrorPropertyForMoreDetails_1 &
+          SeeInteractionErrorPropertyForMoreDetails_2 &
+          SeeInteractionErrorPropertyForMoreDetails_3;
+        player: Player;
+        environment: Environment;
+      })
       .catch((e: unknown) => {
         try {
           mentionableSelectMenu.onError(e);

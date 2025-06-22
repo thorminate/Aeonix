@@ -171,15 +171,20 @@ export default new Event({
     }
 
     await modal
-      .callback(
-        context as ModalSubmitInteraction<CacheType> &
+      .callback({
+        context,
+        player,
+        environment,
+      } as {
+        error: never;
+        context: ModalSubmitInteraction<CacheType> &
           ModalContext &
-          SeeInteractionErrorPropertyForMoreDetails_3 &
+          SeeInteractionErrorPropertyForMoreDetails_1 &
           SeeInteractionErrorPropertyForMoreDetails_2 &
-          SeeInteractionErrorPropertyForMoreDetails_1,
-        player as Player,
-        environment as Environment
-      )
+          SeeInteractionErrorPropertyForMoreDetails_3;
+        player: Player;
+        environment: Environment;
+      })
       .catch((e: unknown) => {
         try {
           modal.onError(e);

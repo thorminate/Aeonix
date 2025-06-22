@@ -43,7 +43,7 @@ export default function softMerge<T extends object>(
   for (const key of Object.keys(source)) {
     const sourceValue = source[key];
 
-    if (!sourceValue) {
+    if (sourceValue == null) {
       continue;
     }
 
