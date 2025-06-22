@@ -1,7 +1,7 @@
-import ItemReference from "../../item/utils/itemReference.js";
-import Player from "../player.js";
-
 // ABANDONED UNTIL FURTHER NOTICE
+
+import ItemReference from "../../../item/utils/itemReference.js";
+import Player from "../../player.js";
 
 export default class Quest {
   public id: string = "";
@@ -27,7 +27,7 @@ export default class Quest {
 
   async fulfill(player: Player) {
     this.completed = true;
-    player.giveXp(this.xpReward);
+    player.stats.giveXp(this.xpReward);
     for (const item of this.itemReward) {
       player.inventory.add(item);
     }

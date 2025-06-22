@@ -5,7 +5,7 @@ import Interaction from "../interaction.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
-    .setName("status")
+    .setName("stats")
     .setDescription("Shows your personal menu"),
 
   interactionType: "command",
@@ -17,7 +17,7 @@ export default new Interaction({
 
   callback: async ({ context, player }) => {
     await context.editReply({
-      components: [await player.getStatusEmbed()],
+      components: [await player.getStatsEmbed()],
       flags: MessageFlags.IsComponentsV2,
     });
   },
@@ -25,16 +25,16 @@ export default new Interaction({
   onError(e) {
     if (e instanceof HTTPError && e.status === 503) {
       log({
-        header: "Status Error, the API did not respond in time.",
-        processName: "StatusCommand",
+        header: "Stats Error, the API did not respond in time.",
+        processName: "StatsCommand",
         payload: e,
         type: "Error",
       });
       return;
     }
     log({
-      header: "Status Error",
-      processName: "StatusCommand",
+      header: "Stats Error",
+      processName: "StatsCommand",
       payload: e,
       type: "Error",
     });

@@ -1,5 +1,4 @@
 import Saveable from "../core/saveable.js";
-import hardMerge from "../../utils/hardMerge.js";
 import {
   APIContainerComponent,
   ButtonBuilder,
@@ -14,70 +13,44 @@ import {
   TextDisplayBuilder,
   User,
 } from "discord.js";
-import Stats from "./utils/status.js";
-import Inventory from "./utils/inventory.js";
-import calculateXpRequirement from "./utils/calculateXpRequirement.js";
+import Stats from "./utils/stats/stats.js";
+import Inventory from "./utils/inventory/inventory.js";
+import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
 import aeonix from "../../aeonix.js";
-import playerModel from "./utils/playerModel.js";
 import log from "../../utils/log.js";
+import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
 import PlayerDocument from "./utils/playerDocument.js";
-import PlayerMoveToResult from "./utils/playerMoveToResult.js";
-import ItemReference from "../item/utils/itemReference.js";
-import StatusEffect from "./utils/statusEffect.js";
+import playerModel from "./utils/playerModel.js";
+import Inbox from "./utils/inbox/inbox.js";
+import QuestLog from "./utils/questLog/questLog.js";
+import Location from "./utils/location/location.js";
+import Persona from "./utils/persona/persona.js";
+import StatusEffects from "./utils/statusEffect/statusEffects.js";
+import { PlayerSubclassBase } from "./utils/types/PlayerSubclassBase.js";
 
 export default class Player extends Saveable<PlayerDocument> {
   // Identifiers
   _id: string;
-  name: string;
 
   // Persona Information
-  persona = { name: "", avatarURL: "" };
-  location: string = "";
-  locationChannelId: string = "";
-  statusEffects: StatusEffect[] = [];
-  private _inventory: Inventory;
-  private _status: Stats;
-
-  public get status(): Stats {
-    return hardMerge(new Stats(), this._status, {}) as Stats;
-  }
-
-  public set status(value: Stats) {
-    this._status = value;
-  }
-
-  public get inventory(): Inventory {
-    if (this._inventory instanceof Inventory) return this._inventory;
-
-    this._inventory = hardMerge(new Inventory(), this._inventory, {});
-
-    return this._inventory;
-  }
-
-  public set inventory(value: Inventory) {
-    this._inventory = value;
-  }
+  persona: Persona;
+  location: Location;
+  statusEffects: StatusEffects;
+  inventory: Inventory;
+  stats: Stats;
+  inbox: Inbox;
+  questLog: QuestLog;
 
   fetchUser(): User | undefined {
     return aeonix.users.cache.get(this._id);
   }
 
-  async fetchEnvironmentChannel(guildId: string) {
-    const guild = aeonix.guilds.cache.get(guildId);
-
-    if (!guild) return;
-
-    const env = await this.fetchEnvironment();
-
-    if (!env) return;
-
-    const channelId = env.channelId;
-
-    return guild.channels.cache.get(channelId) as TextChannel;
+  async fetchEnvironmentChannel() {
+    return aeonix.channels.cache.get(this.location.channelId) as TextChannel;
   }
 
   async fetchEnvironment() {
-    return aeonix.environments.get(this.location);
+    return aeonix.environments.get(this.location.id);
   }
 
   async moveTo(
@@ -90,7 +63,7 @@ export default class Player extends Saveable<PlayerDocument> {
 
     if (!env) return "invalid location";
 
-    if (this.location === location && !disregardAlreadyHere)
+    if (this.location.id === location && !disregardAlreadyHere)
       return "already here";
 
     const oldEnv = await this.fetchEnvironment().catch(() => undefined);
@@ -144,9 +117,9 @@ export default class Player extends Saveable<PlayerDocument> {
 
     env.join(this);
 
-    this.location = location;
+    this.location.id = location;
 
-    this.locationChannelId = channel.id;
+    this.location.channelId = channel.id;
 
     await env.save();
 
@@ -185,29 +158,7 @@ export default class Player extends Saveable<PlayerDocument> {
     return masterRole.members?.has(thisUser.id) ?? false;
   }
 
-  levelUp(amount: number = 1, resetXp: boolean = true) {
-    if (amount <= 0 || !amount) return;
-    this.status.level += amount;
-    if (resetXp) this.status.xp = 0;
-  }
-
-  giveXp(amount: number) {
-    this.status.xp += amount;
-    while (this.status.xp >= calculateXpRequirement(this.status.level)) {
-      this.levelUp(1, false);
-      this.status.xp -= calculateXpRequirement(this.status.level - 1);
-    }
-
-    if (this.status.xp < 0) this.status.xp = 0;
-  }
-
-  giveXpFromRange(min: number, max: number) {
-    const randomFromRange = Math.floor(Math.random() * (max - min + 1)) + min;
-
-    this.giveXp(randomFromRange);
-  }
-
-  async getStatusEmbed(): Promise<APIContainerComponent> {
+  async getStatsEmbed(): Promise<APIContainerComponent> {
     const welcomeOptions = [
       "Sup,",
       "Hello",
@@ -238,9 +189,9 @@ export default class Player extends Saveable<PlayerDocument> {
         new SectionBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `**Level:** *${this.status.level}*\n**XP:** *${
-                this.status.xp
-              }/${calculateXpRequirement(this.status.level)}*`
+              `**Level:** *${this.stats.level}*\n**XP:** *${
+                this.stats.xp
+              }/${calculateXpRequirement(this.stats.level)}*`
             )
           )
           .setButtonAccessory(
@@ -257,16 +208,18 @@ export default class Player extends Saveable<PlayerDocument> {
       )
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `**Strength:** *${this.status.strength}*\n**Will:** *${this.status.will}*\n**Cognition:** *${this.status.cognition}*`
+          `**Strength:** *${this.stats.strength}*\n**Will:** *${this.stats.will}*\n**Cognition:** *${this.stats.cognition}*`
         )
       )
       .toJSON();
   }
 
+  // This is required by Saveable
+
   protected getIdentifier() {
     return {
       key: "_id",
-      value: this.name,
+      value: this._id,
     };
   }
 
@@ -279,26 +232,48 @@ export default class Player extends Saveable<PlayerDocument> {
   }
 
   protected getClassMap(): Record<string, new (...args: any) => any> {
-    return {
-      _inventory: Inventory,
-      _status: Stats,
-      statusEffects: StatusEffect,
-      "_inventory._entries": ItemReference,
+    const result = {
+      persona: Persona,
+      location: Location,
+      questLog: QuestLog,
+      inventory: Inventory,
+      inbox: Inbox,
+      stats: Stats,
+      statusEffects: StatusEffects,
     };
+
+    const map: Record<string, new (...args: any) => any> = {};
+
+    // Loop through all own properties
+    for (const key of Object.keys(this)) {
+      const value = (this as any)[key] as PlayerSubclassBase;
+      // Check if it has getClassMap method
+      if (
+        value &&
+        typeof value === "object" &&
+        typeof value.getClassMap === "function"
+      ) {
+        const subMap = value.getClassMap();
+
+        for (const [subKey, classRef] of Object.entries(subMap)) {
+          map[`${key}.${subKey}`] = classRef;
+        }
+      }
+    }
+
+    return { ...map, ...result };
   }
 
   constructor(user?: User, displayName?: string, personaAvatar?: string) {
     super();
-    // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
 
-    this.name = user ? user.username : "";
-    this.persona = {
-      name: displayName || "",
-      avatarURL: personaAvatar || "",
-    };
-    this._id = user ? user.id : "";
-
-    this._status = new Stats();
-    this._inventory = new Inventory();
+    this._id = user?.id ?? "";
+    this.persona = new Persona(displayName || "", personaAvatar || "");
+    this.statusEffects = new StatusEffects();
+    this.stats = new Stats();
+    this.inventory = new Inventory();
+    this.inbox = new Inbox();
+    this.questLog = new QuestLog();
+    this.location = new Location();
   }
 }

@@ -1,18 +1,18 @@
+import { Stats } from "fs";
 import { Document } from "mongoose";
-import Inventory from "./inventory.js";
-import Stats from "./status.js";
-import Quest from "./quest.js";
+import Inventory from "./inventory/inventory.js";
+import Inbox from "./inbox/inbox.js";
+import QuestLog from "./questLog/questLog.js";
+import Persona from "./persona/persona.js";
+import StatusEffects from "./statusEffect/statusEffects.js";
 
 export default interface PlayerDocument extends Document {
   _id: string;
-  name: string;
-  persona: { name: string; avatarURL: string };
-  _status: Stats;
-  _inventory: Inventory;
-  location: string;
-  locationChannelId: string;
-  quests: {
-    pending: Quest[];
-    completed: Quest[];
-  };
+  persona: Persona;
+  stats: Stats;
+  inventory: Inventory;
+  inbox: Inbox;
+  location: Location;
+  questLog: QuestLog;
+  statusEffects: StatusEffects;
 }

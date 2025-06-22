@@ -11,7 +11,6 @@ export default new Interaction({
     .setStyle(ButtonStyle.Danger),
 
   interactionType: "button",
-  customId: "deletePlayerConfirmed",
   ephemeral: true,
   acknowledge: false,
   passPlayer: true,
@@ -19,14 +18,27 @@ export default new Interaction({
   passEnvironment: false,
 
   callback: async ({ context, player }) => {
+    log({
+      header: "Deleting Player",
+      processName: "DeletePlayerConfirmedButton",
+      type: "Warn",
+    });
+
     await (context.member?.roles as GuildMemberRoleManager).remove(
       aeonix.playerRoleId,
       "Player deleted"
     );
 
-    const channel = await player.fetchEnvironmentChannel(context.guildId || "");
+    const channel = await player.fetchEnvironmentChannel();
 
-    if (!channel) return;
+    if (!channel) {
+      log({
+        header: "Environment channel not found",
+        processName: "DeletePlayerConfirmedButton",
+        type: "Error",
+      });
+      return;
+    }
 
     await channel.permissionOverwrites.delete(context.user.id);
 

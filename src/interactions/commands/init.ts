@@ -1,9 +1,4 @@
-import {
-  ButtonBuilder,
-  ButtonStyle,
-  MessageFlags,
-  SlashCommandBuilder,
-} from "discord.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import Player from "../../models/player/player.js";
 import {
   welcomeImage,
@@ -13,6 +8,7 @@ import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
 import Interaction from "../interaction.js";
+import onboarding0 from "../buttons/onboarding0.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
@@ -38,13 +34,7 @@ export default new Interaction({
       return;
     }
 
-    const components = componentWrapper(
-      new ButtonBuilder()
-        .setCustomId("onboarding0")
-        .setLabel("Begin")
-        .setStyle(ButtonStyle.Primary)
-        .setEmoji("👋")
-    );
+    const components = componentWrapper(onboarding0.data);
 
     await context.editReply({
       files: [welcomeImage],

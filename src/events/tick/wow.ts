@@ -6,7 +6,6 @@ export default new Event({
     log({
       header: "Tick Event Triggered",
       processName: "TickEvent",
-      payload: aeonix.user ? aeonix.user.username : "Unknown User",
       type: "Info",
     });
   },

@@ -128,9 +128,6 @@ type RawInteractionTypeFromInteractionType<T extends InteractionTypes> =
     ? UserSelectMenuInteraction<CacheType>
     : never;
 
-type CustomIdTypeFromInteractionType<T extends InteractionTypes> =
-  T extends "command" ? string | undefined : string;
-
 export interface SeeInteractionErrorPropertyForMoreDetails_1 {
   /**
    * ❌ ERROR: `passPlayer` must be `true` if `environmentOnly` is `true`.
@@ -216,15 +213,13 @@ type InteractionCallback<
       context: RawInteractionTypeFromInteractionType<InteractionType>;
     }) => Promise<void>;
 
-export type IInteraction<
+export interface IInteraction<
   Acknowledge extends boolean,
   PassPlayer extends boolean,
   EnvironmentOnly extends boolean,
   PassEnvironment extends boolean,
   InteractionType extends InteractionTypes
-> = (InteractionType extends "command"
-  ? { customId?: CustomIdTypeFromInteractionType<InteractionType> }
-  : { customId: CustomIdTypeFromInteractionType<InteractionType> }) & {
+> {
   interactionType: InteractionType;
   data: BuilderTypeFromInteractionType<InteractionType>;
   permissionsRequired?: Array<bigint>;
@@ -243,9 +238,7 @@ export type IInteraction<
     InteractionType
   >;
   onError: (e: unknown) => void;
-};
-
-// FIXME: There is no way to enforce that Interaction and IInteraction have the same properties.
+}
 
 export default class Interaction<
   Acknowledge extends boolean,
@@ -253,10 +246,17 @@ export default class Interaction<
   EnvironmentOnly extends boolean,
   PassEnvironment extends boolean,
   InteractionType extends InteractionTypes
-> {
+> implements
+    IInteraction<
+      Acknowledge,
+      PassPlayer,
+      EnvironmentOnly,
+      PassEnvironment,
+      InteractionType
+    >
+{
   interactionType!: InteractionType;
   data!: BuilderTypeFromInteractionType<InteractionType>;
-  customId?: CustomIdTypeFromInteractionType<InteractionType>;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
   acknowledge!: Acknowledge;

@@ -52,7 +52,6 @@ export default new Interaction({
       )
     ),
   interactionType: "modal",
-  customId: "onboarding1",
   ephemeral: true,
   passPlayer: false,
   acknowledge: true,

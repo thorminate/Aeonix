@@ -33,7 +33,7 @@ export default new Event<Message>({
       await webhook.send({
         content: context.content,
         username: player.persona.name,
-        avatarURL: player.persona.avatarURL,
+        avatarURL: player.persona.avatar,
       }),
       await context.delete(),
     ]);

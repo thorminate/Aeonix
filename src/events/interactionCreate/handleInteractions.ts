@@ -347,11 +347,17 @@ export default new Event<BaseInteraction>({
           boolean,
           InteractionTypes
         >
-      ) =>
-        type === "command"
+      ) => {
+        return type === "command"
           ? (interaction.data as SlashCommandBuilder).name ===
-            (context as ChatInputCommandInteraction).commandName
-          : interaction.customId === (context as ButtonInteraction).customId
+              (context as ChatInputCommandInteraction).commandName
+          : "data" in interaction.data
+          ? "custom_id" in interaction.data.data
+            ? interaction.data.data.custom_id ===
+              (context as ButtonInteraction).customId
+            : false
+          : false;
+      }
     );
 
     if (!interaction) return;
@@ -434,7 +440,7 @@ export default new Event<BaseInteraction>({
       }
 
       if (interaction.environmentOnly) {
-        if (player.locationChannelId !== context.channelId) {
+        if (player.location.channelId !== context.channelId) {
           if (interaction.acknowledge) {
             await context.editReply({
               content: "You must be in your environment channel to run this.",
@@ -474,8 +480,8 @@ export default new Event<BaseInteraction>({
           interaction.onError(e);
         } catch (e) {
           log({
-            header: "Error in button error handler",
-            processName: "ButtonHandler",
+            header: "Error in interaction error handler",
+            processName: "InteractionHandler",
             payload: e,
             type: "Error",
           });
@@ -484,8 +490,8 @@ export default new Event<BaseInteraction>({
   },
   onError: async (e) =>
     log({
-      header: "A button could not be handled correctly",
-      processName: "ButtonHandler",
+      header: "An interaction could not be handled correctly",
+      processName: "InteractionHandler",
       payload: e,
       type: "Error",
     }),

@@ -52,11 +52,9 @@ export default abstract class Saveable<T extends Document> {
     const doc = await model.findOne(query as Record<string, string>);
     if (!doc) return undefined;
 
-    const instance = hardMerge(
-      new this() as TInstance,
-      doc.toObject(),
-      this.prototype.getClassMap()
-    );
+    const newThis = new this() as TInstance;
+
+    const instance = hardMerge(newThis, doc.toObject(), newThis.getClassMap());
     return instance;
   }
 

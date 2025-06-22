@@ -1,4 +1,4 @@
-import Environment from "../../environment/environment.js";
+import Environment from "../../../environment/environment.js";
 
 type PlayerMoveToResult =
   | "invalid location"

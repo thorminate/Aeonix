@@ -3,12 +3,11 @@ import Interaction from "../interaction.js";
 
 export default new Interaction({
   data: new ButtonBuilder()
-    .setCustomId("WIPTemplateButton")
+    .setCustomId("WIP")
     .setLabel("WIP")
     .setStyle(ButtonStyle.Primary),
 
   interactionType: "button",
-  customId: "WIPTemplateButton",
   ephemeral: true,
   acknowledge: true,
   passPlayer: false,

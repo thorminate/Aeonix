@@ -1,4 +1,4 @@
-import { ButtonBuilder, MessageFlags } from "discord.js";
+import { ButtonBuilder, ButtonStyle, MessageFlags } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayer from "./deletePlayer.js";
@@ -7,10 +7,13 @@ import componentWrapper from "../../utils/componentWrapper.js";
 import Interaction from "../interaction.js";
 
 export default new Interaction({
-  data: new ButtonBuilder(),
+  data: new ButtonBuilder()
+    .setCustomId("onboarding0")
+    .setLabel("Begin")
+    .setEmoji("👋")
+    .setStyle(ButtonStyle.Primary),
 
   interactionType: "button",
-  customId: "onboarding0",
   ephemeral: true,
   acknowledge: false,
   passPlayer: false,

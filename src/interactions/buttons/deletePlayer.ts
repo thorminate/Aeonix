@@ -12,7 +12,6 @@ export default new Interaction({
     .setStyle(ButtonStyle.Danger),
 
   interactionType: "button",
-  customId: "deletePlayer",
   ephemeral: true,
   acknowledge: false,
   passPlayer: false,

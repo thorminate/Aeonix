@@ -1,13 +1,8 @@
-import {
-  AttachmentBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  DiscordAPIError,
-  TextChannel,
-} from "discord.js";
+import { AttachmentBuilder, DiscordAPIError, TextChannel } from "discord.js";
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import componentWrapper from "../../utils/componentWrapper.js";
+import onboarding0 from "../../interactions/buttons/onboarding0.js";
 
 // turn on word wrap to see the full message
 
@@ -70,13 +65,7 @@ export default new Event({
       }
     });
 
-    const components = componentWrapper(
-      new ButtonBuilder()
-        .setCustomId("onboarding0")
-        .setLabel("Begin")
-        .setStyle(ButtonStyle.Primary)
-        .setEmoji("👋")
-    );
+    const components = componentWrapper(onboarding0.data);
 
     await onboardingChannel.send({
       files: [welcomeImage],
