@@ -224,12 +224,12 @@ export interface IInteraction<
   data: BuilderTypeFromInteractionType<InteractionType>;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge: Acknowledge;
+  acknowledge?: Acknowledge;
   ephemeral?: boolean;
   deleted?: boolean;
-  passPlayer: PassPlayer;
-  environmentOnly: EnvironmentOnly;
-  passEnvironment: PassEnvironment;
+  passPlayer?: PassPlayer;
+  environmentOnly?: EnvironmentOnly;
+  passEnvironment?: PassEnvironment;
   callback: InteractionCallback<
     Acknowledge,
     PassPlayer,
@@ -259,12 +259,12 @@ export default class Interaction<
   data!: BuilderTypeFromInteractionType<InteractionType>;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
-  acknowledge!: Acknowledge;
+  acknowledge?: Acknowledge;
   ephemeral?: boolean;
   deleted?: boolean;
-  passPlayer!: PassPlayer;
-  environmentOnly!: EnvironmentOnly;
-  passEnvironment!: PassEnvironment;
+  passPlayer?: PassPlayer;
+  environmentOnly?: EnvironmentOnly;
+  passEnvironment?: PassEnvironment;
   callback!: InteractionCallback<
     Acknowledge,
     PassPlayer,
@@ -275,7 +275,7 @@ export default class Interaction<
   onError!: (e: unknown) => void;
 
   constructor(
-    interactionObject: IInteraction<
+    o: IInteraction<
       Acknowledge,
       PassPlayer,
       EnvironmentOnly,
@@ -294,8 +294,19 @@ export default class Interaction<
       userSelectMenu: UserSelectMenuBuilder,
     } as const;
 
-    return hardMerge(this, interactionObject, {
-      data: interactionTypeToBuilderMap[interactionObject.interactionType],
+    if (o.ephemeral === undefined) o.ephemeral = false;
+    if (o.permissionsRequired === undefined) o.permissionsRequired = [];
+    if (o.adminOnly === undefined) o.adminOnly = false;
+    if (o.deleted === undefined) o.deleted = false;
+    if (o.passPlayer === undefined) o.passPlayer = false as PassPlayer;
+    if (o.environmentOnly === undefined)
+      o.environmentOnly = false as EnvironmentOnly;
+    if (o.passEnvironment === undefined)
+      o.passEnvironment = false as PassEnvironment;
+    if (o.acknowledge === undefined) o.acknowledge = true as Acknowledge;
+
+    return hardMerge(this, o, {
+      data: interactionTypeToBuilderMap[o.interactionType],
     });
   }
 }

@@ -1,15 +1,7 @@
 import ItemReference from "../../../item/utils/itemReference.js";
 import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
 
-export interface IInventory {
-  capacity: number;
-  entries: ItemReference[];
-}
-
-export default class Inventory
-  extends PlayerSubclassBase
-  implements IInventory
-{
+export default class Inventory extends PlayerSubclassBase {
   capacity: number = 10;
   entries: ItemReference[] = [];
 

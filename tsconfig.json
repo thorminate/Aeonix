@@ -22,7 +22,9 @@
     "useUnknownInCatchVariables": true,
     "noImplicitOverride": true,
     "noUnusedLocals": true,
-    "allowUnusedLabels": false
+    "allowUnusedLabels": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "compileOnSave": true,
   "exclude": ["node_modules/", "dist/"],

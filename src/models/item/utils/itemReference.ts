@@ -2,22 +2,22 @@ import { randomUUID } from "crypto";
 import Item, { TemplateItem } from "../item.js";
 import hardMerge from "../../../utils/hardMerge.js";
 import log from "../../../utils/log.js";
+import { modelOptions, prop, Severity } from "@typegoose/typegoose";
+import { Schema } from "mongoose";
 
-export interface IItemReference {
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
+export default class ItemReference {
+  @prop({ default: "" })
   name: string;
+  @prop({ default: "" })
   id: string;
-  type: string;
+  @prop({ default: 1 })
   quantity: number;
+  @prop({ default: 1 })
   weight: number;
+  @prop({ type: () => Schema.Types.Mixed, default: {} })
   data: object;
-}
-
-export default class ItemReference implements IItemReference {
-  name: string;
-  id: string;
-  quantity: number;
-  weight: number;
-  data: object;
+  @prop({ default: "" })
   type: string;
 
   constructor(

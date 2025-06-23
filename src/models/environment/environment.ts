@@ -5,6 +5,7 @@ import Player from "../player/player.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
+import hardMerge from "../../utils/hardMerge.js";
 
 type ItemReferenceV2 = ItemReference | string;
 
@@ -17,8 +18,8 @@ export default abstract class Environment {
   players: string[] = [];
   items: ItemReference[] = [];
 
-  async save(): Promise<void> {
-    await environmentModel.findByIdAndUpdate(this.id, this.toSaveablePOJO(), {
+  async commit(): Promise<void> {
+    await environmentModel.findByIdAndUpdate(this.id, hardMerge({}, this), {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,
@@ -96,33 +97,6 @@ export default abstract class Environment {
         name: this.name,
       });
     }
-  }
-
-  toSaveablePOJO(): Record<string, any> {
-    const result: Record<string, any> = {};
-    let current: any = this;
-
-    while (current && current !== Object.prototype) {
-      for (const key of Object.getOwnPropertyNames(current)) {
-        if (
-          key === "constructor" ||
-          typeof (this as any)[key] === "function" ||
-          key.startsWith("_")
-        ) {
-          continue;
-        }
-
-        if (!(key in result)) {
-          result[key] = (this as any)[key];
-        }
-      }
-
-      current = Object.getPrototypeOf(current);
-    }
-
-    delete result.id;
-
-    return result;
   }
 
   _getClassMap(): Record<string, new (...args: any) => any> {

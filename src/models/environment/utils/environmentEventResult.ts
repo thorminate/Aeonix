@@ -1,5 +1,5 @@
 export default class EnvironmentEventResult {
-  message: string;
+  message: string = "";
   success: boolean;
 
   constructor(message: string, success: boolean) {

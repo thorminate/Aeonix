@@ -1,4 +1,3 @@
-import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
 import aeonix from "../../aeonix.js";
@@ -18,17 +17,6 @@ export default new Interaction({
   passEnvironment: false,
 
   callback: async ({ context, player }) => {
-    log({
-      header: "Deleting Player",
-      processName: "DeletePlayerConfirmedButton",
-      type: "Warn",
-    });
-
-    await (context.member?.roles as GuildMemberRoleManager).remove(
-      aeonix.playerRoleId,
-      "Player deleted"
-    );
-
     const channel = await player.fetchEnvironmentChannel();
 
     if (!channel) {
@@ -42,7 +30,12 @@ export default new Interaction({
 
     await channel.permissionOverwrites.delete(context.user.id);
 
-    await Player.delete(context.user.id);
+    await (context.member?.roles as GuildMemberRoleManager).remove(
+      aeonix.playerRoleId,
+      "Player deleted"
+    );
+
+    await player.delete();
 
     await context.update({
       content: "Your persona has been deleted.",

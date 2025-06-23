@@ -4,25 +4,26 @@ import ItemReference from "../../../item/utils/itemReference.js";
 import Player from "../../player.js";
 
 export default class Quest {
-  public id: string = "";
-  public name: string = "";
-  public description: string = "";
-  public xpReward: number = 0;
-  public itemReward: ItemReference[] = [];
-  public completed: boolean = false;
+  id: string;
+  name: string;
+  description: string;
+  xpReward: number;
+  itemReward: ItemReference[];
+  completed: boolean;
 
   constructor(
-    id: string,
-    name: string,
-    description: string,
-    xpReward?: number,
-    itemReward?: ItemReference[]
+    id: string = "",
+    name: string = "",
+    description: string = "",
+    xpReward: number = 0,
+    itemReward: ItemReference[] = []
   ) {
     this.id = id;
     this.name = name;
     this.description = description;
     this.xpReward = xpReward ?? 0;
     this.itemReward = itemReward ?? [];
+    this.completed = false;
   }
 
   async fulfill(player: Player) {
@@ -32,7 +33,7 @@ export default class Quest {
       player.inventory.add(item);
     }
 
-    player.save().catch((e) => {
+    player.commit().catch((e) => {
       console.error("Error saving player after quest fulfillment:", e);
     });
   }

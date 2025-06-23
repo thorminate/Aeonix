@@ -108,21 +108,21 @@ log({
 
 class EnvironmentManager {
   async get(location: string) {
-    let [classInstance, dbData] = await Promise.all([
+    const [env, dbData] = await Promise.all([
       loadEnvironmentClassById(location),
       environmentModel.findById(location).lean().exec(),
     ]);
 
-    if (!classInstance) return;
+    if (!env) return;
 
-    await classInstance.init();
+    await env.init();
 
     if (!dbData) {
-      await classInstance.save();
-      return classInstance;
+      await env.commit();
+      return env;
     }
 
-    return softMerge(classInstance, dbData, classInstance.getFullClassMap());
+    return softMerge(env, dbData, env.getFullClassMap());
   }
   async getAll() {
     const allDocs = await environmentModel.find().lean().exec();
@@ -142,6 +142,8 @@ export class Aeonix extends Client {
   packageJson: PackageJson = JSON.parse(
     readFileSync("./package.json").toString()
   );
+
+  db: typeof mongoose = mongoose;
 
   private _currentTime = 1;
 
@@ -592,16 +594,16 @@ export class Aeonix extends Client {
           return;
         }
 
-        await mongoose.connect(mdbToken).then(() => {
-          log({
-            header: "Linked to DB",
-            processName: "NetworkingHandler",
-            type: "Info",
-          });
+        this.db = await mongoose.connect(mdbToken);
 
-          process.on("SIGINT", () => {
-            mongoose.connection.close();
-          });
+        log({
+          header: "Linked to DB",
+          processName: "NetworkingHandler",
+          type: "Info",
+        });
+
+        process.on("SIGINT", () => {
+          mongoose.connection.close();
         });
 
         eventHandler(this);
@@ -612,13 +614,14 @@ export class Aeonix extends Client {
           type: "Info",
         });
 
-        await this.login(dscToken).then(() => {
-          log({
-            header: "Connected to Discord",
-            processName: "NetworkingHandler",
-            type: "Info",
-          });
+        await this.login(dscToken);
+
+        log({
+          header: "Connected to Discord",
+          processName: "NetworkingHandler",
+          type: "Info",
         });
+
         await this.statusRefresh();
       } catch (e) {
         log({

@@ -2,7 +2,9 @@ import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
 import Letter from "./letter.js";
 
 export default class Inbox extends PlayerSubclassBase {
-  letters: Letter[];
+  unread: Letter[];
+  read: Letter[];
+  archived: Letter[];
 
   getClassMap(): Record<string, new (...args: any) => any> {
     return {
@@ -13,6 +15,8 @@ export default class Inbox extends PlayerSubclassBase {
   constructor() {
     super();
 
-    this.letters = [];
+    this.unread = [];
+    this.read = [];
+    this.archived = [];
   }
 }

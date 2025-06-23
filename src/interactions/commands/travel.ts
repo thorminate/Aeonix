@@ -23,8 +23,6 @@ function createCollectors(message: Message, player: Player) {
         buttonContext.customId.split("-")[1] || ""
       );
 
-      await player.save();
-
       if (
         result === "invalid location" ||
         result === "not adjacent" ||
@@ -43,6 +41,8 @@ function createCollectors(message: Message, player: Player) {
         });
         return;
       }
+
+      await player.commit();
 
       await buttonContext.update({
         content: `You have moved to ${buttonContext.customId.split("-")[1]}.`,

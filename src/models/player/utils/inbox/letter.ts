@@ -5,10 +5,10 @@ export default class Letter {
   body: string;
 
   constructor(
-    sender: string,
-    recipient: string,
-    subject: string,
-    body: string
+    sender: string = "",
+    recipient: string = "",
+    subject: string = "",
+    body: string = ""
   ) {
     this.sender = sender;
     this.recipient = recipient;

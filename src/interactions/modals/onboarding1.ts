@@ -145,7 +145,7 @@ export default new Interaction({
 
     await player.moveTo("start", true, true, true);
 
-    await player.save();
+    await player.commit();
 
     await context.editReply({
       content: "1/1 - Your persona has been created.",

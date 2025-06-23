@@ -1,4 +1,3 @@
-import Saveable from "../core/saveable.js";
 import {
   APIContainerComponent,
   ButtonBuilder,
@@ -19,26 +18,50 @@ import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
 import aeonix from "../../aeonix.js";
 import log from "../../utils/log.js";
 import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
-import PlayerDocument from "./utils/playerDocument.js";
-import playerModel from "./utils/playerModel.js";
 import Inbox from "./utils/inbox/inbox.js";
 import QuestLog from "./utils/questLog/questLog.js";
 import Location from "./utils/location/location.js";
 import Persona from "./utils/persona/persona.js";
 import StatusEffects from "./utils/statusEffect/statusEffects.js";
 import { PlayerSubclassBase } from "./utils/types/PlayerSubclassBase.js";
+import hardMerge from "../../utils/hardMerge.js";
+import {
+  getModelForClass,
+  modelOptions,
+  prop,
+  Severity,
+} from "@typegoose/typegoose";
 
-export default class Player extends Saveable<PlayerDocument> {
+@modelOptions({
+  existingConnection: aeonix.db.connection,
+  existingMongoose: aeonix.db,
+  options: {
+    allowMixed: Severity.ALLOW,
+  },
+  schemaOptions: {
+    _id: false,
+    suppressReservedKeysWarning: true,
+  },
+})
+export default class Player {
   // Identifiers
+  @prop({ type: () => String, required: true })
   _id: string;
 
   // Persona Information
+  @prop({ default: {}, type: Object })
   persona: Persona;
+  @prop({ default: {}, type: Object })
   location: Location;
+  @prop({ default: {}, type: Object })
   statusEffects: StatusEffects;
+  @prop({ default: {}, type: Object })
   inventory: Inventory;
+  @prop({ default: {}, type: Object })
   stats: Stats;
+  @prop({ default: {}, type: Object })
   inbox: Inbox;
+  @prop({ default: {}, type: Object })
   questLog: QuestLog;
 
   fetchUser(): User | undefined {
@@ -86,7 +109,7 @@ export default class Player extends Saveable<PlayerDocument> {
         });
       }
 
-      oldEnv.save();
+      oldEnv.commit();
     } else if (!disregardOldEnvironment) {
       return "no old environment";
     }
@@ -121,9 +144,7 @@ export default class Player extends Saveable<PlayerDocument> {
 
     this.location.channelId = channel.id;
 
-    await env.save();
-
-    await this.save();
+    await env.commit();
 
     return env;
   }
@@ -214,21 +235,28 @@ export default class Player extends Saveable<PlayerDocument> {
       .toJSON();
   }
 
-  // This is required by Saveable
-
-  protected getIdentifier() {
-    return {
-      key: "_id",
-      value: this._id,
-    };
+  async commit(): Promise<void> {
+    await playerModel.findByIdAndUpdate(this._id, hardMerge({}, this), {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    });
   }
 
-  getModel() {
-    return playerModel;
+  async delete(): Promise<void> {
+    await playerModel.findByIdAndDelete({
+      _id: this._id,
+    } as Record<string, string>);
   }
 
-  static getModel() {
-    return playerModel;
+  static async find(identifier: string): Promise<Player | undefined> {
+    const doc = await playerModel.findById(identifier);
+    if (!doc) return undefined;
+
+    const newThis = new this() as Player;
+
+    const instance = hardMerge(newThis, doc.toObject(), newThis.getClassMap());
+    return instance;
   }
 
   protected getClassMap(): Record<string, new (...args: any) => any> {
@@ -265,8 +293,6 @@ export default class Player extends Saveable<PlayerDocument> {
   }
 
   constructor(user?: User, displayName?: string, personaAvatar?: string) {
-    super();
-
     this._id = user?.id ?? "";
     this.persona = new Persona(displayName || "", personaAvatar || "");
     this.statusEffects = new StatusEffects();
@@ -277,3 +303,9 @@ export default class Player extends Saveable<PlayerDocument> {
     this.location = new Location();
   }
 }
+
+export const playerModel = getModelForClass(Player, {
+  schemaOptions: {
+    suppressReservedKeysWarning: true,
+  },
+});
