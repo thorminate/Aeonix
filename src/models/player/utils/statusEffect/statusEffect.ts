@@ -7,15 +7,7 @@ export default class StatusEffect {
   duration: number = 0; // Duration in turns
   isPermanent: boolean = false;
 
-  onEffectStart(player: Player): Player {
-    return player;
-  }
-
-  onEffectTick(player: Player): Player {
-    return player;
-  }
-
-  onEffectEnd(player: Player): Player {
-    return player;
-  }
+  onEffectStart?(player: Player): Player;
+  onEffectTick?(player: Player): Player;
+  onEffectEnd?(player: Player): Player;
 }

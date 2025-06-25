@@ -10,6 +10,7 @@ export default class Stats extends PlayerSubclassBase {
   will: number = 0;
   cognition: number = 0;
   hasNausea: boolean = false;
+  hasCompletedTutorial: boolean = false;
 
   levelUp(amount: number = 1, resetXp: boolean = true) {
     if (amount <= 0 || !amount) return;

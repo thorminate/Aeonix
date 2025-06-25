@@ -154,10 +154,10 @@ export interface SeeInteractionErrorPropertyForMoreDetails_3 {
 
 // im sorry for this abomination -- it does its job pretty well though
 type InteractionCallback<
-  Acknowledge extends boolean,
-  PassPlayer extends boolean,
-  PassEnvironment extends boolean,
-  EnvironmentOnly extends boolean,
+  Acknowledge extends boolean | undefined,
+  PassPlayer extends boolean | undefined,
+  PassEnvironment extends boolean | undefined,
+  EnvironmentOnly extends boolean | undefined,
   InteractionType extends InteractionTypes
 > = Acknowledge extends true
   ? PassPlayer extends true
@@ -213,48 +213,13 @@ type InteractionCallback<
       context: RawInteractionTypeFromInteractionType<InteractionType>;
     }) => Promise<void>;
 
-export interface IInteraction<
-  Acknowledge extends boolean,
-  PassPlayer extends boolean,
-  EnvironmentOnly extends boolean,
-  PassEnvironment extends boolean,
-  InteractionType extends InteractionTypes
-> {
-  interactionType: InteractionType;
-  data: BuilderTypeFromInteractionType<InteractionType>;
-  permissionsRequired?: Array<bigint>;
-  adminOnly?: boolean;
-  acknowledge?: Acknowledge;
-  ephemeral?: boolean;
-  deleted?: boolean;
-  passPlayer?: PassPlayer;
-  environmentOnly?: EnvironmentOnly;
-  passEnvironment?: PassEnvironment;
-  callback: InteractionCallback<
-    Acknowledge,
-    PassPlayer,
-    PassEnvironment,
-    EnvironmentOnly,
-    InteractionType
-  >;
-  onError: (e: unknown) => void;
-}
-
 export default class Interaction<
   Acknowledge extends boolean,
   PassPlayer extends boolean,
   EnvironmentOnly extends boolean,
   PassEnvironment extends boolean,
   InteractionType extends InteractionTypes
-> implements
-    IInteraction<
-      Acknowledge,
-      PassPlayer,
-      EnvironmentOnly,
-      PassEnvironment,
-      InteractionType
-    >
-{
+> {
   interactionType!: InteractionType;
   data!: BuilderTypeFromInteractionType<InteractionType>;
   permissionsRequired?: Array<bigint>;
@@ -275,7 +240,7 @@ export default class Interaction<
   onError!: (e: unknown) => void;
 
   constructor(
-    o: IInteraction<
+    o: Interaction<
       Acknowledge,
       PassPlayer,
       EnvironmentOnly,

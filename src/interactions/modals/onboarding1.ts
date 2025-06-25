@@ -11,6 +11,7 @@ import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
 import aeonix from "../../aeonix.js";
 import Interaction from "../interaction.js";
+import TutorialQuestLetter from "../../content/letters/tutorialQuestLetter.js";
 
 async function isImageUrl(url: string) {
   try {
@@ -145,7 +146,13 @@ export default new Interaction({
 
     await player.moveTo("start", true, true, true);
 
+    player.inbox.addLetter(new TutorialQuestLetter());
+
     await player.commit();
+
+    await startChannel.send({
+      content: `<@${context.user.id}> has joined the game! Please check your inbox for further instructions (\`/inbox\`).`,
+    });
 
     await context.editReply({
       content: "1/1 - Your persona has been created.",

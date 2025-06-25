@@ -1,18 +1,15 @@
-export default class Letter {
-  sender: string;
-  recipient: string;
-  subject: string;
-  body: string;
+import { randomUUID } from "node:crypto";
+import Player from "../../player.js";
 
-  constructor(
-    sender: string = "",
-    recipient: string = "",
-    subject: string = "",
-    body: string = ""
-  ) {
-    this.sender = sender;
-    this.recipient = recipient;
-    this.subject = subject;
-    this.body = body;
-  }
+export default class Letter {
+  id: string = randomUUID();
+  sender: string = "";
+  subject: string = "";
+  body: string = "";
+  interactable: boolean = false;
+  interactionType: string = "";
+  canDismiss: boolean = true;
+
+  onRead?(player: Player): void;
+  onInteract?(player: Player): void;
 }

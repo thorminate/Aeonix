@@ -2,7 +2,7 @@ import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
 import StatusEffect from "./statusEffect.js";
 
 export default class StatusEffects extends PlayerSubclassBase {
-  effects: StatusEffect[];
+  effects: StatusEffect[] = [];
 
   getClassMap(): Record<string, new (...args: any) => any> {
     return {
@@ -12,7 +12,5 @@ export default class StatusEffects extends PlayerSubclassBase {
 
   constructor() {
     super();
-
-    this.effects = [];
   }
 }

@@ -19,7 +19,6 @@ import aeonix from "../../aeonix.js";
 import log from "../../utils/log.js";
 import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
 import Inbox from "./utils/inbox/inbox.js";
-import QuestLog from "./utils/questLog/questLog.js";
 import Location from "./utils/location/location.js";
 import Persona from "./utils/persona/persona.js";
 import StatusEffects from "./utils/statusEffect/statusEffects.js";
@@ -31,6 +30,7 @@ import {
   prop,
   Severity,
 } from "@typegoose/typegoose";
+import Quests from "./utils/quests/quests.js";
 
 @modelOptions({
   existingConnection: aeonix.db.connection,
@@ -44,11 +44,9 @@ import {
   },
 })
 export default class Player {
-  // Identifiers
   @prop({ type: () => String, required: true })
   _id: string;
 
-  // Persona Information
   @prop({ default: {}, type: Object })
   persona: Persona;
   @prop({ default: {}, type: Object })
@@ -62,7 +60,7 @@ export default class Player {
   @prop({ default: {}, type: Object })
   inbox: Inbox;
   @prop({ default: {}, type: Object })
-  questLog: QuestLog;
+  quests: Quests;
 
   fetchUser(): User | undefined {
     return aeonix.users.cache.get(this._id);
@@ -263,7 +261,7 @@ export default class Player {
     const result = {
       persona: Persona,
       location: Location,
-      questLog: QuestLog,
+      quests: Quests,
       inventory: Inventory,
       inbox: Inbox,
       stats: Stats,
@@ -299,13 +297,9 @@ export default class Player {
     this.stats = new Stats();
     this.inventory = new Inventory();
     this.inbox = new Inbox();
-    this.questLog = new QuestLog();
+    this.quests = new Quests();
     this.location = new Location();
   }
 }
 
-export const playerModel = getModelForClass(Player, {
-  schemaOptions: {
-    suppressReservedKeysWarning: true,
-  },
-});
+export const playerModel = getModelForClass(Player);
