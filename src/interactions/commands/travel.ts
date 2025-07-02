@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import log from "../../utils/log.js";
 import Player from "../../models/player/player.js";
-import paginator from "../../utils/paginator.js";
+import paginator from "../../utils/buttonPaginator.js";
 import Interaction from "../interaction.js";
 
 function createCollectors(message: Message, player: Player) {

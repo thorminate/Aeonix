@@ -52,9 +52,9 @@ export default class Inbox extends PlayerSubclassBase {
     return letter;
   }
 
-  getClassMap(): Record<string, new (...args: any) => any> {
+  getClassMap(): Record<string, object> {
     return {
-      letters: Letter,
+      letters: Letter as object,
     };
   }
 

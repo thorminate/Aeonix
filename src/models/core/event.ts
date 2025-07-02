@@ -1,4 +1,4 @@
-import { Aeonix } from "../../aeonix.js";
+import Aeonix from "../../aeonix.js";
 
 export class EventParams<T> {
   aeonix: Aeonix;

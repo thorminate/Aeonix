@@ -1,4 +1,4 @@
-# Generics
+# Generic
 
 dist/
 logs/
@@ -6,4 +6,8 @@ node_modules/
 
 # Anti-Spoilers
 
-src/content
+src/content/environments/
+src/content/items/
+src/content/letters/
+src/content/quests/
+src/content/statusEffects/

@@ -6,7 +6,7 @@ export default class StatusEffects extends PlayerSubclassBase {
 
   getClassMap(): Record<string, new (...args: any) => any> {
     return {
-      effects: StatusEffect,
+      effects: StatusEffect as any,
     };
   }
 

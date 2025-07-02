@@ -1,6 +1,6 @@
 import log from "../../utils/log.js";
 import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
-import aeonix from "../../aeonix.js";
+import aeonix from "../../index.js";
 import Interaction from "../interaction.js";
 
 export default new Interaction({

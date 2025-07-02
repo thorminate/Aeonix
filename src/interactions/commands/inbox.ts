@@ -14,7 +14,7 @@ export default new Interaction({
   passEnvironment: false,
 
   callback: async ({ context, player }) => {
-    await context.editReply("WIP");
+    await context.editReply(JSON.stringify(player.inbox));
   },
 
   onError: (e) => console.error(e),

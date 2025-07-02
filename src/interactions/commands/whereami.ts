@@ -10,7 +10,7 @@ export default new Interaction({
   acknowledge: true,
   ephemeral: true,
   passPlayer: true,
-  environmentOnly: true,
+  environmentOnly: false,
   passEnvironment: false,
 
   callback: async ({ context, player }) => {

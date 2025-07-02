@@ -9,7 +9,7 @@ export default class Quests extends PlayerSubclassBase {
     this[quest.completed ? "completed" : "pending"].push(quest);
   }
 
-  getClassMap(): Record<string, new (...args: any) => any> {
+  getClassMap(): Record<string, object> {
     return {
       active: Quest,
       completed: Quest,

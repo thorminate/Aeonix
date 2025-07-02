@@ -15,7 +15,7 @@ import {
 import Stats from "./utils/stats/stats.js";
 import Inventory from "./utils/inventory/inventory.js";
 import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
-import aeonix from "../../aeonix.js";
+import aeonix from "../../index.js";
 import log from "../../utils/log.js";
 import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
 import Inbox from "./utils/inbox/inbox.js";
@@ -282,7 +282,7 @@ export default class Player {
         const subMap = value.getClassMap();
 
         for (const [subKey, classRef] of Object.entries(subMap)) {
-          map[`${key}.${subKey}`] = classRef;
+          map[`${key}.${subKey}`] = classRef as new (...args: any) => any;
         }
       }
     }

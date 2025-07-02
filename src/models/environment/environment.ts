@@ -1,22 +1,31 @@
 import { TextChannel } from "discord.js";
-import aeonix from "../../aeonix.js";
-import ItemReference from "../item/utils/itemReference.js";
+import aeonix from "../../index.js";
 import Player from "../player/player.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
 import hardMerge from "../../utils/hardMerge.js";
-
-type ItemReferenceV2 = ItemReference | string;
+import { randomUUID } from "crypto";
+import Item from "../item/item.js";
 
 export default abstract class Environment {
-  abstract id: string;
+  private _id: string = "";
+  abstract type: string;
   abstract channelId: string;
   abstract name: string;
   abstract description: string;
   abstract adjacentEnvironments: string[];
   players: string[] = [];
-  items: ItemReference[] = [];
+  items: Item[] = [];
+
+  get id() {
+    if (!this._id) this._id = randomUUID();
+    return this._id;
+  }
+
+  set id(id: string) {
+    this._id = id;
+  }
 
   async commit(): Promise<void> {
     await environmentModel.findByIdAndUpdate(this.id, hardMerge({}, this), {
@@ -51,13 +60,13 @@ export default abstract class Environment {
     this.players.push(player._id);
   }
 
-  dropItem(player: Player, item: ItemReference) {
+  dropItem(player: Player, item: Item) {
     if (this.onItemDrop) this.onItemDrop({ eventType: "drop", player, item });
 
     this.items.push(item);
   }
 
-  pickUpItem(player: Player, id: ItemReferenceV2): ItemReference | undefined {
+  pickUpItem(player: Player, id: Item | string): Item | undefined {
     const item =
       typeof id === "string" ? this.items.find((i) => i.id === id) : id;
 
@@ -101,7 +110,7 @@ export default abstract class Environment {
 
   _getClassMap(): Record<string, new (...args: any) => any> {
     return {
-      items: ItemReference,
+      items: Item as any,
     };
   }
 
@@ -112,13 +121,5 @@ export default abstract class Environment {
       ...this._getClassMap(),
       ...this.getClassMap(),
     };
-  }
-
-  get _id() {
-    return this.id;
-  }
-
-  set _id(id: string) {
-    this.id = id;
   }
 }

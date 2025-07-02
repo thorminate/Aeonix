@@ -34,7 +34,7 @@ export async function findLocalButtons() {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const buttonFiles = getAllFiles(
+  const buttonFiles = await getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "buttons")
   );
 
@@ -66,7 +66,7 @@ export async function findLocalChannelSelectMenus() {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const channelSelectMenuFiles = getAllFiles(
+  const channelSelectMenuFiles = await getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "channelSelectMenus")
   );
 
@@ -98,7 +98,7 @@ export async function findLocalCommands() {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const commandFiles = getAllFiles(
+  const commandFiles = await getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "commands")
   );
 
@@ -130,7 +130,7 @@ export async function findLocalMentionableSelectMenus() {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const mentionableSelectMenuFiles = getAllFiles(
+  const mentionableSelectMenuFiles = await getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "mentionableSelectMenus")
   );
 
@@ -162,7 +162,7 @@ export async function findLocalModals() {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const modalFiles = getAllFiles(
+  const modalFiles = await getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "modals")
   );
 
@@ -190,7 +190,7 @@ export async function findLocalRoleSelectMenus() {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const roleSelectMenuFiles = getAllFiles(
+  const roleSelectMenuFiles = await getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "roleSelectMenus")
   );
 
@@ -222,7 +222,7 @@ export async function findLocalStringSelectMenus() {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const stringSelectMenuFiles = getAllFiles(
+  const stringSelectMenuFiles = await getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "stringSelectMenus")
   );
 
@@ -254,7 +254,7 @@ export async function findLocalUserSelectMenus() {
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  const userSelectMenuFiles = getAllFiles(
+  const userSelectMenuFiles = await getAllFiles(
     path.join(__dirname, "..", "..", "interactions", "userSelectMenus")
   );
 

@@ -3,19 +3,19 @@ import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles functi
 import url from "url";
 import log from "../utils/log.js";
 import Event, { EventParams } from "../models/core/event.js";
-import { Aeonix } from "../aeonix.js";
+import Aeonix from "../aeonix.js";
 
-export default (aeonix: Aeonix) => {
+export default async (aeonix: Aeonix) => {
   try {
     const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-    const eventFolders: Array<string> = getAllFiles(
+    const eventFolders = await getAllFiles(
       path.join(__dirname, "..", "events"),
       true
     );
 
     for (const eventFolder of eventFolders) {
-      const eventFiles: Array<string> = getAllFiles(eventFolder);
+      const eventFiles = await getAllFiles(eventFolder);
       eventFiles.sort((a: string, b: string) => a.localeCompare(b));
 
       const eventName = eventFolder.replace(/\\/g, "/").split("/").pop();

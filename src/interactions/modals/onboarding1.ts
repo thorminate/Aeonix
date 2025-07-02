@@ -9,7 +9,7 @@ import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
-import aeonix from "../../aeonix.js";
+import aeonix from "../../index.js";
 import Interaction from "../interaction.js";
 import TutorialQuestLetter from "../../content/letters/tutorialQuestLetter.js";
 

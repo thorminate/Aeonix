@@ -1,13 +1,24 @@
+import { randomUUID } from "node:crypto";
 import Player from "../../player.js";
 
-export default class StatusEffect {
-  id: string = "";
-  name: string = "";
-  description: string = "";
-  duration: number = 0; // Duration in turns
-  isPermanent: boolean = false;
+export default abstract class StatusEffect {
+  private _id: string = "";
+  abstract type: string;
+  abstract name: string;
+  abstract description: string;
+  abstract duration: number; // Duration in turns
+  abstract isPermanent: boolean;
 
-  onEffectStart?(player: Player): Player;
-  onEffectTick?(player: Player): Player;
-  onEffectEnd?(player: Player): Player;
+  get id() {
+    if (!this._id) this._id = randomUUID();
+    return this._id;
+  }
+
+  set id(id: string) {
+    this._id = id;
+  }
+
+  abstract onEffectStart(player: Player): Player;
+  abstract onEffectTick(player: Player): Player;
+  abstract onEffectEnd(player: Player): Player;
 }

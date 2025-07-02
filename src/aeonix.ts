@@ -1,24 +1,44 @@
-#!/usr/bin/env node
-
-import { ActivityType, Client, GatewayIntentBits, Partials } from "discord.js";
-import mongoose from "mongoose";
-import eventHandler from "./handlers/eventHandler.js";
-import log from "./utils/log.js";
-import readline from "readline/promises";
 import {
-  appendFileSync,
-  existsSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "fs";
-import { config } from "@dotenvx/dotenvx";
-import { blue, blueBright, green, magenta, redBright } from "ansis";
-import { execSync } from "child_process";
+  ActivityType,
+  Client,
+  GatewayIntentBits,
+  Partials,
+  Collection,
+} from "discord.js";
+import readline from "readline/promises";
+import log from "./utils/log.js";
+import mongoose from "mongoose";
+import { readFileSync } from "fs";
 import path from "path";
+import url from "url";
+import eventHandler from "./handlers/eventHandler.js";
+import Environment from "./models/environment/environment.js";
+import Item from "./models/item/item.js";
+import Letter from "./models/player/utils/inbox/letter.js";
+import Quest from "./models/player/utils/quests/quest.js";
+import StatusEffect from "./models/player/utils/statusEffect/statusEffect.js";
+import getAllFiles from "./utils/getAllFiles.js";
 import environmentModel from "./models/environment/utils/environmentModel.js";
-import loadEnvironmentClassById from "./models/environment/utils/loadEnvironmentClassById.js";
 import softMerge from "./utils/softMerge.js";
+import cliHandler from "./handlers/cliHandler.js";
+
+async function loadContent(folderName: string): Promise<any[]> {
+  const contentPath = `./dist/content/${folderName}/`;
+
+  const result = [];
+
+  const allFiles = await getAllFiles(contentPath);
+
+  for (const file of allFiles) {
+    const filePath = path.resolve(file);
+    const fileUrl = url.pathToFileURL(filePath);
+    const content = (await import(fileUrl.toString())).default;
+
+    result.push(new content());
+  }
+
+  return result;
+}
 
 interface PackageJson {
   name: string;
@@ -49,95 +69,13 @@ interface PackageJson {
   };
 }
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  history: ["exit"],
-  historySize: 10,
-  prompt: `${magenta("Aeonix")} ${green(">>")} `,
-});
-
-// Make sure the .env file exists
-if (!existsSync("./.env")) {
-  // If the .env file doesn't exist, we create it.
-
-  log({
-    header: ".env file not found, starting setup wizard",
-    processName: "AeonixSetupWizard",
-    type: "Warn",
-  });
-
-  const token = await rl.question("Enter your token: ");
-  writeFileSync("./.env", `TOKEN="${token}"`);
-
-  const mongodbUri = await rl.question("Enter your MongoDB URI: ");
-  appendFileSync("./.env", `\nMONGODB_URI="${mongodbUri}"`);
-
-  const playerRoleId = await rl.question("What ID does the player role have? ");
-  appendFileSync("./.env", `\nPLAYER_ROLE="${playerRoleId}"`);
-
-  const onboardingChannelId = await rl.question(
-    "What ID does the onboarding channel have? "
-  );
-  appendFileSync("./.env", `\nONBOARDING_CHANNEL="${onboardingChannelId}"`);
-
-  const rulesChannelId = await rl.question(
-    "What ID does the rules channel have? "
-  );
-  appendFileSync("./.env", `\nRULES_CHANNEL="${rulesChannelId}"`);
-
-  log({
-    header: "Created .env file",
-    processName: "AeonixSetupWizard",
-    type: "Info",
-  });
-}
-
-// Load environment variables
-const __dotenvx = config({
-  quiet: true,
-});
-
-log({
-  header: `Injecting env (${
-    Object.keys(__dotenvx.parsed ?? {}).length
-  }) from .env`,
-  processName: "Dotenvx",
-  type: "Info",
-});
-
-class EnvironmentManager {
-  async get(location: string) {
-    const [env, dbData] = await Promise.all([
-      loadEnvironmentClassById(location),
-      environmentModel.findById(location).lean().exec(),
-    ]);
-
-    if (!env) return;
-
-    await env.init();
-
-    if (!dbData) {
-      await env.commit();
-      return env;
-    }
-
-    return softMerge(env, dbData, env.getFullClassMap());
-  }
-  async getAll() {
-    const allDocs = await environmentModel.find().lean().exec();
-
-    return Promise.all(
-      allDocs.map(async (doc) => {
-        await this.get((doc._id as string) || "");
-      })
-    );
-  }
-}
-
-export class Aeonix extends Client {
-  rl = rl;
-  environments = new EnvironmentManager();
+export default class Aeonix extends Client {
+  rl: readline.Interface;
+  environments = new Collection<string, Environment>();
+  items = new Collection<string, Item>();
+  letters = new Collection<string, Letter>();
+  quests = new Collection<string, Quest>();
+  statusEffects = new Collection<string, StatusEffect>();
 
   packageJson: PackageJson = JSON.parse(
     readFileSync("./package.json").toString()
@@ -346,7 +284,7 @@ export class Aeonix extends Client {
     }
   }
 
-  constructor() {
+  constructor(rl: readline.Interface) {
     log({
       header: "Initializing Aeonix...",
       processName: "AeonixConstructor",
@@ -393,192 +331,9 @@ export class Aeonix extends Client {
       ],
     });
 
-    this.rl.on("line", async (input: string) => {
-      const inputArr: string[] = input.split(" ");
-      const firstOptionIndex: number = inputArr.findIndex((arg) =>
-        arg.includes("--")
-      );
+    this.rl = rl;
 
-      // When a line is typed.
-      switch (inputArr[0]?.toLowerCase().trim()) {
-        case "help": {
-          log({
-            header: "Help Command",
-            processName: "CLI",
-            payload: [
-              "'exit' to quit and turn off Aeonix",
-              "'help' for help",
-              "'log <header> [options]' options are --payload and --folder",
-              "'clear' to clear the console",
-              "'tsc' to recompile the bot's typescript files",
-              "'info' to get information about the bot",
-            ],
-            type: "Info",
-          });
-          break;
-        }
-
-        case "clear": {
-          log({
-            header: "Clearing console",
-            processName: "CLI",
-            type: "Info",
-          });
-          process.stdout.write("\x1B[2J\x1B[0f");
-          console.clear();
-          break;
-        }
-
-        case "exit": {
-          // Exit aeonix.
-          await this.exit();
-          break;
-        }
-
-        case "log": {
-          // Log the inputs
-          if (firstOptionIndex === -1) {
-            log({
-              header: inputArr.slice(1).join(" "),
-              processName: "CLI",
-              type: "Info",
-            });
-            return;
-          }
-          const header: string = inputArr.slice(1, firstOptionIndex).join(" ");
-
-          const options: string[] = inputArr.slice(firstOptionIndex);
-          let payload: string = "";
-          let processName: string = "";
-          let type:
-            | "Info"
-            | "Warn"
-            | "Error"
-            | "Fatal"
-            | "Verbose"
-            | "Debug"
-            | "Silly" = "Info";
-          for (let i = 0; i < options.length; i++) {
-            if (options[i] === "--payload") {
-              for (
-                let j = i + 1;
-                j < options.length &&
-                options[j] != "--processName" &&
-                options[j] != "--type";
-                j++
-              ) {
-                payload += options[j];
-              }
-            } else if (options[i] === "--processName") {
-              for (
-                let j = i + 1;
-                j < options.length &&
-                options[j] != "--payload" &&
-                options[j] != "--type";
-                j++
-              ) {
-                processName += options[j];
-              }
-            } else if (options[i] === "--type") {
-              if (
-                options[i + 1] !== "Fatal" &&
-                options[i + 1] !== "Error" &&
-                options[i + 1] !== "Warn" &&
-                options[i + 1] !== "Info" &&
-                options[i + 1] !== "Verbose" &&
-                options[i + 1] !== "Debug" &&
-                options[i + 1] !== "Silly"
-              ) {
-                log({
-                  header: "Invalid type: " + options[i + 1],
-                  processName: "CLI",
-                  type: "Warn",
-                });
-                return;
-              }
-              type = options[i + 1] as
-                | "Info"
-                | "Warn"
-                | "Error"
-                | "Fatal"
-                | "Verbose"
-                | "Debug"
-                | "Silly";
-            }
-          }
-          log({
-            header,
-            payload,
-            processName,
-            type,
-          });
-          break;
-        }
-
-        case "tsc": {
-          log({
-            header: "Recompiling",
-            processName: "CLI",
-            type: "Info",
-          });
-
-          rmSync("./dist", { recursive: true, force: true });
-          try {
-            execSync("tsc", { stdio: "inherit" });
-          } catch (e) {
-            log({
-              header: "Recompilation failed",
-              processName: "CLI",
-              payload: e,
-              type: "Error",
-            });
-          }
-          break;
-        }
-
-        case "info": {
-          const deps = this.packageJson.dependencies;
-          log({
-            header: "Info",
-            processName: "CLI",
-            payload: [
-              blue`Version: ` + blueBright(this.packageJson.version),
-              blue`Git hash: ` +
-                blueBright(
-                  execSync("git rev-parse --short HEAD").toString().trim()
-                ),
-              blue`Installed at: ` +
-                blueBright(path.join(import.meta.url, "..").slice(8)),
-              " ",
-              redBright`Dependencies:`,
-              "  Node.js: " + process.version,
-              `  Discord.js: ${deps["discord.js"].replace("^", "v")}`,
-              `  Mongoose: ${deps.mongoose.replace("^", "v")}`,
-              `  Dotenvx: ${deps["@dotenvx/dotenvx"].replace("^", "v")}`,
-              `  Ansis: ` + deps.ansis.replace("^", "v"),
-              `  TypeScript: ${deps.typescript.replace("^", "v")}`,
-              " ",
-            ],
-            type: "Info",
-          });
-          break;
-        }
-
-        default: {
-          // Invalid command handling.
-          log({
-            header: "Invalid command: " + input,
-            processName: "CLI",
-            payload: ["'exit' to quit and turn off Aeonix, or 'help' for help"],
-            type: "Warn",
-          });
-          break;
-        }
-      }
-
-      this.rl.prompt();
-    });
-    this.rl.prompt();
+    cliHandler(this);
 
     const mdbToken = process.env.MONGODB_URI;
     const dscToken = process.env.DISCORD_TOKEN;
@@ -623,6 +378,46 @@ export class Aeonix extends Client {
         });
 
         await this.statusRefresh();
+
+        this.environments = new Collection<string, Environment>(
+          await Promise.all(
+            (
+              await loadContent("environments")
+            ).map(async (e: Environment) => {
+              await e.init();
+
+              const doc = environmentModel.findOne({ type: e.type }).exec();
+
+              if (!doc) {
+                await e.commit();
+                return [e.type, e] as [string, Environment];
+              }
+
+              const env = softMerge(e, doc);
+
+              return [e.type, env] as [string, Environment];
+            })
+          )
+        );
+
+        this.items = new Collection<string, Item>(
+          (await loadContent("items")).map((i) => [i.type, i])
+        );
+
+        this.letters = new Collection<string, Letter>(
+          (await loadContent("letters")).map((i) => [i.type, i])
+        );
+
+        this.quests = new Collection<string, Quest>(
+          (await loadContent("quests")).map((q: Quest) => [q.type, q])
+        );
+
+        this.statusEffects = new Collection<string, StatusEffect>(
+          (await loadContent("statusEffects")).map((s: StatusEffect) => [
+            s.type,
+            s,
+          ])
+        );
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",
@@ -639,6 +434,3 @@ export class Aeonix extends Client {
     }, 60 * 1000);
   }
 }
-
-// Export the Aeonix object
-export default new Aeonix();

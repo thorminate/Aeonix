@@ -1,12 +1,23 @@
 // ABANDONED UNTIL FURTHER NOTICE
 
+import { randomUUID } from "crypto";
 import Player from "../../player.js";
 
-export default class Quest {
-  id: string = "";
-  name: string = "";
-  description: string = "";
+export default abstract class Quest {
+  private _id: string = "";
+  abstract type: string;
+  abstract name: string;
+  abstract description: string;
   completed: boolean = false;
+
+  get id() {
+    if (!this._id) this._id = randomUUID();
+    return this._id;
+  }
+
+  set id(id: string) {
+    this._id = id;
+  }
 
   async fulfill(player: Player) {
     this.completed = true;
@@ -18,5 +29,5 @@ export default class Quest {
     });
   }
 
-  onFulfill?(player: Player): void;
+  abstract onFulfill(player: Player): void;
 }

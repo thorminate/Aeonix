@@ -1,9 +1,14 @@
-import { MessageFlags, SlashCommandBuilder } from "discord.js";
+import {
+  MediaGalleryBuilder,
+  MessageFlags,
+  SlashCommandBuilder,
+  TextDisplayBuilder,
+} from "discord.js";
 import Player from "../../models/player/player.js";
 import {
   welcomeImage,
   welcomeMessage,
-} from "../../events/ready/02registerOnboarding.js";
+} from "../../events/ready/02verifyOnboardingMsg.js";
 import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
@@ -34,16 +39,21 @@ export default new Interaction({
       return;
     }
 
-    const components = componentWrapper(onboarding0.data);
-
     await context.editReply({
+      components: [
+        new MediaGalleryBuilder().addItems([
+          {
+            media: {
+              url: "attachment://welcome.png",
+              content_type: "image/png",
+            },
+          },
+        ]),
+        new TextDisplayBuilder().setContent(welcomeMessage),
+        ...componentWrapper(onboarding0.data),
+      ],
+      flags: MessageFlags.IsComponentsV2,
       files: [welcomeImage],
-    });
-
-    await context.followUp({
-      content: welcomeMessage,
-      components,
-      flags: MessageFlags.Ephemeral,
     });
   },
 

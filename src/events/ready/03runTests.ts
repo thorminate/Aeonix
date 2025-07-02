@@ -1,4 +1,4 @@
-import BackpackItem from "../../content/items/BackpackItem.js";
+import BackpackItem from "../../content/items/backpackItem.js";
 import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
@@ -18,44 +18,14 @@ export default new Event({
     const player = new Player(aeonix.user, aeonix.user.username);
 
     const item = new BackpackItem();
-    const item2 = (await item.toItemReference().toItem()) as BackpackItem;
 
     let test = true;
 
-    // #region Item
-
-    if (item.name !== item2.name) {
-      log({
-        header: "Test Error, name should be the same",
-        processName: "TestRunner",
-        payload: `${item.name} !== ${item2.name}`,
-        type: "Error",
-      });
-      test = false;
-    }
-
-    if (item.data.capacity !== item2.data.capacity) {
-      log({
-        header: "Test Error, damage should be the same",
-        processName: "TestRunner",
-        payload: `${item.data.entries} !== ${item2.data.entries}`,
-        type: "Error",
-      });
-      test = false;
-    } else if (item.id !== item2.id) {
-      log({
-        header: "Test Error, id should be the same",
-        processName: "TestRunner",
-        payload: `${item.id} !== ${item2.id}`,
-        type: "Error",
-      });
-      test = false;
-    }
     // #region Inventory
 
     player.inventory.clear();
 
-    player.inventory.add(item.toItemReference());
+    player.inventory.add(item);
 
     if (player.inventory.entries.length !== 1) {
       log({
@@ -85,7 +55,7 @@ export default new Event({
       log({
         header: "Test Error, start environment is falsy",
         processName: "TestRunner",
-        payload: await aeonix.environments.getAll(),
+        payload: aeonix.environments,
         type: "Error",
       });
       test = false;

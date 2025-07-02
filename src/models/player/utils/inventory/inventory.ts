@@ -1,41 +1,37 @@
-import ItemReference from "../../../item/utils/itemReference.js";
+import Item from "../../../item/item.js";
 import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
 
 export default class Inventory extends PlayerSubclassBase {
   capacity: number = 10;
-  entries: ItemReference[] = [];
+  entries: Item[] = [];
 
-  add(...entries: ItemReference[]): void {
+  add(...entries: Item[]): void {
     this.entries.push(...entries);
   }
 
-  remove(entry: ItemReference | string): void {
+  remove(entry: Item | string): void {
     if (typeof entry === "string") {
-      this.entries = this.entries.filter(
-        (e: ItemReference) => e.name !== entry
-      );
+      this.entries = this.entries.filter((e: Item) => e.name !== entry);
 
       return;
     }
 
-    this.entries = this.entries.filter(
-      (e: ItemReference) => e.name != entry.name
-    );
+    this.entries = this.entries.filter((e: Item) => e.name != entry.name);
   }
 
-  findItem(query: { key?: string; value: string }): ItemReference | undefined {
+  findOne(query: { key?: string; value: string }): Item | undefined {
     if (!query.key) query.key = "name";
 
     return this.entries.find(
-      (e: ItemReference) => e[query.key as keyof ItemReference] === query.value
+      (e: Item) => e[query.key as keyof Item] === query.value
     );
   }
 
-  findItems(query: { key?: string; value: string }): ItemReference[] {
+  find(query: { key?: string; value: string }): Item[] {
     if (!query.key) query.key = "name";
 
     return this.entries.filter(
-      (e: ItemReference) => e[query.key as keyof ItemReference] === query.value
+      (e: Item) => e[query.key as keyof Item] === query.value
     );
   }
 
@@ -45,7 +41,7 @@ export default class Inventory extends PlayerSubclassBase {
 
   getClassMap(): Record<string, new (...args: any) => any> {
     return {
-      entries: ItemReference,
+      entries: Item as any,
     };
   }
 
