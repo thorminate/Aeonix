@@ -1,10 +1,11 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
-import Interaction from "../interaction.js";
+import Interaction from "../models/core/interaction.js";
+import log from "../utils/log.js";
 
 export default new Interaction({
   data: new ButtonBuilder()
-    .setCustomId("WIP")
-    .setLabel("WIP")
+    .setCustomId("template")
+    .setLabel("Template")
     .setStyle(ButtonStyle.Primary),
 
   interactionType: "button",
@@ -16,11 +17,16 @@ export default new Interaction({
 
   callback: async ({ context }) => {
     await context.editReply({
-      content: "This button is not yet implemented, wait for future updates!",
+      content: "Template button executed!",
     });
   },
 
   onError: (e) => {
-    console.error(e);
+    log({
+      header: "Button Error",
+      processName: "TemplateButton",
+      payload: e,
+      type: "Error",
+    });
   },
 });

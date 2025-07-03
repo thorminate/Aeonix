@@ -2,7 +2,7 @@ import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import { ApplicationCommand } from "discord.js";
 import { findLocalCommands } from "../interactionCreate/handleInteractions.js";
-import Interaction from "../../interactions/interaction.js";
+import Interaction from "../../models/core/interaction.js";
 import Aeonix from "../../aeonix.js";
 
 async function getApplicationCommands(aeonix: Aeonix, guildId: string) {
@@ -90,7 +90,7 @@ export default new Event({
       boolean,
       boolean,
       "command"
-    >[] = await findLocalCommands();
+    >[] = await findLocalCommands(false);
     const applicationCommands = await getApplicationCommands(
       aeonix,
       "1267928656877977670"

@@ -6,8 +6,16 @@ node_modules/
 
 # Anti-Spoilers
 
+src/content/buttons/
+src/content/channelSelectMenus/
+src/content/commands/
 src/content/environments/
 src/content/items/
 src/content/letters/
+src/content/mentionableSelectMenus/
+src/content/modals/
 src/content/quests/
+src/content/roleSelectMenus/
 src/content/statusEffects/
+src/content/stringSelectMenus/
+src/content/userSelectMenus/

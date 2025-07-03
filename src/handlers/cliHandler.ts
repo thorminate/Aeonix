@@ -1,7 +1,7 @@
 import Aeonix from "../aeonix.js";
 import { blue, blueBright, redBright } from "ansis";
 import { execSync } from "child_process";
-import { log } from "console";
+import log from "../utils/log.js";
 import { rmSync } from "fs";
 import path from "path";
 

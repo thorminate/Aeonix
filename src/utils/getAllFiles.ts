@@ -5,12 +5,15 @@ import fs from "fs/promises"; // Get the file system library.
 
 export default async (
   directory: string,
-  foldersOnly = false
+  foldersOnly = false,
+  strict = true
 ): Promise<string[]> => {
   //export the function
   const fileNames = []; // define fileNames as an array
 
-  const files = await fs.readdir(directory, { withFileTypes: true }); // get all files/folders in directory
+  const files = strict
+    ? await fs.readdir(directory, { withFileTypes: true })
+    : await fs.readdir(directory, { withFileTypes: true }).catch(() => []); // get all files/folders in directory
 
   for (const file of files) {
     // loop through all files/folders

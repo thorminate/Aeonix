@@ -11,7 +11,7 @@ import {
   MessageFlags,
 } from "discord.js";
 import log from "./log.js";
-import { CommandContext } from "../interactions/interaction.js";
+import { CommandContext } from "../models/core/interaction.js";
 
 async function paginate(
   context: ButtonInteraction,
