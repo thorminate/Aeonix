@@ -1,65 +1,21 @@
 import {
   ActivityType,
   Client,
+  ClientEvents,
   GatewayIntentBits,
   Partials,
-  Collection,
 } from "discord.js";
 import readline from "readline/promises";
 import log from "./utils/log.js";
 import mongoose from "mongoose";
 import { readFileSync } from "fs";
-import path from "path";
-import url from "url";
-import eventHandler from "./handlers/eventHandler.js";
-import Environment from "./models/environment/environment.js";
-import Item from "./models/item/item.js";
-import Letter from "./models/player/utils/inbox/letter.js";
-import Quest from "./models/player/utils/quests/quest.js";
-import StatusEffect from "./models/player/utils/statusEffect/statusEffect.js";
-import getAllFiles from "./utils/getAllFiles.js";
-import environmentModel from "./models/environment/utils/environmentModel.js";
-import softMerge from "./utils/softMerge.js";
-import cliHandler from "./handlers/cliHandler.js";
-import Interaction from "./models/core/interaction.js";
+import eventManager from "./managers/eventManager.js";
+import cliManager from "./managers/cliManager.js";
+import AeonixCache from "./models/core/aeonixCache.js";
 
-async function loadContentClasses(folderName: string): Promise<any[]> {
-  const contentPath = `./dist/content/${folderName}/`;
-
-  const result = [];
-
-  const allFiles = await getAllFiles(contentPath);
-
-  for (const file of allFiles) {
-    const filePath = path.resolve(file);
-    const fileUrl = url.pathToFileURL(filePath);
-    const content = (await import(fileUrl.toString()).catch(() => undefined))
-      ?.default;
-
-    result.push(new content());
-  }
-
-  return result;
-}
-
-async function loadInteractions(folderName: string): Promise<any[]> {
-  const contentPath = `./dist/content/${folderName}/`;
-
-  const result = [];
-
-  const allFiles = await getAllFiles(contentPath, false, false);
-
-  for (const file of allFiles) {
-    const filePath = path.resolve(file);
-    const fileUrl = url.pathToFileURL(filePath);
-    const content = (await import(fileUrl.toString()).catch(() => undefined))
-      ?.default;
-
-    result.push(content);
-  }
-
-  return result;
-}
+export type AeonixEvents = ClientEvents & {
+  tick: [currentTime: number];
+};
 
 interface PackageJson {
   name: string;
@@ -92,43 +48,7 @@ interface PackageJson {
 
 export default class Aeonix extends Client {
   rl: readline.Interface;
-  environments = new Collection<string, Environment>();
-  items = new Collection<string, Item>();
-  letters = new Collection<string, Letter>();
-  quests = new Collection<string, Quest>();
-  statusEffects = new Collection<string, StatusEffect>();
-  buttons = new Collection<
-    string,
-    Interaction<boolean, boolean, boolean, boolean, "button">
-  >();
-  channelSelectMenus = new Collection<
-    string,
-    Interaction<boolean, boolean, boolean, boolean, "channelSelectMenu">
-  >();
-  commands = new Collection<
-    string,
-    Interaction<boolean, boolean, boolean, boolean, "command">
-  >();
-  mentionableSelectMenus = new Collection<
-    string,
-    Interaction<boolean, boolean, boolean, boolean, "mentionableSelectMenu">
-  >();
-  modals = new Collection<
-    string,
-    Interaction<boolean, boolean, boolean, boolean, "modal">
-  >();
-  roleSelectMenus = new Collection<
-    string,
-    Interaction<boolean, boolean, boolean, boolean, "roleSelectMenu">
-  >();
-  stringSelectMenus = new Collection<
-    string,
-    Interaction<boolean, boolean, boolean, boolean, "stringSelectMenu">
-  >();
-  userSelectMenus = new Collection<
-    string,
-    Interaction<boolean, boolean, boolean, boolean, "userSelectMenu">
-  >();
+  cache: AeonixCache = new AeonixCache();
 
   packageJson: PackageJson = JSON.parse(
     readFileSync("./package.json").toString()
@@ -281,7 +201,7 @@ export default class Aeonix extends Client {
       this._currentTime = 1; // Reset to 1 if the time exceeds 24
     }
 
-    this.emit("tick");
+    this.emit("tick", this.currentTime);
   }
 
   async exit(code: number = 0) {
@@ -348,6 +268,13 @@ export default class Aeonix extends Client {
       presence: {
         status: "online",
         afk: false,
+        activities: [
+          {
+            name: "Aeonix",
+            type: ActivityType.Custom,
+            state: "Initializing...",
+          },
+        ],
       },
       intents: [
         // This is every possible intent :)
@@ -386,7 +313,7 @@ export default class Aeonix extends Client {
 
     this.rl = rl;
 
-    cliHandler(this);
+    cliManager(this);
 
     const mdbToken = process.env.MONGODB_URI;
     const dscToken = process.env.DISCORD_TOKEN;
@@ -398,199 +325,40 @@ export default class Aeonix extends Client {
             header: "Missing token(s)",
             processName: "AeonixConstructor",
             type: "Fatal",
+            payload: { discordToken: dscToken, mongodbToken: mdbToken },
           });
           return;
         }
 
-        this.db = await mongoose.connect(mdbToken);
-
-        log({
-          header: "Linked to DB",
-          processName: "NetworkingHandler",
-          type: "Info",
+        eventManager(this).then(() => {
+          log({
+            header: "Event handler ready to rumble!",
+            processName: "EventHandler",
+            type: "Info",
+          });
         });
 
-        process.on("SIGINT", () => {
-          mongoose.connection.close();
+        await Promise.all([
+          mongoose.connect(mdbToken),
+          this.login(dscToken),
+        ]).then(([db]) => {
+          log({
+            header: "Connected to external services",
+            processName: "NetworkingHandler",
+            type: "Info",
+          });
+          this.db = db;
+          process.on("SIGINT", () => {
+            mongoose.connection.close();
+          });
         });
 
-        eventHandler(this);
-
-        log({
-          header: "Event handler ready to rumble!",
-          processName: "EventHandler",
-          type: "Info",
-        });
-
-        await this.login(dscToken);
-
-        log({
-          header: "Connected to Discord",
-          processName: "NetworkingHandler",
-          type: "Info",
-        });
-
-        await this.statusRefresh();
-
-        this.environments = new Collection<string, Environment>(
-          await Promise.all(
-            (
-              await loadContentClasses("environments")
-            ).map(async (e: Environment) => {
-              await e.init();
-
-              const doc = environmentModel.findOne({ type: e.type }).exec();
-
-              if (!doc) {
-                await e.commit();
-                return [e.type, e] as [string, Environment];
-              }
-
-              const env = softMerge(e, doc);
-
-              return [e.type, env] as [string, Environment];
-            })
-          )
-        );
-
-        this.items = new Collection<string, Item>(
-          (await loadContentClasses("items")).map((i) => [i.type, i])
-        );
-
-        this.letters = new Collection<string, Letter>(
-          (await loadContentClasses("letters")).map((i) => [i.type, i])
-        );
-
-        this.quests = new Collection<string, Quest>(
-          (await loadContentClasses("quests")).map((q: Quest) => [q.type, q])
-        );
-
-        this.statusEffects = new Collection<string, StatusEffect>(
-          (await loadContentClasses("statusEffects")).map((s: StatusEffect) => [
-            s.type,
-            s,
-          ])
-        );
-
-        this.buttons = new Collection<
-          string,
-          Interaction<boolean, boolean, boolean, boolean, "button">
-        >(
-          (await loadInteractions("buttons")).map(
-            (b: Interaction<boolean, boolean, boolean, boolean, "button">) => [
-              (b.data.data as { custom_id: string }).custom_id,
-              b,
-            ]
-          )
-        );
-
-        this.channelSelectMenus = new Collection<
-          string,
-          Interaction<boolean, boolean, boolean, boolean, "channelSelectMenu">
-        >(
-          (await loadInteractions("channelSelectMenus")).map(
-            (
-              b: Interaction<
-                boolean,
-                boolean,
-                boolean,
-                boolean,
-                "channelSelectMenu"
-              >
-            ) => [(b.data.data as { custom_id: string }).custom_id, b]
-          )
-        );
-
-        this.commands = new Collection<
-          string,
-          Interaction<boolean, boolean, boolean, boolean, "command">
-        >(
-          (await loadInteractions("commands")).map(
-            (b: Interaction<boolean, boolean, boolean, boolean, "command">) => [
-              b.data.name,
-              b,
-            ]
-          )
-        );
-
-        this.mentionableSelectMenus = new Collection<
-          string,
-          Interaction<
-            boolean,
-            boolean,
-            boolean,
-            boolean,
-            "mentionableSelectMenu"
-          >
-        >(
-          (await loadInteractions("mentionableSelectMenus")).map(
-            (
-              b: Interaction<
-                boolean,
-                boolean,
-                boolean,
-                boolean,
-                "mentionableSelectMenu"
-              >
-            ) => [(b.data.data as { custom_id: string }).custom_id, b]
-          )
-        );
-
-        this.roleSelectMenus = new Collection<
-          string,
-          Interaction<boolean, boolean, boolean, boolean, "roleSelectMenu">
-        >(
-          (await loadInteractions("roleSelectMenus")).map(
-            (
-              b: Interaction<
-                boolean,
-                boolean,
-                boolean,
-                boolean,
-                "roleSelectMenu"
-              >
-            ) => [(b.data.data as { custom_id: string }).custom_id, b]
-          )
-        );
-
-        this.stringSelectMenus = new Collection<
-          string,
-          Interaction<boolean, boolean, boolean, boolean, "stringSelectMenu">
-        >(
-          (await loadInteractions("stringSelectMenus")).map(
-            (
-              b: Interaction<
-                boolean,
-                boolean,
-                boolean,
-                boolean,
-                "stringSelectMenu"
-              >
-            ) => [(b.data.data as { custom_id: string }).custom_id, b]
-          )
-        );
-
-        this.userSelectMenus = new Collection<
-          string,
-          Interaction<boolean, boolean, boolean, boolean, "userSelectMenu">
-        >(
-          (await loadInteractions("userSelectMenus")).map(
-            (
-              b: Interaction<
-                boolean,
-                boolean,
-                boolean,
-                boolean,
-                "userSelectMenu"
-              >
-            ) => [(b.data.data as { custom_id: string }).custom_id, b]
-          )
-        );
-
-        log({
-          header: "Cached all content",
-          processName: "ContentCacher",
-          type: "Info",
+        this.cache.init().then((cache) => {
+          log({
+            header: "All content cached",
+            processName: "CacheHandler",
+            type: "Info",
+          });
         });
       } catch (e) {
         log({
@@ -607,5 +375,48 @@ export default class Aeonix extends Client {
       this.statusRefresh();
       this.tick();
     }, 60 * 1000);
+  }
+
+  override on<Event extends keyof AeonixEvents>(
+    event: Event,
+    listener: (...args: AeonixEvents[Event]) => void
+  ): this;
+  override on(event: string, listener: (...args: any[]) => void): this {
+    super.on(event, listener);
+    return this;
+  }
+
+  override once<Event extends keyof AeonixEvents>(
+    event: Event,
+    listener: (...args: AeonixEvents[Event]) => void
+  ): this;
+  override once(event: string, listener: (...args: any[]) => void): this {
+    super.once(event, listener);
+    return this;
+  }
+
+  override emit<Event extends keyof AeonixEvents>(
+    event: Event,
+    ...args: AeonixEvents[Event]
+  ): boolean;
+  override emit(event: string, ...args: any[]): boolean {
+    return super.emit(event, ...args);
+  }
+
+  override off<Event extends keyof AeonixEvents>(
+    event: Event,
+    listener: (...args: AeonixEvents[Event]) => void
+  ): this;
+  override off(event: string, listener: (...args: any[]) => void): this {
+    super.off(event, listener);
+    return this;
+  }
+
+  override removeAllListeners<Event extends keyof AeonixEvents>(
+    event?: Event
+  ): this;
+  override removeAllListeners(event?: string): this {
+    super.removeAllListeners(event);
+    return this;
   }
 }

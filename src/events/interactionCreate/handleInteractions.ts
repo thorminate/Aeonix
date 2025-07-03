@@ -1,12 +1,17 @@
 import {
-  BaseInteraction,
   ButtonInteraction,
   CacheType,
+  ChannelSelectMenuInteraction,
   ChatInputCommandInteraction,
+  MentionableSelectMenuInteraction,
   MessageFlags,
+  ModalSubmitInteraction,
   PermissionFlagsBits,
   PermissionsBitField,
+  RoleSelectMenuInteraction,
   SlashCommandBuilder,
+  StringSelectMenuInteraction,
+  UserSelectMenuInteraction,
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
@@ -26,7 +31,7 @@ import aeonix from "../../index.js";
 
 export async function findLocalButtons(useCache = true) {
   if (useCache) {
-    return [...aeonix.buttons.values()];
+    return [...aeonix.cache.buttons.values()];
   }
 
   const localButtons: Interaction<
@@ -62,7 +67,7 @@ export async function findLocalButtons(useCache = true) {
 
 export async function findLocalChannelSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.channelSelectMenus.values()];
+    return [...aeonix.cache.channelSelectMenus.values()];
   }
 
   const localChannelSelectMenus: Interaction<
@@ -98,7 +103,7 @@ export async function findLocalChannelSelectMenus(useCache = true) {
 
 export async function findLocalCommands(useCache = true) {
   if (useCache) {
-    return [...aeonix.commands.values()];
+    return [...aeonix.cache.commands.values()];
   }
 
   const localCommands: Interaction<
@@ -134,7 +139,7 @@ export async function findLocalCommands(useCache = true) {
 
 export async function findLocalMentionableSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.mentionableSelectMenus.values()];
+    return [...aeonix.cache.mentionableSelectMenus.values()];
   }
 
   const localMentionableSelectMenus: Interaction<
@@ -170,7 +175,7 @@ export async function findLocalMentionableSelectMenus(useCache = true) {
 
 export async function findLocalModals(useCache = true) {
   if (useCache) {
-    return [...aeonix.modals.values()];
+    return [...aeonix.cache.modals.values()];
   }
 
   const localModals: Interaction<
@@ -202,7 +207,7 @@ export async function findLocalModals(useCache = true) {
 
 export async function findLocalRoleSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.roleSelectMenus.values()];
+    return [...aeonix.cache.roleSelectMenus.values()];
   }
 
   const localRoleSelectMenus: Interaction<
@@ -238,7 +243,7 @@ export async function findLocalRoleSelectMenus(useCache = true) {
 
 export async function findLocalStringSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.stringSelectMenus.values()];
+    return [...aeonix.cache.stringSelectMenus.values()];
   }
 
   const localStringSelectMenus: Interaction<
@@ -274,7 +279,7 @@ export async function findLocalStringSelectMenus(useCache = true) {
 
 export async function findLocalUserSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.userSelectMenus.values()];
+    return [...aeonix.cache.userSelectMenus.values()];
   }
 
   const localUserSelectMenus: Interaction<
@@ -308,8 +313,20 @@ export async function findLocalUserSelectMenus(useCache = true) {
   return localUserSelectMenus;
 }
 
-export default new Event<BaseInteraction>({
-  callback: async ({ context }) => {
+export default new Event<
+  [
+    data:
+      | ButtonInteraction
+      | ChannelSelectMenuInteraction
+      | ChatInputCommandInteraction
+      | MentionableSelectMenuInteraction
+      | ModalSubmitInteraction
+      | RoleSelectMenuInteraction
+      | StringSelectMenuInteraction
+      | UserSelectMenuInteraction
+  ]
+>({
+  callback: async ({ args: [context] }) => {
     let type = "";
 
     if (context.isButton()) {

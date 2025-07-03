@@ -5,9 +5,15 @@
   "author": "Thorminate",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.12.4",
+  "engineStrict": true,
   "homepage": "https://github.com/thorminate/Aeonix#readme",
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "keywords": [],
+  "engines": {
+    "node": "24.3.0",
+    "pnpm": "10.12.4"
+  },
   "scripts": {
     "dev": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/index.js",
     "start": "node --trace-warnings ./dist/aeonix.js",
@@ -19,7 +25,7 @@
     "@typegoose/typegoose": "^12.17.0",
     "@types/node": "^24.0.10",
     "ansis": "^4.1.0",
-    "discord.js": "^14.20.0",
+    "discord.js": "^14.21.0",
     "mongoose": "^8.16.1",
     "typescript": "^5.8.3"
   },
@@ -31,9 +37,9 @@
     "url": "https://github.com/thorminate/Aeonix/issues"
   },
   "devDependencies": {
-    "@eslint/js": "^9.29.0",
-    "eslint": "^9.29.0",
+    "@eslint/js": "^9.30.1",
+    "eslint": "^9.30.1",
     "globals": "^16.3.0",
-    "typescript-eslint": "^8.34.1"
+    "typescript-eslint": "^8.35.1"
   }
 }

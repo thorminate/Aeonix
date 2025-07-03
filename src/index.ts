@@ -65,4 +65,14 @@ log({
 });
 
 // Export the Aeonix object
-export default new Aeonix(rl);
+const aeonix = new Aeonix(rl);
+
+export default aeonix;
+
+aeonix.on("tick", (currentTime) => {
+  log({
+    header: `Tick ${currentTime}`,
+    processName: "Aeonix.tick",
+    type: "Info",
+  });
+});

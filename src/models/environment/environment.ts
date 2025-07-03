@@ -7,6 +7,7 @@ import environmentModel from "./utils/environmentModel.js";
 import hardMerge from "../../utils/hardMerge.js";
 import { randomUUID } from "crypto";
 import Item from "../item/item.js";
+import log from "../../utils/log.js";
 
 export default abstract class Environment {
   private _id: string = "";
@@ -36,10 +37,9 @@ export default abstract class Environment {
   }
 
   async fetchChannel(): Promise<TextChannel | null> {
-    return (
-      ((await aeonix.channels.fetch(this.channelId)) as TextChannel | null) ||
-      null
-    );
+    return (await aeonix.channels
+      .fetch(this.channelId, { force: true })
+      .catch(() => null)) as TextChannel | null;
   }
 
   adjacentTo(environment: Environment | string): boolean {
@@ -99,10 +99,20 @@ export default abstract class Environment {
 
     const channel = await this.fetchChannel();
 
-    const webhook = await (channel as TextChannel).fetchWebhooks();
+    if (!channel) {
+      log({
+        header: "Channel not found",
+        processName: "Environment.init",
+        payload: { this: this, channel, fetchChannel: this.fetchChannel },
+        type: "Warn",
+      });
+      return;
+    }
+
+    const webhook = await channel.fetchWebhooks();
 
     if (webhook.size === 0) {
-      await (channel as TextChannel).createWebhook({
+      await channel.createWebhook({
         name: this.name,
       });
     }

@@ -71,7 +71,7 @@ export default class Player {
   }
 
   async fetchEnvironment() {
-    return aeonix.environments.get(this.location.id);
+    return aeonix.cache.environments.get(this.location.id);
   }
 
   async moveTo(
@@ -80,7 +80,7 @@ export default class Player {
     disregardAlreadyHere = false,
     disregardOldEnvironment = false
   ): Promise<PlayerMoveToResult> {
-    const env = await aeonix.environments.get(location);
+    const env = aeonix.cache.environments.get(location);
 
     if (!env) return "invalid location";
 

@@ -49,13 +49,13 @@ export default new Event({
 
     let startEnvironment;
 
-    startEnvironment = await aeonix.environments.get("start");
+    startEnvironment = await aeonix.cache.environments.get("start");
 
     if (!startEnvironment) {
       log({
         header: "Test Error, start environment is falsy",
         processName: "TestRunner",
-        payload: aeonix.environments,
+        payload: aeonix.cache.environments,
         type: "Error",
       });
       test = false;

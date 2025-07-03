@@ -1,9 +1,11 @@
-import { Message } from "discord.js";
+import { Message, OmitPartialGroupDMChannel } from "discord.js";
 import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
 
-export default new Event<Message>({
-  async callback({ context }) {
+export default new Event<
+  [message: OmitPartialGroupDMChannel<Message<boolean>>]
+>({
+  async callback({ args: [context] }) {
     if (!(context instanceof Message)) return;
 
     if (context.author.bot) return;

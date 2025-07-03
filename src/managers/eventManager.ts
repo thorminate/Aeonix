@@ -3,7 +3,7 @@ import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles functi
 import url from "url";
 import log from "../utils/log.js";
 import Event, { EventParams } from "../models/core/event.js";
-import Aeonix from "../aeonix.js";
+import Aeonix, { AeonixEvents } from "../aeonix.js";
 
 export default async (aeonix: Aeonix) => {
   try {
@@ -30,16 +30,16 @@ export default async (aeonix: Aeonix) => {
         return;
       }
 
-      aeonix.on(eventName, async (arg) => {
+      aeonix.on(eventName as keyof AeonixEvents, async (...args) => {
         for (const eventFile of eventFiles) {
           const filePath = path.resolve(eventFile);
           const fileUrl = url.pathToFileURL(filePath);
-          const eventModule: { default: Event<unknown> } = await import(
-            fileUrl.toString()
-          );
+          const eventModule: {
+            default: Event<AeonixEvents[keyof AeonixEvents]>;
+          } = await import(fileUrl.toString());
 
           await eventModule.default
-            .callback(new EventParams(aeonix, arg))
+            .callback(new EventParams(aeonix, ...args))
             .catch((e: unknown) => {
               eventModule.default.onError(e).catch((e: unknown) =>
                 log({
