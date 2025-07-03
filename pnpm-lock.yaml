@@ -18,8 +18,8 @@ importers:
         specifier: ^24.0.10
         version: 24.0.10
       ansis:
-        specifier: ^3.17.0
-        version: 3.17.0
+        specifier: ^4.1.0
+        version: 4.1.0
       discord.js:
         specifier: ^14.20.0
         version: 14.20.0
@@ -288,8 +288,8 @@ packages:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
 
-  ansis@3.17.0:
-    resolution: {integrity: sha512-0qWUglt9JEqLFr3w1I1pbrChn1grhaiAR2ocX1PP/flRmxgtwTzPFFFnfIlD6aMOLQZgSuCRlidD70lvx8yhzg==}
+  ansis@4.1.0:
+    resolution: {integrity: sha512-BGcItUBWSMRgOCe+SVZJ+S7yTRG0eGt9cXAHev72yuGcY23hnLA7Bky5L/xLyPINoSN95geovfBkqoTlNZYa7w==}
     engines: {node: '>=14'}
 
   argparse@2.0.1:
@@ -1147,7 +1147,7 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
 
-  ansis@3.17.0: {}
+  ansis@4.1.0: {}
 
   argparse@2.0.1: {}
 
