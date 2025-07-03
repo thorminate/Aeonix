@@ -15,7 +15,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.45.1",
+    "@dotenvx/dotenvx": "^1.45.2",
     "@typegoose/typegoose": "^12.17.0",
     "@types/node": "^22.15.32",
     "ansis": "^3.17.0",

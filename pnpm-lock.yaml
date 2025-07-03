@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@dotenvx/dotenvx':
-        specifier: ^1.45.1
-        version: 1.45.1
+        specifier: ^1.45.2
+        version: 1.45.2
       '@typegoose/typegoose':
         specifier: ^12.17.0
         version: 12.17.0(mongoose@8.16.0(socks@2.8.5))
@@ -73,8 +73,8 @@ packages:
     resolution: {integrity: sha512-wPlQDxEmlDg5IxhJPuxXr3Vy9AjYq5xCvFWGJyD7w7Np8ZGu+Mc+97LCoEc/+AYCo2IDpKioiH0/c/mj5ZR9Uw==}
     engines: {node: '>=16.11.0'}
 
-  '@dotenvx/dotenvx@1.45.1':
-    resolution: {integrity: sha512-wKHPD+/NMMJVBPg3i98uD9jsURDy+Ck6RQRiWf39TlOAzC+Ge1FkmDk3sgeljYZxA3qF6E7SJmvRqC70XQuuVA==}
+  '@dotenvx/dotenvx@1.45.2':
+    resolution: {integrity: sha512-dljVOZTZhwF3G6E1ifDviOOF/vdHqf37xHVWYzNWW+Zk8Mm8KSJiKvWnFze1KknuWUPNb1jDL53I1f8XXKHEYg==}
     hasBin: true
 
   '@ecies/ciphers@0.2.3':
@@ -357,8 +357,8 @@ packages:
     resolution: {integrity: sha512-5fRTptK2vpuz+bTuAEUQLSo/3AgCSLHl6Mm9+/ofb+8cbbnjWllhtaqRBq7XcpzlBnfNEugKv8HvCwcOtIHpCg==}
     engines: {node: '>=18'}
 
-  dotenv@16.5.0:
-    resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
+  dotenv@16.6.1:
+    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
     engines: {node: '>=12'}
 
   eciesjs@0.4.15:
@@ -899,10 +899,10 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@dotenvx/dotenvx@1.45.1':
+  '@dotenvx/dotenvx@1.45.2':
     dependencies:
       commander: 11.1.0
-      dotenv: 16.5.0
+      dotenv: 16.6.1
       eciesjs: 0.4.15
       execa: 5.1.1
       fdir: 6.4.6(picomatch@4.0.2)
@@ -1218,7 +1218,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  dotenv@16.5.0: {}
+  dotenv@16.6.1: {}
 
   eciesjs@0.4.15:
     dependencies:
