@@ -1,75 +1,183 @@
-import Saveable from "../core/saveable.js";
-import deepInstantiate from "../../utils/deepInstantiate.js";
-import { APIEmbed, EmbedBuilder, User } from "discord.js";
-import { Document, Model } from "mongoose";
-import Stats from "../status/status.js";
-import Inventory from "../inventory/inventory.js";
-import calculateXpRequirement from "../status/utils/calculateXpRequirement.js";
-import aeonix from "../../aeonix.js";
-import playerModel from "./utils/playerModel.js";
+import {
+  APIContainerComponent,
+  ButtonBuilder,
+  ButtonStyle,
+  ContainerBuilder,
+  GuildChannel,
+  OverwriteType,
+  SectionBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  TextChannel,
+  TextDisplayBuilder,
+  User,
+} from "discord.js";
+import Stats from "./utils/stats/stats.js";
+import Inventory from "./utils/inventory/inventory.js";
+import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
+import aeonix from "../../index.js";
+import log from "../../utils/log.js";
+import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
+import Inbox from "./utils/inbox/inbox.js";
+import Location from "./utils/location/location.js";
+import Persona from "./utils/persona/persona.js";
+import StatusEffects from "./utils/statusEffect/statusEffects.js";
+import { PlayerSubclassBase } from "./utils/types/PlayerSubclassBase.js";
+import hardMerge from "../../utils/hardMerge.js";
+import {
+  getModelForClass,
+  modelOptions,
+  prop,
+  Severity,
+} from "@typegoose/typegoose";
+import Quests from "./utils/quests/quests.js";
 
-export interface IPlayer extends Document {
+@modelOptions({
+  existingConnection: aeonix.db.connection,
+  existingMongoose: aeonix.db,
+  options: {
+    allowMixed: Severity.ALLOW,
+  },
+  schemaOptions: {
+    _id: false,
+    suppressReservedKeysWarning: true,
+  },
+})
+export default class Player {
+  @prop({ type: () => String, required: true })
   _id: string;
-  name: string;
-  displayName: string;
-  _status: Stats;
-  _inventory: Inventory;
-}
 
-export default class Player extends Saveable<IPlayer> {
-  _id: string;
-  name: string;
-  displayName: string;
-  private _inventory: Inventory;
-  private _status: Stats;
+  @prop({ default: {}, type: Object })
+  persona: Persona;
+  @prop({ default: {}, type: Object })
+  location: Location;
+  @prop({ default: {}, type: Object })
+  statusEffects: StatusEffects;
+  @prop({ default: {}, type: Object })
+  inventory: Inventory;
+  @prop({ default: {}, type: Object })
+  stats: Stats;
+  @prop({ default: {}, type: Object })
+  inbox: Inbox;
+  @prop({ default: {}, type: Object })
+  quests: Quests;
 
-  public get status(): Stats {
-    return deepInstantiate(new Stats(), this._status, {}) as Stats;
+  fetchUser(): User | undefined {
+    return aeonix.users.cache.get(this._id);
   }
 
-  public set status(value: Stats) {
-    this._status = value;
+  async fetchEnvironmentChannel() {
+    return aeonix.channels.cache.get(this.location.channelId) as TextChannel;
   }
 
-  public get inventory(): Inventory {
-    if (this._inventory instanceof Inventory) return this._inventory;
-
-    this._inventory = deepInstantiate(new Inventory(), this._inventory, {});
-
-    return this._inventory;
+  async fetchEnvironment() {
+    return aeonix.environments.get(this.location.id);
   }
 
-  public set inventory(value: Inventory) {
-    this._inventory = value;
-  }
+  async moveTo(
+    location: string,
+    disregardAdjacents = false,
+    disregardAlreadyHere = false,
+    disregardOldEnvironment = false
+  ): Promise<PlayerMoveToResult> {
+    const env = await aeonix.environments.get(location);
 
-  async getUser(): Promise<User> {
-    return await aeonix.users.fetch(this._id);
-  }
+    if (!env) return "invalid location";
 
-  levelUp(amount: number = 1, resetXp: boolean = true) {
-    if (amount <= 0 || !amount) return;
-    this.status.level += amount;
-    if (resetXp) this.status.xp = 0;
-  }
+    if (this.location.id === location && !disregardAlreadyHere)
+      return "already here";
 
-  giveXp(amount: number) {
-    this.status.xp += amount;
-    while (this.status.xp >= calculateXpRequirement(this.status.level)) {
-      this.levelUp(1, false);
-      this.status.xp -= calculateXpRequirement(this.status.level - 1);
+    const oldEnv = await this.fetchEnvironment().catch(() => undefined);
+
+    if (oldEnv) {
+      if (!oldEnv.adjacentTo(env) && !disregardAdjacents) return "not adjacent";
+
+      oldEnv.leave(this);
+
+      const oldChannel = await oldEnv.fetchChannel();
+
+      if (oldChannel && oldChannel instanceof GuildChannel) {
+        await oldChannel.permissionOverwrites.delete(this._id).catch((e) => {
+          log({
+            header: "Failed to delete permission overwrite",
+            processName: "Player.moveTo",
+            payload: e,
+            type: "Warn",
+          });
+        });
+      }
+
+      oldEnv.commit();
+    } else if (!disregardOldEnvironment) {
+      return "no old environment";
     }
 
-    if (this.status.xp < 0) this.status.xp = 0;
+    const channel = await env.fetchChannel();
+
+    if (!channel || !(channel instanceof GuildChannel))
+      return "location channel not found";
+
+    await channel.permissionOverwrites
+      .create(
+        this._id,
+        {
+          ViewChannel: true,
+        },
+        {
+          reason: "Onboarding",
+          type: OverwriteType.Member,
+        }
+      )
+      .catch(() => {
+        log({
+          header: "Failed to create permission overwrite",
+          processName: "Player.moveTo",
+          type: "Warn",
+        });
+      });
+
+    env.join(this);
+
+    this.location.id = location;
+
+    this.location.channelId = channel.id;
+
+    await env.commit();
+
+    return env;
   }
 
-  giveXpFromRange(min: number, max: number) {
-    const randomFromRange = Math.floor(Math.random() * (max - min + 1)) + min;
+  async isAdmin(): Promise<boolean> {
+    const guild = aeonix.guilds.cache.get(aeonix.guildId);
 
-    this.giveXp(randomFromRange);
+    if (!guild) {
+      log({
+        header: "Unable to fetch master guild",
+        processName: "Player.isAdmin",
+        type: "Warn",
+      });
+      return false;
+    }
+
+    const masterRole = guild.roles.cache.get(aeonix.masterRoleId);
+
+    if (!masterRole) {
+      log({
+        header: "Unable to fetch master role",
+        processName: "Player.isAdmin",
+        type: "Warn",
+      });
+      return false;
+    }
+
+    const thisUser = this.fetchUser();
+
+    if (!thisUser) return false;
+
+    return masterRole.members?.has(thisUser.id) ?? false;
   }
 
-  async getStatusEmbed(): Promise<APIEmbed> {
+  async getStatsEmbed(): Promise<APIContainerComponent> {
     const welcomeOptions = [
       "Sup,",
       "Hello",
@@ -80,55 +188,118 @@ export default class Player extends Saveable<IPlayer> {
       "Howdy",
       "Hiya",
     ];
-    return new EmbedBuilder()
-      .setTitle(
-        `${welcomeOptions[Math.floor(Math.random() * welcomeOptions.length)]} ${
-          this.displayName
-        }!`
+
+    const user = this.fetchUser();
+
+    if (!user) return new ContainerBuilder().toJSON();
+
+    return new ContainerBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `${
+            welcomeOptions[Math.floor(Math.random() * welcomeOptions.length)]
+          } ***${this.persona.name}!***`
+        )
       )
-      .setDescription(
-        `You are level ${this.status.level} and have ${
-          this.status.xp
-        }/${calculateXpRequirement(this.status.level)} xp.`
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large)
       )
-      .setAuthor({
-        name: (await this.getUser()).username,
-        iconURL: (await this.getUser()).displayAvatarURL(),
-      })
+      .addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `**Level:** *${this.stats.level}*\n**XP:** *${
+                this.stats.xp
+              }/${calculateXpRequirement(this.stats.level)}*`
+            )
+          )
+          .setButtonAccessory(
+            new ButtonBuilder()
+              .setCustomId("WIPTemplateButton")
+              .setLabel("See logs")
+              .setStyle(ButtonStyle.Secondary)
+          )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder()
+          .setSpacing(SeparatorSpacingSize.Small)
+          .setDivider(false)
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `**Strength:** *${this.stats.strength}*\n**Will:** *${this.stats.will}*\n**Cognition:** *${this.stats.cognition}*`
+        )
+      )
       .toJSON();
   }
 
-  protected getIdentifier() {
-    return {
-      key: "name",
-      value: this.name,
+  async commit(): Promise<void> {
+    await playerModel.findByIdAndUpdate(this._id, hardMerge({}, this), {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    });
+  }
+
+  async delete(): Promise<void> {
+    await playerModel.findByIdAndDelete({
+      _id: this._id,
+    } as Record<string, string>);
+  }
+
+  static async find(identifier: string): Promise<Player | undefined> {
+    const doc = await playerModel.findById(identifier);
+    if (!doc) return undefined;
+
+    const newThis = new this() as Player;
+
+    const instance = hardMerge(newThis, doc.toObject(), newThis.getClassMap());
+    return instance;
+  }
+
+  protected getClassMap(): Record<string, new (...args: any) => any> {
+    const result = {
+      persona: Persona,
+      location: Location,
+      quests: Quests,
+      inventory: Inventory,
+      inbox: Inbox,
+      stats: Stats,
+      statusEffects: StatusEffects,
     };
+
+    const map: Record<string, new (...args: any) => any> = {};
+
+    // Loop through all own properties
+    for (const key of Object.keys(this)) {
+      const value = (this as any)[key] as PlayerSubclassBase;
+      // Check if it has getClassMap method
+      if (
+        value &&
+        typeof value === "object" &&
+        typeof value.getClassMap === "function"
+      ) {
+        const subMap = value.getClassMap();
+
+        for (const [subKey, classRef] of Object.entries(subMap)) {
+          map[`${key}.${subKey}`] = classRef as new (...args: any) => any;
+        }
+      }
+    }
+
+    return { ...map, ...result };
   }
 
-  protected getModel(): Model<IPlayer> {
-    return playerModel;
-  }
-
-  static getModel(): Model<IPlayer> {
-    return playerModel;
-  }
-
-  protected getClassMap(): Record<string, object> {
-    return {
-      _inventory: Inventory,
-      _status: Stats,
-    };
-  }
-
-  constructor(user?: User, displayName?: string) {
-    super();
-    // Only the required properties (inside the schema) are set. The rest are implied when saving to db.
-
-    this.name = user ? user.username : "";
-    this.displayName = displayName || "";
-    this._id = user ? user.id : "";
-
-    this._status = new Stats();
-    this._inventory = new Inventory();
+  constructor(user?: User, displayName?: string, personaAvatar?: string) {
+    this._id = user?.id ?? "";
+    this.persona = new Persona(displayName || "", personaAvatar || "");
+    this.statusEffects = new StatusEffects();
+    this.stats = new Stats();
+    this.inventory = new Inventory();
+    this.inbox = new Inbox();
+    this.quests = new Quests();
+    this.location = new Location();
   }
 }
+
+export const playerModel = getModelForClass(Player);

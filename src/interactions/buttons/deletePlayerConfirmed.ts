@@ -1,27 +1,41 @@
-import Player from "../../models/player/player.js";
-import Button from "../button.js";
 import log from "../../utils/log.js";
-import { ButtonBuilder, ButtonStyle } from "discord.js";
+import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
+import aeonix from "../../index.js";
+import Interaction from "../interaction.js";
 
-export default new Button({
+export default new Interaction({
   data: new ButtonBuilder()
     .setCustomId("deletePlayerConfirmed")
     .setLabel("Yes")
     .setStyle(ButtonStyle.Danger),
-  customId: "deletePlayerConfirmed",
+
+  interactionType: "button",
   ephemeral: true,
   acknowledge: false,
-  passPlayer: false,
+  passPlayer: true,
+  environmentOnly: false,
+  passEnvironment: false,
 
-  callback: async (context) => {
-    if (!(await Player.find(context.user.username))) {
-      await context.update({
-        content: "You don't exist in the DB, therefore you cannot be deleted.",
+  callback: async ({ context, player }) => {
+    const channel = await player.fetchEnvironmentChannel();
+
+    if (!channel) {
+      log({
+        header: "Environment channel not found",
+        processName: "DeletePlayerConfirmedButton",
+        type: "Error",
       });
       return;
     }
 
-    await Player.delete(context.user.username);
+    await channel.permissionOverwrites.delete(context.user.id);
+
+    await (context.member?.roles as GuildMemberRoleManager).remove(
+      aeonix.playerRoleId,
+      "Player deleted"
+    );
+
+    await player.delete();
 
     await context.update({
       content: "Your persona has been deleted.",

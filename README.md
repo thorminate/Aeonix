@@ -2,4 +2,4 @@
 
 ## TODO
 
-Moved to Thorminate/projects/Aeonix
+Moved to Notion

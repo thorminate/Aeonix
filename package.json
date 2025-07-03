@@ -9,13 +9,18 @@
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "keywords": [],
   "scripts": {
-    "start": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/aeonix.js"
+    "dev": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/index.js",
+    "start": "node --trace-warnings ./dist/aeonix.js",
+    "build": "node ./scripts/reset.js && tsc",
+    "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.41.0",
+    "@dotenvx/dotenvx": "^1.45.1",
+    "@typegoose/typegoose": "^12.17.0",
+    "@types/node": "^22.15.32",
     "ansis": "^3.17.0",
-    "discord.js": "^14.19.1",
-    "mongoose": "^8.14.0",
+    "discord.js": "^14.20.0",
+    "mongoose": "^8.16.0",
     "typescript": "^5.8.3"
   },
   "repository": {
@@ -26,9 +31,9 @@
     "url": "https://github.com/thorminate/Aeonix/issues"
   },
   "devDependencies": {
-    "@eslint/js": "^9.25.1",
-    "eslint": "^9.25.1",
-    "globals": "^16.0.0",
-    "typescript-eslint": "^8.31.1"
+    "@eslint/js": "^9.29.0",
+    "eslint": "^9.29.0",
+    "globals": "^16.2.0",
+    "typescript-eslint": "^8.34.1"
   }
 }

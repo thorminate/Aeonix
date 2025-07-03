@@ -1,28 +1,34 @@
 import {
-  ButtonBuilder,
-  ButtonStyle,
+  MediaGalleryBuilder,
   MessageFlags,
   SlashCommandBuilder,
+  TextDisplayBuilder,
 } from "discord.js";
 import Player from "../../models/player/player.js";
-import Command from "../command.js";
 import {
   welcomeImage,
   welcomeMessage,
-} from "../../events/ready/02registerOnboarding.js";
+} from "../../events/ready/02verifyOnboardingMsg.js";
 import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
+import Interaction from "../interaction.js";
+import onboarding0 from "../buttons/onboarding0.js";
 
-export default new Command({
+export default new Interaction({
   data: new SlashCommandBuilder()
     .setName("init")
     .setDescription("Initializes your persona"),
-  passPlayer: false,
-  acknowledge: true,
 
-  callback: async (context) => {
-    if (await Player.find(context.user.username)) {
+  interactionType: "command",
+  passPlayer: false,
+  ephemeral: true,
+  acknowledge: true,
+  environmentOnly: false,
+  passEnvironment: false,
+
+  callback: async ({ context }) => {
+    if (await Player.find(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 
       await context.editReply({
@@ -33,22 +39,21 @@ export default new Command({
       return;
     }
 
-    const components = componentWrapper(
-      new ButtonBuilder()
-        .setCustomId("onboarding1")
-        .setLabel("Begin")
-        .setStyle(ButtonStyle.Primary)
-        .setEmoji("👋")
-    );
-
     await context.editReply({
+      components: [
+        new MediaGalleryBuilder().addItems([
+          {
+            media: {
+              url: "attachment://welcome.png",
+              content_type: "image/png",
+            },
+          },
+        ]),
+        new TextDisplayBuilder().setContent(welcomeMessage),
+        ...componentWrapper(onboarding0.data),
+      ],
+      flags: MessageFlags.IsComponentsV2,
       files: [welcomeImage],
-    });
-
-    await context.followUp({
-      content: welcomeMessage,
-      components,
-      flags: MessageFlags.Ephemeral,
     });
   },
 

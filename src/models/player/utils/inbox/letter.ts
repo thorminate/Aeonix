@@ -1,0 +1,30 @@
+import { randomUUID } from "crypto";
+import Player from "../../player.js";
+
+export default abstract class Letter {
+  private _id = "";
+  abstract type: string;
+  abstract sender: string;
+  abstract subject: string;
+  abstract body: string;
+  abstract interactable: boolean;
+  abstract interactionType: string;
+  abstract canDismiss?: boolean;
+
+  get id() {
+    if (!this._id) this._id = randomUUID();
+    return this._id;
+  }
+
+  set id(id: string) {
+    this._id = id;
+  }
+
+  onRead(player: Player): void {
+    return;
+  }
+
+  onInteract(player: Player): void {
+    return;
+  }
+}

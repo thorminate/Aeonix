@@ -1,19 +1,44 @@
-import { ActivityType, Client, GatewayIntentBits, Partials } from "discord.js";
-import mongoose from "mongoose";
-import eventHandler from "./handlers/eventHandler.js";
-import log from "./utils/log.js";
-import readline from "readline/promises";
 import {
-  appendFileSync,
-  existsSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "fs";
-import { config } from "@dotenvx/dotenvx";
-import { blue, blueBright, green, magenta, redBright } from "ansis";
-import { execSync } from "child_process";
+  ActivityType,
+  Client,
+  GatewayIntentBits,
+  Partials,
+  Collection,
+} from "discord.js";
+import readline from "readline/promises";
+import log from "./utils/log.js";
+import mongoose from "mongoose";
+import { readFileSync } from "fs";
 import path from "path";
+import url from "url";
+import eventHandler from "./handlers/eventHandler.js";
+import Environment from "./models/environment/environment.js";
+import Item from "./models/item/item.js";
+import Letter from "./models/player/utils/inbox/letter.js";
+import Quest from "./models/player/utils/quests/quest.js";
+import StatusEffect from "./models/player/utils/statusEffect/statusEffect.js";
+import getAllFiles from "./utils/getAllFiles.js";
+import environmentModel from "./models/environment/utils/environmentModel.js";
+import softMerge from "./utils/softMerge.js";
+import cliHandler from "./handlers/cliHandler.js";
+
+async function loadContent(folderName: string): Promise<any[]> {
+  const contentPath = `./dist/content/${folderName}/`;
+
+  const result = [];
+
+  const allFiles = await getAllFiles(contentPath);
+
+  for (const file of allFiles) {
+    const filePath = path.resolve(file);
+    const fileUrl = url.pathToFileURL(filePath);
+    const content = (await import(fileUrl.toString())).default;
+
+    result.push(new content());
+  }
+
+  return result;
+}
 
 interface PackageJson {
   name: string;
@@ -44,279 +69,167 @@ interface PackageJson {
   };
 }
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  history: ["exit"],
-  historySize: 10,
-  prompt: `${magenta("Aeonix")} ${green(">>")} `,
-});
-
-// Make sure the .env file exists
-if (!existsSync("./.env")) {
-  // If the .env file doesn't exist, we create it.
-
-  log({
-    header: ".env file not found, starting setup wizard",
-    processName: "AeonixSetupWizard",
-    type: "Warn",
-  });
-
-  const token = await rl.question("Enter your token: ");
-  writeFileSync("./.env", `TOKEN="${token}"`);
-
-  const mongodbUri = await rl.question("Enter your MongoDB URI: ");
-  appendFileSync("./.env", `\nMONGODB_URI="${mongodbUri}"`);
-
-  const playerRoleId = await rl.question("What ID does the player role have? ");
-  appendFileSync("./.env", `\nPLAYER_ROLE="${playerRoleId}"`);
-
-  const onboardingChannelId = await rl.question(
-    "What ID does the onboarding channel have? "
-  );
-  appendFileSync("./.env", `\nONBOARDING_CHANNEL="${onboardingChannelId}"`);
-
-  const rulesChannelId = await rl.question(
-    "What ID does the rules channel have? "
-  );
-  appendFileSync("./.env", `\nRULES_CHANNEL="${rulesChannelId}"`);
-
-  log({
-    header: "Created .env file",
-    processName: "AeonixSetupWizard",
-    type: "Info",
-  });
-}
-
-// Load environment variables
-config();
-
-// Define Aeonix
-export class Aeonix extends Client {
+export default class Aeonix extends Client {
   rl: readline.Interface;
+  environments = new Collection<string, Environment>();
+  items = new Collection<string, Item>();
+  letters = new Collection<string, Letter>();
+  quests = new Collection<string, Quest>();
+  statusEffects = new Collection<string, StatusEffect>();
+
   packageJson: PackageJson = JSON.parse(
     readFileSync("./package.json").toString()
   );
-  activities = [
-    "Reading through the archives",
-    "Manipulating physical forces",
-    "Predicting the future",
-    "Exploring virtual realms",
-    "Solving complex puzzles",
-    "Composing symphonies",
-    "Crafting digital art",
-    "Engaging in strategic battles",
-    "Hosting trivia challenges",
-    "Developing new algorithms",
-    "Analyzing data patterns",
-    "Training neural networks",
-    "Simulating quantum physics",
-    "Navigating through codebases",
-    "Designing architectural models",
-    "Experimenting with chemistry formulas",
-    "Writing interactive fiction",
-    "Conducting virtual experiments",
-    "Building mechanical prototypes",
-    "Investigating historical mysteries",
-    "Planning space missions",
-    "Creating culinary recipes",
-    "Learning new languages",
-    "Practicing martial arts",
-    "Sketching futuristic designs",
-    "Meditating in digital gardens",
-    "Organizing virtual events",
-    "Reviewing scientific journals",
-    "Participating in hackathons",
-    "Exploring ancient civilizations",
-    "Curating music playlists",
-    "Studying celestial phenomena",
-    "Simulating economic models",
-    "Crafting immersive narratives",
-    "Developing mobile applications",
-    "Analyzing genetic sequences",
-    "Planning urban developments",
-    "Researching cybersecurity trends",
-    "Designing user interfaces",
-    "Exploring philosophical concepts",
-    "Experimenting with soundscapes",
-    "Building virtual communities",
-    "Investigating paranormal activities",
-    "Learning sign language",
-    "Practicing calligraphy",
-    "Exploring deep-sea mysteries",
-    "Training for marathons",
-    "Studying behavioral psychology",
-    "Developing board games",
-    "Exploring renewable energy solutions",
-    "Crafting leather goods",
-    "Learning about cryptocurrency",
-    "Practicing yoga poses",
-    "Studying architectural history",
-    "Exploring virtual reality worlds",
-    "Learning to play instruments",
-    "Practicing photography skills",
-    "Studying marine biology",
-    "Exploring artificial intelligence",
-    "Learning about blockchain technology",
-    "Practicing public speaking",
-    "Studying environmental science",
-    "Exploring space technologies",
-    "Learning about robotics",
-    "Practicing graphic design",
-    "Studying human anatomy",
-    "Exploring cultural anthropology",
-    "Learning about quantum computing",
-    "Practicing animation techniques",
-    "Studying political science",
-    "Exploring ancient mythologies",
-    "Learning about astronomy",
-    "Practicing woodworking skills",
-    "Studying meteorology",
-    "Exploring virtual economies",
-    "Learning about nanotechnology",
-    "Practicing sculpture techniques",
-    "Studying criminology",
-    "Exploring digital marketing",
-    "Learning about gastronomy",
-    "Practicing dance routines",
-    "Studying linguistics",
-    "Exploring fashion design",
-    "Learning about cinematography",
-    "Practicing pottery making",
-    "Studying sociology",
-    "Exploring interior design",
-    "Learning about archaeology",
-    "Practicing metalworking skills",
-    "Studying zoology",
-    "Exploring landscape architecture",
-    "Learning about mythology",
-    "Practicing embroidery techniques",
-    "Studying astronomy",
-    "Exploring culinary arts",
-    "Learning about paleontology",
-    "Practicing glassblowing",
-    "Studying economics",
-    "Exploring urban planning",
-    "Learning about ethnomusicology",
-    "Practicing jewelry making",
-    "Studying cartography",
-    "Exploring industrial design",
-    "Learning about viticulture",
-    "Practicing bookbinding",
-    "Studying psychology",
-    "Exploring game theory",
-    "Learning about oceanography",
-    "Practicing knitting techniques",
-    "Studying anthropology",
-    "Exploring graphic novels",
-    "Learning about ecology",
-    "Practicing origami",
-    "Studying philosophy",
-    "Exploring digital photography",
-    "Learning about meteorology",
-    "Practicing quilting",
-    "Studying art history",
-    "Exploring sound engineering",
-    "Learning about geology",
-    "Practicing sewing techniques",
-    "Studying literature",
-    "Exploring animation",
-    "Learning about botany",
-    "Practicing candle making",
-    "Studying theater arts",
-    "Exploring photography",
-    "Learning about chemistry",
-    "Practicing soap making",
-    "Studying film studies",
-    "Exploring sculpture",
-    "Learning about physics",
-    "Practicing weaving",
-    "Studying music theory",
-    "Exploring ceramics",
-    "Learning about astronomy",
-    "Practicing leather crafting",
-    "Studying dance",
-    "Exploring painting techniques",
-    "Learning about biology",
-    "Practicing woodworking",
-    "Studying creative writing",
-    "Exploring textile arts",
-    "Learning about mathematics",
-    "Practicing metalworking",
-    "Studying poetry",
-    "Exploring printmaking",
-    "Learning about environmental science",
-    "Practicing glass art",
-    "Studying journalism",
-    "Exploring fashion illustration",
-    "Learning about political science",
-    "Practicing calligraphy",
-    "Studying linguistics",
-    "Exploring interior decoration",
-    "Learning about sociology",
-    "Practicing embroidery",
-    "Studying cultural studies",
-    "Exploring landscape painting",
-    "Learning about anthropology",
-    "Practicing pottery",
-    "Studying communication",
-    "Exploring graphic design",
-    "Learning about psychology",
-    "Practicing knitting",
-    "Studying media studies",
-    "Exploring digital art",
-    "Learning about economics",
-    "Practicing origami",
-    "Studying education",
-    "Exploring photography editing",
-    "Learning about history",
-    "Practicing quilting",
-    "Studying philosophy",
-    "Exploring video production",
-    "Learning about geography",
-    "Practicing sewing",
-    "Studying art therapy",
-    "Exploring animation techniques",
-    "Learning about archaeology",
-    "Practicing candle making",
-    "Studying film production",
-    "Exploring sculpture techniques",
-    "Learning about theology",
-    "Practicing soap making",
-    "Studying music production",
-    "Exploring ceramics techniques",
-    "Learning about literature",
-    "Practicing leatherworking",
-    "Studying creative arts",
-    "Exploring textile design",
-    "Learning about cultural anthropology",
-    "Practicing metal crafting",
-    "Studying performing arts",
-    "Exploring printmaking techniques",
-    "Learning about environmental studies",
-    "Practicing glassblowing techniques",
-    "Studying communication arts",
-    "Exploring fashion styling",
-    "Learning about political theory",
-    "Practicing bookbinding techniques",
-    "Studying language arts",
-    "Exploring interior architecture",
-    "Learning about social sciences",
-    "Practicing jewelry design",
-    "Studying visual arts",
-    "Exploring landscape design",
-    "Learning about human geography",
-    "Practicing woodworking techniques",
-    "Studying art education",
-    "Exploring digital media",
-    "Learning about urban studies",
-    "Practicing sculpture modeling",
-    "Studying theater production",
-    "Exploring multimedia arts",
-    "Learning about public relations",
-    "Practicing textile printing",
+
+  db: typeof mongoose = mongoose;
+
+  private _currentTime = 1;
+
+  playerRoleId: string = process.env.PLAYER_ROLE || "";
+  guildId: string = process.env.GUILD_ID || "";
+  onboardingChannelId: string = process.env.ONBOARDING_CHANNEL || "";
+  rulesChannelId: string = process.env.RULES_CHANNEL || "";
+  masterRoleId: string = process.env.MASTER_ROLE || "";
+
+  verbs = [
+    "Learning about",
+    "Exploring",
+    "Playing with",
+    "Reading about",
+    "Watching tutorials on",
     "Studying",
+    "Discovering",
+    "Researching",
+    "Delving into",
+    "Examining",
+    "Investigating",
   ];
+
+  nouns = [
+    "advanced mathematics",
+    "electromagnetism",
+    "elementary chemistry",
+    "different species",
+    "differential equations",
+    "modern computer programs",
+    "programming in typescript",
+    "classical art",
+    "EDM music",
+    "dancing",
+    "singing great hits",
+    "poetry",
+    "novels",
+    "paintings in the style of Van Gogh",
+    "drawings a beautiful landscape",
+    "popular sculptures",
+    "taking stunning shots",
+    "video editing",
+    "game development",
+    "web development",
+    "app development",
+    "data analysis",
+    "data visualization",
+    "data science",
+    "data mining",
+    "philosophical concepts",
+    "psychology",
+    "conscience",
+    "neuralese",
+    "board games",
+    "calligraphy",
+    "new languages",
+    "blockchain",
+    "cryptography",
+    "encryption techniques",
+    "decryption techniques",
+    "encryption algorithms",
+    "decryption algorithms",
+    "virtual reality",
+    "augmented reality",
+    "modern robotics",
+    "artificial intelligence",
+    "hackathons",
+    "celestial phenomena",
+    "economic models",
+    "archiving",
+    "physical forces",
+    "quantum physics",
+    "quantum computing",
+    "historical events",
+    "abandoned codebases",
+    "martial arts",
+    "renewable energy solutions",
+    "digital security",
+    "quantum mechanics",
+    "quantum entanglement",
+    "nuclear physics",
+    "particle physics",
+    "genetic engineering",
+    "climate change",
+    "environmental science",
+    "marine biology",
+    "cosmology",
+    "theoretical physics",
+    "string theory",
+    "biotechnology",
+    "nanotechnology",
+    "cybersecurity",
+    "ethical hacking",
+    "space exploration",
+    "astrophysics",
+    "biomechanics",
+    "neuroscience",
+    "behavioral science",
+    "social dynamics",
+    "cultural anthropology",
+    "historical analysis",
+    "geopolitical strategies",
+    "sustainable development",
+    "urban planning",
+    "wildlife conservation",
+    "oceanography",
+    "meteorology",
+    "robotics engineering",
+    "autonomous vehicles",
+    "machine learning",
+    "deep learning",
+    "natural language processing",
+    "computer vision",
+    "augmented reality",
+    "virtual reality",
+    "3D modeling",
+    "digital art",
+    "geographic information systems",
+    "remote sensing",
+    "cartography",
+    "spatial analysis",
+  ];
+
+  get currentTime() {
+    const now = this._currentTime;
+
+    if (now <= 0 || now > 24) {
+      log({
+        header: "Invalid current time, resetting to 1",
+        processName: "Aeonix.currentTime",
+        type: "Error",
+        payload: { currentTime: now },
+      });
+      this._currentTime = 1; // Reset to 1 if the time is invalid
+      return 1; // Default to 1 if the time is invalid
+    }
+
+    return now;
+  }
+
+  tick() {
+    this._currentTime += 1;
+    if (this._currentTime > 24) {
+      this._currentTime = 1; // Reset to 1 if the time exceeds 24
+    }
+
+    this.emit("tick");
+  }
 
   async exit(code: number = 0) {
     log({
@@ -330,7 +243,7 @@ export class Aeonix extends Client {
         this.user.setPresence({ status: "invisible" });
       }
       await this.destroy();
-      process.exit(code);
+      process.exit(code); // Exit with the provided code
     } catch (e) {
       log({
         header: "Error while shutting down",
@@ -343,8 +256,20 @@ export class Aeonix extends Client {
   }
 
   async statusRefresh() {
+    if (!Array.isArray(this.verbs) || !Array.isArray(this.nouns)) {
+      log({
+        header: "Verbs or nouns are not arrays",
+        processName: "Aeonix.statusRefresh",
+        type: "Error",
+        payload: { verbs: this.verbs, nouns: this.nouns },
+      });
+      return;
+    }
+
     const randomChoice =
-      this.activities[Math.floor(Math.random() * this.activities.length)];
+      this.verbs[Math.floor(Math.random() * (this.verbs?.length ?? 0))] +
+      " " +
+      this.nouns[Math.floor(Math.random() * (this.nouns?.length ?? 0))];
     if (this.user) {
       this.user.setPresence({
         status: "online",
@@ -359,8 +284,13 @@ export class Aeonix extends Client {
     }
   }
 
-  constructor() {
-    // Define the client
+  constructor(rl: readline.Interface) {
+    log({
+      header: "Initializing Aeonix...",
+      processName: "AeonixConstructor",
+      type: "Info",
+    });
+
     super({
       presence: {
         status: "online",
@@ -403,204 +333,13 @@ export class Aeonix extends Client {
 
     this.rl = rl;
 
-    // Inject CLI
-    this.rl.on("line", async (input: string) => {
-      const inputArr: string[] = input.split(" ");
-      const firstOptionIndex: number = inputArr.findIndex((arg) =>
-        arg.includes("--")
-      );
+    cliHandler(this);
 
-      // When a line is typed.
-      switch (inputArr[0]?.toLowerCase().trim()) {
-        case "help": {
-          log({
-            header: "Help Command",
-            processName: "CLI",
-            payload: [
-              "'exit' to quit and turn off Aeonix",
-              "'help' for help",
-              "'log <header> [options]' options are --payload and --folder",
-              "'clear' to clear the console",
-              "'tsc' to recompile the bot's typescript files",
-              "'info' to get information about the bot",
-            ],
-            type: "Info",
-          });
-          break;
-        }
-
-        case "clear": {
-          log({
-            header: "Clearing console",
-            processName: "CLI",
-            type: "Info",
-          });
-          process.stdout.write("\x1B[2J\x1B[0f");
-          break;
-        }
-
-        case "exit": {
-          // Exit aeonix.
-          await this.exit();
-          break;
-        }
-
-        case "log": {
-          // Log the inputs
-          if (firstOptionIndex === -1) {
-            log({
-              header: inputArr.slice(1).join(" "),
-              processName: "CLI",
-              type: "Info",
-            });
-            return;
-          }
-          const header: string = inputArr.slice(1, firstOptionIndex).join(" ");
-
-          const options: string[] = inputArr.slice(firstOptionIndex);
-          let payload: string = "";
-          let processName: string = "";
-          let type:
-            | "Info"
-            | "Warn"
-            | "Error"
-            | "Fatal"
-            | "Verbose"
-            | "Debug"
-            | "Silly" = "Info";
-          for (let i = 0; i < options.length; i++) {
-            if (options[i] === "--payload") {
-              for (
-                let j = i + 1;
-                j < options.length &&
-                options[j] != "--processName" &&
-                options[j] != "--type";
-                j++
-              ) {
-                payload += options[j];
-              }
-            } else if (options[i] === "--processName") {
-              for (
-                let j = i + 1;
-                j < options.length &&
-                options[j] != "--payload" &&
-                options[j] != "--type";
-                j++
-              ) {
-                processName += options[j];
-              }
-            } else if (options[i] === "--type") {
-              if (
-                options[i + 1] !== "Fatal" &&
-                options[i + 1] !== "Error" &&
-                options[i + 1] !== "Warn" &&
-                options[i + 1] !== "Info" &&
-                options[i + 1] !== "Verbose" &&
-                options[i + 1] !== "Debug" &&
-                options[i + 1] !== "Silly"
-              ) {
-                log({
-                  header: "Invalid type: " + options[i + 1],
-                  processName: "CLI",
-                  type: "Warn",
-                });
-                return;
-              }
-              type = options[i + 1] as
-                | "Info"
-                | "Warn"
-                | "Error"
-                | "Fatal"
-                | "Verbose"
-                | "Debug"
-                | "Silly";
-            }
-          }
-          log({
-            header,
-            payload,
-            processName,
-            type,
-          });
-          break;
-        }
-
-        case "tsc": {
-          log({
-            header: "Recompiling",
-            processName: "CLI",
-            type: "Info",
-          });
-
-          rmSync("./dist", { recursive: true, force: true });
-          try {
-            execSync("tsc", { stdio: "inherit" });
-          } catch (e) {
-            log({
-              header: "Recompilation failed",
-              processName: "CLI",
-              payload: e,
-              type: "Error",
-            });
-          }
-          break;
-        }
-
-        case "info": {
-          const deps = this.packageJson.dependencies;
-          log({
-            header: "Info",
-            processName: "CLI",
-            payload: [
-              blue`Version: ` + blueBright(this.packageJson.version),
-              blue`Git hash: ` +
-                blueBright(
-                  execSync("git rev-parse --short HEAD").toString().trim()
-                ),
-              blue`Installed at: ` +
-                blueBright(path.join(import.meta.url, "..").slice(8)),
-              " ",
-              redBright`Dependencies:`,
-              "  Node.js: " + process.version,
-              `  Discord.js: ${deps["discord.js"].replace("^", "v")}`,
-              `  Mongoose: ${deps.mongoose.replace("^", "v")}`,
-              `  Dotenvx: ${deps["@dotenvx/dotenvx"].replace("^", "v")}`,
-              `  Ansis: ` + deps.ansis.replace("^", "v"),
-              `  TypeScript: ${deps.typescript.replace("^", "v")}`,
-              " ",
-            ],
-            type: "Info",
-          });
-          break;
-        }
-
-        default: {
-          // Invalid command handling.
-          log({
-            header: "Invalid command: " + input,
-            processName: "CLI",
-            payload: ["'exit' to quit and turn off Aeonix, or 'help' for help"],
-            type: "Warn",
-          });
-          break;
-        }
-      }
-
-      this.rl.prompt();
-    });
-    this.rl.prompt();
-
-    const mdbToken = process.env["MONGODB_URI"];
-    const dscToken = process.env["DISCORD_TOKEN"];
+    const mdbToken = process.env.MONGODB_URI;
+    const dscToken = process.env.DISCORD_TOKEN;
 
     (async () => {
       try {
-        log({
-          header: "Initializing Aeonix...",
-          processName: "AeonixConstructor",
-          type: "Info",
-        });
-
         if (!dscToken || !mdbToken) {
           log({
             header: "Missing token(s)",
@@ -610,47 +349,88 @@ export class Aeonix extends Client {
           return;
         }
 
-        await mongoose.connect(mdbToken).then(() => {
-          log({
-            header: "Linked to DB",
-            processName: "AeonixConstructor",
-            type: "Info",
-          });
+        this.db = await mongoose.connect(mdbToken);
 
-          process.on("SIGINT", () => {
-            mongoose.connection.close();
-          });
+        log({
+          header: "Linked to DB",
+          processName: "NetworkingHandler",
+          type: "Info",
+        });
+
+        process.on("SIGINT", () => {
+          mongoose.connection.close();
         });
 
         eventHandler(this);
 
         log({
-          header: "Event handler initialized",
-          processName: "AeonixConstructor",
+          header: "Event handler ready to rumble!",
+          processName: "EventHandler",
           type: "Info",
         });
 
-        await this.login(dscToken).then(() => {
-          log({
-            header: "Connected to Discord",
-            processName: "AeonixConstructor",
-            type: "Info",
-          });
+        await this.login(dscToken);
+
+        log({
+          header: "Connected to Discord",
+          processName: "NetworkingHandler",
+          type: "Info",
         });
+
         await this.statusRefresh();
+
+        this.environments = new Collection<string, Environment>(
+          await Promise.all(
+            (
+              await loadContent("environments")
+            ).map(async (e: Environment) => {
+              await e.init();
+
+              const doc = environmentModel.findOne({ type: e.type }).exec();
+
+              if (!doc) {
+                await e.commit();
+                return [e.type, e] as [string, Environment];
+              }
+
+              const env = softMerge(e, doc);
+
+              return [e.type, env] as [string, Environment];
+            })
+          )
+        );
+
+        this.items = new Collection<string, Item>(
+          (await loadContent("items")).map((i) => [i.type, i])
+        );
+
+        this.letters = new Collection<string, Letter>(
+          (await loadContent("letters")).map((i) => [i.type, i])
+        );
+
+        this.quests = new Collection<string, Quest>(
+          (await loadContent("quests")).map((q: Quest) => [q.type, q])
+        );
+
+        this.statusEffects = new Collection<string, StatusEffect>(
+          (await loadContent("statusEffects")).map((s: StatusEffect) => [
+            s.type,
+            s,
+          ])
+        );
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",
-          processName: "AeonixConstructor",
+          processName: "ErrorSuppressant",
           payload: e,
           type: "Fatal",
         });
       }
     })();
 
-    setInterval(() => this.statusRefresh(), 10 * 60 * 1000);
+    setInterval(() => {
+      this.statusRefresh();
+      this.tick();
+    }, 60 * 1000);
   }
 }
-
-// Export the Aeonix object
-export default new Aeonix();

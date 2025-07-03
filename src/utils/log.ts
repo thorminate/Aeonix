@@ -3,9 +3,9 @@ import fs from "node:fs";
 import url from "node:url";
 import { inspect } from "node:util";
 import readline from "node:readline";
-import { cyan, gray, red, redBright, yellow } from "ansis";
-import { Aeonix } from "../aeonix.js";
+import { blackBright, cyan, red, redBright, yellow } from "ansis";
 import { actualPrimitives } from "mongoose";
+import Aeonix from "../aeonix.js";
 
 interface LogOptions {
   header: string;
@@ -74,7 +74,9 @@ export default (options: LogOptions) => {
       ? yellow
       : cyan;
 
-  const logTime = gray`${date.toLocaleTimeString()}`;
+  date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+
+  const logTime = blackBright`${date.toLocaleString("sv")}`;
   const logContent = `${headerColour(header)}${fPayload}`;
   const logProcessName = processName ? `${processName}/` : "Main/";
   const logType = type ? `${type}` : "Info";
@@ -105,8 +107,7 @@ export default (options: LogOptions) => {
   logStream.end();
 
   if (!doNotPrompt) {
-    import("../aeonix.js").then((module: { default: Aeonix }) => {
-      const aeonix: Aeonix = module.default;
+    import("../index.js").then(({ default: aeonix }: { default: Aeonix }) => {
       if (aeonix) aeonix.rl.prompt();
     });
   }

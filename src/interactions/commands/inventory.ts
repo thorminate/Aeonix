@@ -8,16 +8,16 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Command from "../command.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
-import InventoryEntry from "../../models/inventory/utils/inventoryEntry.js";
-import paginator, { paginateFromButton } from "../../utils/paginator.js";
+import paginator, { paginateFromButton } from "../../utils/buttonPaginator.js";
 import { randomUUID } from "node:crypto";
 import componentWrapper from "../../utils/componentWrapper.js";
+import Interaction from "../interaction.js";
+import Item from "../../models/item/item.js";
 
-function getButtonsFromEntries(entries: InventoryEntry[]): ButtonBuilder[] {
-  return entries.map((entry: InventoryEntry): ButtonBuilder => {
+function getButtonsFromEntries(entries: Item[]): ButtonBuilder[] {
+  return entries.map((entry: Item): ButtonBuilder => {
     return new ButtonBuilder()
       .setCustomId(entry.id)
       .setLabel(entry.name)
@@ -101,19 +101,7 @@ function createCollectors(
             (e) => e.id === useData
           );
 
-          const activeEntry = player.inventory.entries[activeEntryIndex];
-
-          if (!activeEntry) {
-            log({
-              header: "Item not found in inventory",
-              processName: "InventoryCommand",
-              payload: [player.inventory.entries, useData, activeEntryIndex],
-              type: "Error",
-            });
-            return;
-          }
-
-          const item = await activeEntry.toItem();
+          const item = player.inventory.entries[activeEntryIndex];
 
           if (!item) {
             log({
@@ -129,11 +117,9 @@ function createCollectors(
             player,
           });
 
-          const newEntry = item.toInventoryEntry();
+          player.inventory.entries[activeEntryIndex] = item;
 
-          player.inventory.entries[activeEntryIndex] = newEntry;
-
-          player.save();
+          await player.commit();
 
           await context.update({
             content: `**${item.name}**\n${usageResult.message}`,
@@ -159,11 +145,11 @@ function createCollectors(
 
         default:
           {
-            const currentEntry = player.inventory.entries.find(
-              (entry: InventoryEntry) => entry.id === useType
+            const currentItem = player.inventory.entries.find(
+              (entry: Item) => entry.id === useType
             );
 
-            if (!currentEntry) {
+            if (!currentItem) {
               log({
                 header: "Item not found in inventory",
                 processName: "InventoryCommand",
@@ -173,20 +159,8 @@ function createCollectors(
               return;
             }
 
-            const currentItem = await currentEntry.toItem();
-
-            if (!currentItem) {
-              log({
-                header: "Inventory entry could not be converted to item",
-                processName: "InventoryCommand",
-                payload: [useType, player.inventory.entries],
-                type: "Error",
-              });
-              return;
-            }
-
             await context.update({
-              content: `**${currentEntry.name}**`,
+              content: `**${currentItem.name}**`,
               components: componentWrapper(
                 new ButtonBuilder()
                   .setCustomId("close")
@@ -194,11 +168,11 @@ function createCollectors(
                   .setEmoji("✖️")
                   .setStyle(ButtonStyle.Danger),
                 new ButtonBuilder()
-                  .setCustomId(`use:${currentEntry.id}`)
+                  .setCustomId(`use:${currentItem.id}`)
                   .setLabel(currentItem.useType)
                   .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
-                  .setCustomId(`drop:${currentEntry.id}`)
+                  .setCustomId(`drop:${currentItem.id}`)
                   .setLabel("Drop")
                   .setStyle(ButtonStyle.Secondary)
               ),
@@ -217,15 +191,20 @@ function createCollectors(
   });
 }
 
-export default new Command({
+export default new Interaction({
+  interactionType: "command",
+
   data: new SlashCommandBuilder()
     .setName("inventory")
     .setDescription("Shows your inventory"),
+
   ephemeral: true,
   acknowledge: true,
   passPlayer: true,
+  environmentOnly: true,
+  passEnvironment: false,
 
-  callback: async (context, player): Promise<void> => {
+  callback: async ({ context, player }): Promise<void> => {
     if (!player) {
       log({
         header: "Player could not be passed to inventory command",
@@ -236,17 +215,12 @@ export default new Command({
     }
     const unsanitizedButtons = getButtonsFromEntries(player.inventory.entries);
 
-    if (unsanitizedButtons.length === 0) {
-      await context.editReply("You have no items in your inventory.");
-      return;
-    }
-
     const buttons = scrambleDuplicates(unsanitizedButtons, player);
 
-    const message = await paginator(
-      context,
-      buttons,
-      `**Inventory:**\n-# (select an item to see more details)`
+    const message = await paginator(context, buttons, (pg) =>
+      pg
+        ? "`**Inventory:**\n-# (select an item to see more details)`"
+        : "You have no items in your inventory."
     );
 
     if (!message) {

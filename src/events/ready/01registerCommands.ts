@@ -1,33 +1,9 @@
 import log from "../../utils/log.js";
-import Command from "../../interactions/command.js";
-import Event, { EventParams } from "../../models/core/event.js";
-import path from "path";
-import url from "url";
-import { Aeonix } from "../../aeonix.js";
+import Event from "../../models/core/event.js";
 import { ApplicationCommand } from "discord.js";
-import getAllFiles from "../../utils/getAllFiles.js";
-
-export async function findLocalCommands() {
-  const localCommands: Command<boolean, boolean>[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const commandFiles = getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "commands")
-  );
-
-  for (const commandFile of commandFiles) {
-    const filePath = path.resolve(commandFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const commandObject: Command<boolean, boolean> = (
-      await import(fileUrl.toString())
-    ).default;
-
-    localCommands.push(commandObject);
-  }
-
-  return localCommands;
-}
+import { findLocalCommands } from "../interactionCreate/handleInteractions.js";
+import Interaction from "../../interactions/interaction.js";
+import Aeonix from "../../aeonix.js";
 
 async function getApplicationCommands(aeonix: Aeonix, guildId: string) {
   const applicationCommands = (await aeonix.guilds.fetch(guildId)).commands; // get global commands
@@ -89,7 +65,7 @@ function areOptionsDifferent(existingOptions: any[], localOptions: any[]) {
 
 function areCommandsDifferent(
   existingCommand: ApplicationCommand,
-  localCommand: Command<boolean, boolean>
+  localCommand: Interaction<boolean, boolean, boolean, boolean, "command">
 ) {
   if (
     existingCommand.description !== localCommand.data.description ||
@@ -107,11 +83,16 @@ function areCommandsDifferent(
 }
 
 export default new Event({
-  callback: async (event: EventParams) => {
-    const localCommands: Command<boolean, boolean>[] =
-      await findLocalCommands();
+  callback: async ({ aeonix }) => {
+    const localCommands: Interaction<
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      "command"
+    >[] = await findLocalCommands();
     const applicationCommands = await getApplicationCommands(
-      event.aeonix,
+      aeonix,
       "1267928656877977670"
     );
 

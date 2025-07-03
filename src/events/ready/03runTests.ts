@@ -1,61 +1,31 @@
-import Event, { EventParams } from "../../models/core/event.js";
-import BackpackItem from "../../models/item/content/BackpackItem.js";
+import BackpackItem from "../../content/items/backpackItem.js";
+import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 
 export default new Event({
-  callback: async (event: EventParams) => {
-    if (!event.aeonix.user) {
+  callback: async ({ aeonix }) => {
+    if (!aeonix.user) {
       log({
         header: "User is falsy",
         processName: "TestRunner",
-        payload: event.aeonix.user,
+        payload: aeonix.user,
         type: "Error",
       });
       return;
     }
 
-    const player = new Player(event.aeonix.user, event.aeonix.user.username);
+    const player = new Player(aeonix.user, aeonix.user.username);
 
     const item = new BackpackItem();
-    const item2 = (await item.toInventoryEntry().toItem()) as BackpackItem;
 
     let test = true;
 
-    // #region Item conversion
-
-    if (item.name !== item2.name) {
-      log({
-        header: "Test Error, name should be the same",
-        processName: "TestRunner",
-        payload: `${item.name} !== ${item2.name}`,
-        type: "Error",
-      });
-      test = false;
-    }
-
-    if (item.data.capacity !== item2.data.capacity) {
-      log({
-        header: "Test Error, damage should be the same",
-        processName: "TestRunner",
-        payload: `${item.data.entries} !== ${item2.data.entries}`,
-        type: "Error",
-      });
-      test = false;
-    } else if (item.id !== item2.id) {
-      log({
-        header: "Test Error, id should be the same",
-        processName: "TestRunner",
-        payload: `${item.id} !== ${item2.id}`,
-        type: "Error",
-      });
-      test = false;
-    }
-    // #region Inventory mutability
+    // #region Inventory
 
     player.inventory.clear();
 
-    player.inventory.add(item.toInventoryEntry());
+    player.inventory.add(item);
 
     if (player.inventory.entries.length !== 1) {
       log({
@@ -70,6 +40,22 @@ export default new Event({
         header: "Test Error, quantity should be 1",
         processName: "TestRunner",
         payload: `${player.inventory.entries[0]?.quantity} !== 1`,
+        type: "Error",
+      });
+      test = false;
+    }
+
+    // #region Environment
+
+    let startEnvironment;
+
+    startEnvironment = await aeonix.environments.get("start");
+
+    if (!startEnvironment) {
+      log({
+        header: "Test Error, start environment is falsy",
+        processName: "TestRunner",
+        payload: aeonix.environments,
         type: "Error",
       });
       test = false;
