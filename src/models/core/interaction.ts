@@ -17,9 +17,9 @@ import {
   UserSelectMenuBuilder,
   UserSelectMenuInteraction,
 } from "discord.js";
-import Player from "../models/player/player.js";
-import hardMerge from "../utils/hardMerge.js";
-import Environment from "../models/environment/environment.js";
+import Player from "../player/player.js";
+import hardMerge from "../../utils/hardMerge.js";
+import Environment from "../environment/environment.js";
 
 export type ButtonContext = Omit<
   ButtonInteraction<CacheType>,

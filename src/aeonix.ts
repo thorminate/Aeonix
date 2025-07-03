@@ -21,8 +21,9 @@ import getAllFiles from "./utils/getAllFiles.js";
 import environmentModel from "./models/environment/utils/environmentModel.js";
 import softMerge from "./utils/softMerge.js";
 import cliHandler from "./handlers/cliHandler.js";
+import Interaction from "./models/core/interaction.js";
 
-async function loadContent(folderName: string): Promise<any[]> {
+async function loadContentClasses(folderName: string): Promise<any[]> {
   const contentPath = `./dist/content/${folderName}/`;
 
   const result = [];
@@ -32,9 +33,29 @@ async function loadContent(folderName: string): Promise<any[]> {
   for (const file of allFiles) {
     const filePath = path.resolve(file);
     const fileUrl = url.pathToFileURL(filePath);
-    const content = (await import(fileUrl.toString())).default;
+    const content = (await import(fileUrl.toString()).catch(() => undefined))
+      ?.default;
 
     result.push(new content());
+  }
+
+  return result;
+}
+
+async function loadInteractions(folderName: string): Promise<any[]> {
+  const contentPath = `./dist/content/${folderName}/`;
+
+  const result = [];
+
+  const allFiles = await getAllFiles(contentPath, false, false);
+
+  for (const file of allFiles) {
+    const filePath = path.resolve(file);
+    const fileUrl = url.pathToFileURL(filePath);
+    const content = (await import(fileUrl.toString()).catch(() => undefined))
+      ?.default;
+
+    result.push(content);
   }
 
   return result;
@@ -76,6 +97,38 @@ export default class Aeonix extends Client {
   letters = new Collection<string, Letter>();
   quests = new Collection<string, Quest>();
   statusEffects = new Collection<string, StatusEffect>();
+  buttons = new Collection<
+    string,
+    Interaction<boolean, boolean, boolean, boolean, "button">
+  >();
+  channelSelectMenus = new Collection<
+    string,
+    Interaction<boolean, boolean, boolean, boolean, "channelSelectMenu">
+  >();
+  commands = new Collection<
+    string,
+    Interaction<boolean, boolean, boolean, boolean, "command">
+  >();
+  mentionableSelectMenus = new Collection<
+    string,
+    Interaction<boolean, boolean, boolean, boolean, "mentionableSelectMenu">
+  >();
+  modals = new Collection<
+    string,
+    Interaction<boolean, boolean, boolean, boolean, "modal">
+  >();
+  roleSelectMenus = new Collection<
+    string,
+    Interaction<boolean, boolean, boolean, boolean, "roleSelectMenu">
+  >();
+  stringSelectMenus = new Collection<
+    string,
+    Interaction<boolean, boolean, boolean, boolean, "stringSelectMenu">
+  >();
+  userSelectMenus = new Collection<
+    string,
+    Interaction<boolean, boolean, boolean, boolean, "userSelectMenu">
+  >();
 
   packageJson: PackageJson = JSON.parse(
     readFileSync("./package.json").toString()
@@ -382,7 +435,7 @@ export default class Aeonix extends Client {
         this.environments = new Collection<string, Environment>(
           await Promise.all(
             (
-              await loadContent("environments")
+              await loadContentClasses("environments")
             ).map(async (e: Environment) => {
               await e.init();
 
@@ -401,23 +454,144 @@ export default class Aeonix extends Client {
         );
 
         this.items = new Collection<string, Item>(
-          (await loadContent("items")).map((i) => [i.type, i])
+          (await loadContentClasses("items")).map((i) => [i.type, i])
         );
 
         this.letters = new Collection<string, Letter>(
-          (await loadContent("letters")).map((i) => [i.type, i])
+          (await loadContentClasses("letters")).map((i) => [i.type, i])
         );
 
         this.quests = new Collection<string, Quest>(
-          (await loadContent("quests")).map((q: Quest) => [q.type, q])
+          (await loadContentClasses("quests")).map((q: Quest) => [q.type, q])
         );
 
         this.statusEffects = new Collection<string, StatusEffect>(
-          (await loadContent("statusEffects")).map((s: StatusEffect) => [
+          (await loadContentClasses("statusEffects")).map((s: StatusEffect) => [
             s.type,
             s,
           ])
         );
+
+        this.buttons = new Collection<
+          string,
+          Interaction<boolean, boolean, boolean, boolean, "button">
+        >(
+          (await loadInteractions("buttons")).map(
+            (b: Interaction<boolean, boolean, boolean, boolean, "button">) => [
+              (b.data.data as { custom_id: string }).custom_id,
+              b,
+            ]
+          )
+        );
+
+        this.channelSelectMenus = new Collection<
+          string,
+          Interaction<boolean, boolean, boolean, boolean, "channelSelectMenu">
+        >(
+          (await loadInteractions("channelSelectMenus")).map(
+            (
+              b: Interaction<
+                boolean,
+                boolean,
+                boolean,
+                boolean,
+                "channelSelectMenu"
+              >
+            ) => [(b.data.data as { custom_id: string }).custom_id, b]
+          )
+        );
+
+        this.commands = new Collection<
+          string,
+          Interaction<boolean, boolean, boolean, boolean, "command">
+        >(
+          (await loadInteractions("commands")).map(
+            (b: Interaction<boolean, boolean, boolean, boolean, "command">) => [
+              b.data.name,
+              b,
+            ]
+          )
+        );
+
+        this.mentionableSelectMenus = new Collection<
+          string,
+          Interaction<
+            boolean,
+            boolean,
+            boolean,
+            boolean,
+            "mentionableSelectMenu"
+          >
+        >(
+          (await loadInteractions("mentionableSelectMenus")).map(
+            (
+              b: Interaction<
+                boolean,
+                boolean,
+                boolean,
+                boolean,
+                "mentionableSelectMenu"
+              >
+            ) => [(b.data.data as { custom_id: string }).custom_id, b]
+          )
+        );
+
+        this.roleSelectMenus = new Collection<
+          string,
+          Interaction<boolean, boolean, boolean, boolean, "roleSelectMenu">
+        >(
+          (await loadInteractions("roleSelectMenus")).map(
+            (
+              b: Interaction<
+                boolean,
+                boolean,
+                boolean,
+                boolean,
+                "roleSelectMenu"
+              >
+            ) => [(b.data.data as { custom_id: string }).custom_id, b]
+          )
+        );
+
+        this.stringSelectMenus = new Collection<
+          string,
+          Interaction<boolean, boolean, boolean, boolean, "stringSelectMenu">
+        >(
+          (await loadInteractions("stringSelectMenus")).map(
+            (
+              b: Interaction<
+                boolean,
+                boolean,
+                boolean,
+                boolean,
+                "stringSelectMenu"
+              >
+            ) => [(b.data.data as { custom_id: string }).custom_id, b]
+          )
+        );
+
+        this.userSelectMenus = new Collection<
+          string,
+          Interaction<boolean, boolean, boolean, boolean, "userSelectMenu">
+        >(
+          (await loadInteractions("userSelectMenus")).map(
+            (
+              b: Interaction<
+                boolean,
+                boolean,
+                boolean,
+                boolean,
+                "userSelectMenu"
+              >
+            ) => [(b.data.data as { custom_id: string }).custom_id, b]
+          )
+        );
+
+        log({
+          header: "Cached all content",
+          processName: "ContentCacher",
+          type: "Info",
+        });
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",
@@ -425,6 +599,7 @@ export default class Aeonix extends Client {
           payload: e,
           type: "Fatal",
         });
+        this.exit(1);
       }
     })();
 

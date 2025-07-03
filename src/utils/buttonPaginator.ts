@@ -15,7 +15,7 @@ import {
 } from "discord.js";
 import hardMerge from "./hardMerge.js";
 import log from "./log.js";
-import { CommandContext } from "../interactions/interaction.js";
+import { CommandContext } from "../models/core/interaction.js";
 
 type Page = ActionRowBuilder<ButtonBuilder>;
 type GetterOrLiteral = string | ((currentPage: Page | undefined) => string);

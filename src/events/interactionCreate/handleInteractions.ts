@@ -21,9 +21,14 @@ import Interaction, {
   SeeInteractionErrorPropertyForMoreDetails_1,
   SeeInteractionErrorPropertyForMoreDetails_2,
   SeeInteractionErrorPropertyForMoreDetails_3,
-} from "../../interactions/interaction.js";
+} from "../../models/core/interaction.js";
+import aeonix from "../../index.js";
 
-export async function findLocalButtons() {
+export async function findLocalButtons(useCache = true) {
+  if (useCache) {
+    return [...aeonix.buttons.values()];
+  }
+
   const localButtons: Interaction<
     boolean,
     boolean,
@@ -35,7 +40,7 @@ export async function findLocalButtons() {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const buttonFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "buttons")
+    path.join(__dirname, "..", "..", "content", "buttons")
   );
 
   for (const buttonFile of buttonFiles) {
@@ -55,7 +60,11 @@ export async function findLocalButtons() {
   return localButtons;
 }
 
-export async function findLocalChannelSelectMenus() {
+export async function findLocalChannelSelectMenus(useCache = true) {
+  if (useCache) {
+    return [...aeonix.channelSelectMenus.values()];
+  }
+
   const localChannelSelectMenus: Interaction<
     boolean,
     boolean,
@@ -67,7 +76,7 @@ export async function findLocalChannelSelectMenus() {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const channelSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "channelSelectMenus")
+    path.join(__dirname, "..", "..", "content", "channelSelectMenus")
   );
 
   for (const channelSelectMenuFile of channelSelectMenuFiles) {
@@ -87,7 +96,11 @@ export async function findLocalChannelSelectMenus() {
   return localChannelSelectMenus;
 }
 
-export async function findLocalCommands() {
+export async function findLocalCommands(useCache = true) {
+  if (useCache) {
+    return [...aeonix.commands.values()];
+  }
+
   const localCommands: Interaction<
     boolean,
     boolean,
@@ -99,7 +112,7 @@ export async function findLocalCommands() {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const commandFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "commands")
+    path.join(__dirname, "..", "..", "content", "commands")
   );
 
   for (const commandFile of commandFiles) {
@@ -119,7 +132,11 @@ export async function findLocalCommands() {
   return localCommands;
 }
 
-export async function findLocalMentionableSelectMenus() {
+export async function findLocalMentionableSelectMenus(useCache = true) {
+  if (useCache) {
+    return [...aeonix.mentionableSelectMenus.values()];
+  }
+
   const localMentionableSelectMenus: Interaction<
     boolean,
     boolean,
@@ -131,7 +148,7 @@ export async function findLocalMentionableSelectMenus() {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const mentionableSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "mentionableSelectMenus")
+    path.join(__dirname, "..", "..", "content", "mentionableSelectMenus")
   );
 
   for (const mentionableSelectMenuFile of mentionableSelectMenuFiles) {
@@ -151,7 +168,11 @@ export async function findLocalMentionableSelectMenus() {
   return localMentionableSelectMenus;
 }
 
-export async function findLocalModals() {
+export async function findLocalModals(useCache = true) {
+  if (useCache) {
+    return [...aeonix.modals.values()];
+  }
+
   const localModals: Interaction<
     boolean,
     boolean,
@@ -163,7 +184,7 @@ export async function findLocalModals() {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const modalFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "modals")
+    path.join(__dirname, "..", "..", "content", "modals")
   );
 
   for (const modalFile of modalFiles) {
@@ -179,7 +200,11 @@ export async function findLocalModals() {
   return localModals;
 }
 
-export async function findLocalRoleSelectMenus() {
+export async function findLocalRoleSelectMenus(useCache = true) {
+  if (useCache) {
+    return [...aeonix.roleSelectMenus.values()];
+  }
+
   const localRoleSelectMenus: Interaction<
     boolean,
     boolean,
@@ -191,7 +216,7 @@ export async function findLocalRoleSelectMenus() {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const roleSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "roleSelectMenus")
+    path.join(__dirname, "..", "..", "content", "roleSelectMenus")
   );
 
   for (const roleSelectMenuFile of roleSelectMenuFiles) {
@@ -211,7 +236,11 @@ export async function findLocalRoleSelectMenus() {
   return localRoleSelectMenus;
 }
 
-export async function findLocalStringSelectMenus() {
+export async function findLocalStringSelectMenus(useCache = true) {
+  if (useCache) {
+    return [...aeonix.stringSelectMenus.values()];
+  }
+
   const localStringSelectMenus: Interaction<
     boolean,
     boolean,
@@ -223,7 +252,7 @@ export async function findLocalStringSelectMenus() {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const stringSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "stringSelectMenus")
+    path.join(__dirname, "..", "..", "content", "stringSelectMenus")
   );
 
   for (const stringSelectMenuFile of stringSelectMenuFiles) {
@@ -243,7 +272,11 @@ export async function findLocalStringSelectMenus() {
   return localStringSelectMenus;
 }
 
-export async function findLocalUserSelectMenus() {
+export async function findLocalUserSelectMenus(useCache = true) {
+  if (useCache) {
+    return [...aeonix.userSelectMenus.values()];
+  }
+
   const localUserSelectMenus: Interaction<
     boolean,
     boolean,
@@ -255,7 +288,7 @@ export async function findLocalUserSelectMenus() {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
   const userSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "interactions", "userSelectMenus")
+    path.join(__dirname, "..", "..", "content", "userSelectMenus")
   );
 
   for (const userSelectMenuFile of userSelectMenuFiles) {
@@ -328,7 +361,8 @@ export default new Event<BaseInteraction>({
 
     if (!localInteractions) {
       log({
-        header: "No local interactions found",
+        header:
+          "An interaction was received but no local content were found matching it.",
         processName: "InteractionHandler",
         payload: context,
         type: "Error",
