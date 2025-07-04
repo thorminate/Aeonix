@@ -1,6 +1,6 @@
 import { MentionableSelectMenuBuilder } from "discord.js";
-import Interaction from "../models/core/interaction.js";
-import log from "../utils/log.js";
+import Interaction from "../../models/core/interaction.js";
+import log from "../../utils/log.js";
 
 export default new Interaction({
   data: new MentionableSelectMenuBuilder()

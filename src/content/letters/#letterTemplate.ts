@@ -1,5 +1,5 @@
-import Player from "../models/player/player.js";
-import Letter from "../models/player/utils/inbox/letter.js";
+import Player from "../../models/player/player.js";
+import Letter from "../../models/player/utils/inbox/letter.js";
 
 export default class LetterTemplate extends Letter {
   type: string = "#letterTemplate"; // should always be the exact same as the filename
