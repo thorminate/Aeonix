@@ -1,10 +1,10 @@
 import { log } from "console";
-import { ButtonBuilder, ButtonStyle } from "discord.js";
-import Interaction from "../../models/core/interaction.js";
+import { ButtonStyle } from "discord.js";
+import Interaction, { ButtonBuilderV2 } from "../../models/core/interaction.js";
 
 export default new Interaction({
-  data: new ButtonBuilder()
-    .setCustomId("template")
+  data: new ButtonBuilderV2()
+    .setCustomId("template") // Should always be the same as the filename
     .setLabel("Template")
     .setStyle(ButtonStyle.Primary),
 

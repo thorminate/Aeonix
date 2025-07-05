@@ -1,6 +1,8 @@
 import {
+  APIButtonComponentWithCustomId,
   ButtonBuilder,
   ButtonInteraction,
+  ButtonStyle,
   CacheType,
   ChannelSelectMenuBuilder,
   ChannelSelectMenuInteraction,
@@ -71,9 +73,23 @@ export type InteractionTypes =
   | "stringSelectMenu"
   | "userSelectMenu";
 
+export type ButtonStyleV2 =
+  | ButtonStyle.Primary
+  | ButtonStyle.Secondary
+  | ButtonStyle.Danger
+  | ButtonStyle.Success;
+
+export class ButtonBuilderV2 extends ButtonBuilder {
+  override data: Partial<APIButtonComponentWithCustomId> = {};
+  override setStyle(style: ButtonStyleV2): this {
+    this.data.style = style;
+    return this;
+  }
+}
+
 type BuilderTypeFromInteractionType<T extends InteractionTypes> =
   T extends "button"
-    ? ButtonBuilder
+    ? ButtonBuilderV2
     : T extends "channelSelectMenu"
     ? ChannelSelectMenuBuilder
     : T extends "command"
@@ -214,11 +230,11 @@ type InteractionCallback<
     }) => Promise<void>;
 
 export default class Interaction<
-  Acknowledge extends boolean,
-  PassPlayer extends boolean,
-  EnvironmentOnly extends boolean,
-  PassEnvironment extends boolean,
-  InteractionType extends InteractionTypes
+  InteractionType extends InteractionTypes,
+  Acknowledge extends boolean = true,
+  PassPlayer extends boolean = false,
+  EnvironmentOnly extends boolean = false,
+  PassEnvironment extends boolean = false
 > {
   interactionType!: InteractionType;
   data!: BuilderTypeFromInteractionType<InteractionType>;
@@ -241,11 +257,11 @@ export default class Interaction<
 
   constructor(
     o: Interaction<
+      InteractionType,
       Acknowledge,
       PassPlayer,
       EnvironmentOnly,
-      PassEnvironment,
-      InteractionType
+      PassEnvironment
     >
   ) {
     const interactionTypeToBuilderMap = {

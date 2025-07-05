@@ -1,10 +1,10 @@
 import log from "../../utils/log.js";
-import { ButtonBuilder, ButtonStyle, GuildMemberRoleManager } from "discord.js";
+import { ButtonStyle, GuildMemberRoleManager } from "discord.js";
 import aeonix from "../../index.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ButtonBuilderV2 } from "../../models/core/interaction.js";
 
 export default new Interaction({
-  data: new ButtonBuilder()
+  data: new ButtonBuilderV2()
     .setCustomId("deletePlayerConfirmed")
     .setLabel("Yes")
     .setStyle(ButtonStyle.Danger),
@@ -13,8 +13,6 @@ export default new Interaction({
   ephemeral: true,
   acknowledge: false,
   passPlayer: true,
-  environmentOnly: false,
-  passEnvironment: false,
 
   callback: async ({ context, player }) => {
     const channel = await player.fetchEnvironmentChannel();

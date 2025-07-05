@@ -121,7 +121,7 @@ export default new Interaction({
     }
 
     const startChannel = await (
-      await aeonix.cache.environments.get("start")
+      await aeonix.environments.cache.get("start")
     )?.fetchChannel();
 
     if (!startChannel) {

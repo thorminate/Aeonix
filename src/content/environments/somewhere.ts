@@ -1,6 +1,6 @@
 import Environment from "../../models/environment/environment.js";
 
-export default class StartEnvironment extends Environment {
+export default class SomewhereEnvironment extends Environment {
   type = "somewhere";
   channelId = "1373366311765278793";
   name = "Somewhere";

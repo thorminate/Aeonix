@@ -16,9 +16,6 @@ import {
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
-import path from "path";
-import url from "url";
-import getAllFiles from "../../utils/getAllFiles.js";
 import Environment from "../../models/environment/environment.js";
 import Interaction, {
   ButtonContext,
@@ -31,286 +28,66 @@ import aeonix from "../../index.js";
 
 export async function findLocalButtons(useCache = true) {
   if (useCache) {
-    return [...aeonix.cache.buttons.values()];
+    return [...aeonix.buttons.cache.values()];
   }
 
-  const localButtons: Interaction<
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    "button"
-  >[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const buttonFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "content", "buttons")
-  );
-
-  for (const buttonFile of buttonFiles) {
-    const filePath = path.resolve(buttonFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const buttonObject: Interaction<
-      boolean,
-      boolean,
-      boolean,
-      boolean,
-      "button"
-    > = (await import(fileUrl.toString())).default;
-
-    localButtons.push(buttonObject);
-  }
-
-  return localButtons;
+  return await aeonix.buttons.loadAll();
 }
 
 export async function findLocalChannelSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.cache.channelSelectMenus.values()];
+    return [...aeonix.channelSelectMenus.cache.values()];
   }
 
-  const localChannelSelectMenus: Interaction<
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    "channelSelectMenu"
-  >[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const channelSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "content", "channelSelectMenus")
-  );
-
-  for (const channelSelectMenuFile of channelSelectMenuFiles) {
-    const filePath = path.resolve(channelSelectMenuFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const channelSelectMenu: Interaction<
-      boolean,
-      boolean,
-      boolean,
-      boolean,
-      "channelSelectMenu"
-    > = (await import(fileUrl.toString())).default;
-
-    localChannelSelectMenus.push(channelSelectMenu);
-  }
-
-  return localChannelSelectMenus;
+  return await aeonix.channelSelectMenus.loadAll();
 }
 
 export async function findLocalCommands(useCache = true) {
   if (useCache) {
-    return [...aeonix.cache.commands.values()];
+    return [...aeonix.commands.cache.values()];
   }
 
-  const localCommands: Interaction<
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    "command"
-  >[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const commandFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "content", "commands")
-  );
-
-  for (const commandFile of commandFiles) {
-    const filePath = path.resolve(commandFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const commandObject: Interaction<
-      boolean,
-      boolean,
-      boolean,
-      boolean,
-      "command"
-    > = (await import(fileUrl.toString())).default;
-
-    localCommands.push(commandObject);
-  }
-
-  return localCommands;
+  return await aeonix.commands.loadAll();
 }
 
 export async function findLocalMentionableSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.cache.mentionableSelectMenus.values()];
+    return [...aeonix.mentionableSelectMenus.cache.values()];
   }
 
-  const localMentionableSelectMenus: Interaction<
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    "mentionableSelectMenu"
-  >[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const mentionableSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "content", "mentionableSelectMenus")
-  );
-
-  for (const mentionableSelectMenuFile of mentionableSelectMenuFiles) {
-    const filePath = path.resolve(mentionableSelectMenuFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const mentionableSelectMenu: Interaction<
-      boolean,
-      boolean,
-      boolean,
-      boolean,
-      "mentionableSelectMenu"
-    > = (await import(fileUrl.toString())).default;
-
-    localMentionableSelectMenus.push(mentionableSelectMenu);
-  }
-
-  return localMentionableSelectMenus;
+  return await aeonix.mentionableSelectMenus.loadAll();
 }
 
 export async function findLocalModals(useCache = true) {
   if (useCache) {
-    return [...aeonix.cache.modals.values()];
+    return [...aeonix.modals.cache.values()];
   }
 
-  const localModals: Interaction<
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    "modal"
-  >[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const modalFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "content", "modals")
-  );
-
-  for (const modalFile of modalFiles) {
-    const filePath = path.resolve(modalFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const modal: Interaction<boolean, boolean, boolean, boolean, "modal"> = (
-      await import(fileUrl.toString())
-    ).default;
-
-    localModals.push(modal);
-  }
-
-  return localModals;
+  return await aeonix.modals.loadAll();
 }
 
 export async function findLocalRoleSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.cache.roleSelectMenus.values()];
+    return [...aeonix.roleSelectMenus.cache.values()];
   }
 
-  const localRoleSelectMenus: Interaction<
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    "roleSelectMenu"
-  >[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const roleSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "content", "roleSelectMenus")
-  );
-
-  for (const roleSelectMenuFile of roleSelectMenuFiles) {
-    const filePath = path.resolve(roleSelectMenuFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const roleSelectMenu: Interaction<
-      boolean,
-      boolean,
-      boolean,
-      boolean,
-      "roleSelectMenu"
-    > = (await import(fileUrl.toString())).default;
-
-    localRoleSelectMenus.push(roleSelectMenu);
-  }
-
-  return localRoleSelectMenus;
+  return await aeonix.roleSelectMenus.loadAll();
 }
 
 export async function findLocalStringSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.cache.stringSelectMenus.values()];
+    return [...aeonix.stringSelectMenus.cache.values()];
   }
 
-  const localStringSelectMenus: Interaction<
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    "stringSelectMenu"
-  >[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const stringSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "content", "stringSelectMenus")
-  );
-
-  for (const stringSelectMenuFile of stringSelectMenuFiles) {
-    const filePath = path.resolve(stringSelectMenuFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const stringSelectMenu: Interaction<
-      boolean,
-      boolean,
-      boolean,
-      boolean,
-      "stringSelectMenu"
-    > = (await import(fileUrl.toString())).default;
-
-    localStringSelectMenus.push(stringSelectMenu);
-  }
-
-  return localStringSelectMenus;
+  return await aeonix.stringSelectMenus.loadAll();
 }
 
 export async function findLocalUserSelectMenus(useCache = true) {
   if (useCache) {
-    return [...aeonix.cache.userSelectMenus.values()];
+    return [...aeonix.userSelectMenus.cache.values()];
   }
 
-  const localUserSelectMenus: Interaction<
-    boolean,
-    boolean,
-    boolean,
-    boolean,
-    "userSelectMenu"
-  >[] = [];
-
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  const userSelectMenuFiles = await getAllFiles(
-    path.join(__dirname, "..", "..", "content", "userSelectMenus")
-  );
-
-  for (const userSelectMenuFile of userSelectMenuFiles) {
-    const filePath = path.resolve(userSelectMenuFile);
-    const fileUrl = url.pathToFileURL(filePath);
-    const userSelectMenu: Interaction<
-      boolean,
-      boolean,
-      boolean,
-      boolean,
-      "userSelectMenu"
-    > = (await import(fileUrl.toString())).default;
-
-    localUserSelectMenus.push(userSelectMenu);
-  }
-
-  return localUserSelectMenus;
+  return await aeonix.userSelectMenus.loadAll();
 }
 
 export default new Event<
@@ -388,15 +165,15 @@ export default new Event<
     }
 
     const interaction:
-      | Interaction<boolean, boolean, boolean, boolean, InteractionTypes>
+      | Interaction<InteractionTypes, boolean, boolean, boolean, boolean>
       | undefined = localInteractions.find(
       (
         interaction: Interaction<
+          InteractionTypes,
           boolean,
           boolean,
           boolean,
-          boolean,
-          InteractionTypes
+          boolean
         >
       ) => {
         return type === "command"

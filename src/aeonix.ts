@@ -9,9 +9,21 @@ import readline from "readline/promises";
 import log from "./utils/log.js";
 import mongoose from "mongoose";
 import { readFileSync } from "fs";
-import eventManager from "./managers/eventManager.js";
-import cliManager from "./managers/cliManager.js";
-import AeonixCache from "./models/core/aeonixCache.js";
+import eventManager from "./handlers/eventHandlers.js";
+import cliManager from "./handlers/cliHandlers.js";
+import Player from "./models/player/player.js";
+import ButtonManager from "./managers/buttonManager.js";
+import CommandManager from "./managers/commandManager.js";
+import ChannelSelectMenuManager from "./managers/channelSelectMenuManager.js";
+import EnvironmentManager from "./managers/environmentManager.js";
+import ItemManager from "./managers/itemManager.js";
+import LetterManager from "./managers/letterManager.js";
+import MentionableSelectMenuManager from "./managers/mentionableSelectMenuManager.js";
+import ModalManager from "./managers/modalManager.js";
+import RoleSelectMenuManager from "./managers/roleSelectMenuManager.js";
+import StatusEffectManager from "./managers/statusEffectManager.js";
+import StringSelectMenuManager from "./managers/stringSelectMenuManager.js";
+import UserSelectMenuManager from "./managers/userSelectMenuManager.js";
 
 export type AeonixEvents = ClientEvents & {
   tick: [currentTime: number];
@@ -48,12 +60,6 @@ interface PackageJson {
 
 export default class Aeonix extends Client {
   rl: readline.Interface;
-  cache: AeonixCache = new AeonixCache();
-
-  packageJson: PackageJson = JSON.parse(
-    readFileSync("./package.json").toString()
-  );
-
   db: typeof mongoose = mongoose;
 
   private _currentTime = 1;
@@ -63,6 +69,24 @@ export default class Aeonix extends Client {
   onboardingChannelId: string = process.env.ONBOARDING_CHANNEL || "";
   rulesChannelId: string = process.env.RULES_CHANNEL || "";
   masterRoleId: string = process.env.MASTER_ROLE || "";
+  packageJson: PackageJson = JSON.parse(
+    readFileSync("./package.json").toString()
+  );
+
+  players: typeof Player = Player;
+  buttons = new ButtonManager();
+  channelSelectMenus = new ChannelSelectMenuManager();
+  commands = new CommandManager();
+  environments = new EnvironmentManager();
+  items = new ItemManager();
+  letters = new LetterManager();
+  mentionableSelectMenus = new MentionableSelectMenuManager();
+  modals = new ModalManager();
+  quests = new ModalManager();
+  roleSelectMenus = new RoleSelectMenuManager();
+  statusEffects = new StatusEffectManager();
+  stringSelectMenus = new StringSelectMenuManager();
+  userSelectMenus = new UserSelectMenuManager();
 
   verbs = [
     "Learning about",
@@ -353,10 +377,10 @@ export default class Aeonix extends Client {
           });
         });
 
-        this.cache.init().then((cache) => {
+        makeAllCaches(this).then((newAeonix) => {
           log({
-            header: "All content cached",
-            processName: "CacheHandler",
+            header: "All caches made",
+            processName: "AeonixConstructor",
             type: "Info",
           });
         });
@@ -419,4 +443,24 @@ export default class Aeonix extends Client {
     super.removeAllListeners(event);
     return this;
   }
+}
+
+async function makeAllCaches(o: Aeonix) {
+  await Promise.all([
+    o.buttons.loadAll(),
+    o.channelSelectMenus.loadAll(),
+    o.commands.loadAll(),
+    o.environments.loadAll(),
+    o.items.loadAll(),
+    o.letters.loadAll(),
+    o.mentionableSelectMenus.loadAll(),
+    o.modals.loadAll(),
+    o.quests.loadAll(),
+    o.roleSelectMenus.loadAll(),
+    o.statusEffects.loadAll(),
+    o.stringSelectMenus.loadAll(),
+    o.userSelectMenus.loadAll(),
+  ]);
+
+  return o;
 }

@@ -65,7 +65,7 @@ function areOptionsDifferent(existingOptions: any[], localOptions: any[]) {
 
 function areCommandsDifferent(
   existingCommand: ApplicationCommand,
-  localCommand: Interaction<boolean, boolean, boolean, boolean, "command">
+  localCommand: Interaction<"command", boolean, boolean, boolean, boolean>
 ) {
   if (
     existingCommand.description !== localCommand.data.description ||
@@ -85,11 +85,11 @@ function areCommandsDifferent(
 export default new Event({
   callback: async ({ aeonix }) => {
     const localCommands: Interaction<
+      "command",
       boolean,
       boolean,
       boolean,
-      boolean,
-      "command"
+      boolean
     >[] = await findLocalCommands(false);
     const applicationCommands = await getApplicationCommands(
       aeonix,

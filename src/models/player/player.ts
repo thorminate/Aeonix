@@ -33,14 +33,8 @@ import {
 import Quests from "./utils/quests/quests.js";
 
 @modelOptions({
-  existingConnection: aeonix.db.connection,
-  existingMongoose: aeonix.db,
   options: {
     allowMixed: Severity.ALLOW,
-  },
-  schemaOptions: {
-    _id: false,
-    suppressReservedKeysWarning: true,
   },
 })
 export default class Player {
@@ -71,7 +65,7 @@ export default class Player {
   }
 
   async fetchEnvironment() {
-    return aeonix.cache.environments.get(this.location.id);
+    return aeonix.environments.cache.get(this.location.id);
   }
 
   async moveTo(
@@ -80,7 +74,7 @@ export default class Player {
     disregardAlreadyHere = false,
     disregardOldEnvironment = false
   ): Promise<PlayerMoveToResult> {
-    const env = aeonix.cache.environments.get(location);
+    const env = aeonix.environments.cache.get(location);
 
     if (!env) return "invalid location";
 
