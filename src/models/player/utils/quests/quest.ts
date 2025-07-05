@@ -15,10 +15,6 @@ export default abstract class Quest {
     return this._id;
   }
 
-  set id(id: string) {
-    this._id = id;
-  }
-
   async fulfill(player: Player) {
     this.completed = true;
 

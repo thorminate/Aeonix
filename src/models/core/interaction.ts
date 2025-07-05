@@ -82,8 +82,7 @@ export type ButtonStyleV2 =
 export class ButtonBuilderV2 extends ButtonBuilder {
   override data: Partial<APIButtonComponentWithCustomId> = {};
   override setStyle(style: ButtonStyleV2): this {
-    this.data.style = style;
-    return this;
+    return super.setStyle(style);
   }
 }
 

@@ -14,10 +14,6 @@ export default abstract class StatusEffect {
     return this._id;
   }
 
-  set id(id: string) {
-    this._id = id;
-  }
-
   abstract onEffectStart(player: Player): Player;
   abstract onEffectTick(player: Player): Player;
   abstract onEffectEnd(player: Player): Player;

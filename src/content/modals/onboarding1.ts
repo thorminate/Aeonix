@@ -49,7 +49,7 @@ export default new Interaction({
           .setLabel("Avatar URL")
           .setPlaceholder("https://example.com/avatar.png")
           .setStyle(TextInputStyle.Short)
-          .setRequired(true)
+          .setRequired(false)
       )
     ),
   interactionType: "modal",
@@ -73,7 +73,7 @@ export default new Interaction({
 
     const displayName = context.fields.getTextInputValue("display-name");
 
-    const avatarUrl = context.fields.getTextInputValue("avatar-url");
+    let avatarUrl = context.fields.getTextInputValue("avatar-url");
 
     if (!displayName) {
       await context.editReply({
@@ -83,10 +83,7 @@ export default new Interaction({
     }
 
     if (!avatarUrl) {
-      await context.editReply({
-        content: "Please enter an avatar URL.",
-      });
-      return;
+      avatarUrl = context.user.displayAvatarURL();
     }
 
     if (!(await isImageUrl(avatarUrl))) {
@@ -146,6 +143,7 @@ export default new Interaction({
 
     await player.moveTo("start", true, true, true);
 
+    player.inbox.addLetter(new TutorialQuestLetter());
     player.inbox.addLetter(new TutorialQuestLetter());
 
     await player.commit();

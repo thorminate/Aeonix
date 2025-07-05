@@ -305,18 +305,18 @@ function createCollectors(
 }
 
 /**
- * Creates a paginated message, with buttons. Only allows 5 buttons per row.
+ * Creates a paginated message, with containers.
  * @returns {Message}
  */
 export default async (
   context: CommandContext,
-  containers: ContainerBuilder[],
-  canSearch = false
+  containers: ContainerBuilder[]
 ): Promise<Message | undefined> => {
   try {
     if (containers.length === 1) {
       return context.editReply({
         components: [containers[0] as ContainerBuilder],
+        flags: MessageFlags.IsComponentsV2,
       });
     }
 
@@ -328,6 +328,7 @@ export default async (
               paginationRow(0, containers.length - 1),
             ]
           : [],
+        flags: MessageFlags.IsComponentsV2,
       }),
       containers
     );

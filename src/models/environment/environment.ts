@@ -24,10 +24,6 @@ export default abstract class Environment {
     return this._id;
   }
 
-  set id(id: string) {
-    this._id = id;
-  }
-
   async commit(): Promise<void> {
     await environmentModel.findByIdAndUpdate(this.id, hardMerge({}, this), {
       upsert: true,

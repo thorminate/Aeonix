@@ -2,7 +2,7 @@ import CachedManager from "../models/core/cachedManager.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../utils/getAllFiles.js";
-import StatusEffect from "../models/player/utils/statusEffect/statusEffect.js";
+import StatusEffect from "../models/player/utils/statusEffects/statusEffect.js";
 
 type Holds = StatusEffect;
 

@@ -21,7 +21,7 @@ import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
 import Inbox from "./utils/inbox/inbox.js";
 import Location from "./utils/location/location.js";
 import Persona from "./utils/persona/persona.js";
-import StatusEffects from "./utils/statusEffect/statusEffects.js";
+import StatusEffects from "./utils/statusEffects/statusEffects.js";
 import { PlayerSubclassBase } from "./utils/types/PlayerSubclassBase.js";
 import hardMerge from "../../utils/hardMerge.js";
 import {
