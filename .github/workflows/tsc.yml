@@ -36,7 +36,6 @@ jobs:
         uses: icrawl/action-tsc@v1
         with:
           project: "tsconfig.json"
-        continue-on-error: true
 
       - name: Install ESLint deps
         run: pnpm install @microsoft/eslint-formatter-sarif@3.1.0
