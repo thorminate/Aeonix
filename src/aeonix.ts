@@ -147,7 +147,7 @@ export default class Aeonix extends Client {
       type: "Info",
     });
 
-    const statusMgr = new StatusManager<false>(undefined);
+    const statusMgr: StatusManager | null = new StatusManager();
 
     super({
       presence: {

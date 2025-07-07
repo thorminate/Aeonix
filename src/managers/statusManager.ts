@@ -2,9 +2,7 @@ import { ActivityType } from "discord.js";
 import BaseManager from "../models/core/baseManager.js";
 import log from "../utils/log.js";
 
-export default class StatusManager<
-  HasAeonix = true
-> extends BaseManager<HasAeonix> {
+export default class StatusManager extends BaseManager {
   verbs: string[] = [
     "Learning about",
     "Exploring",

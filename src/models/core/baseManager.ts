@@ -1,10 +1,13 @@
 import Aeonix from "../../aeonix.js";
 
-type ConditionalAeonix<Bool> = Bool extends true ? Aeonix : undefined;
+export default class BaseManager {
+  private _aeonix: Aeonix | undefined;
 
-export default class BaseManager<HasAeonix = true> {
-  aeonix: ConditionalAeonix<HasAeonix>;
-  constructor(aeonix: ConditionalAeonix<HasAeonix>) {
-    this.aeonix = aeonix;
+  get aeonix(): Aeonix | undefined {
+    return this._aeonix;
+  }
+
+  constructor(aeonix?: Aeonix) {
+    this._aeonix = aeonix ? aeonix : undefined;
   }
 }

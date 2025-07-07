@@ -1,10 +1,7 @@
 import { Collection } from "discord.js";
 import BaseManager from "./baseManager.js";
 
-export default abstract class CachedManager<
-  Holds,
-  HasAeonix = true
-> extends BaseManager<HasAeonix> {
+export default abstract class CachedManager<Holds> extends BaseManager {
   private _cache: Collection<string, Holds> = new Collection<string, Holds>();
 
   get cache() {
