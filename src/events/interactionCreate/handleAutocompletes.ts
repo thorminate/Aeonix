@@ -2,7 +2,6 @@ import {
   CacheType,
   PermissionFlagsBits,
   PermissionsBitField,
-  Interaction as DJSInteraction,
   AutocompleteInteraction,
 } from "discord.js";
 import Player from "../../models/player/player.js";
@@ -11,7 +10,7 @@ import Event from "../../models/core/event.js";
 import Interaction from "../../models/core/interaction.js";
 import { findLocalCommands } from "./handleInteractions.js";
 
-export default new Event<[data: DJSInteraction<CacheType>]>({
+export default new Event<"interactionCreate">({
   callback: async ({ args: [context] }) => {
     if (!context.isAutocomplete()) {
       return;

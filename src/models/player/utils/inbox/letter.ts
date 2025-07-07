@@ -18,11 +18,6 @@ export default abstract class Letter {
     return this._id;
   }
 
-  onRead(player: Player): void {
-    return;
-  }
-
-  onInteract(player: Player): void {
-    return;
-  }
+  onRead?(player: Player): void;
+  onInteract?(player: Player): void;
 }

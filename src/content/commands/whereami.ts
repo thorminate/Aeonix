@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import Interaction, { ITypes } from "../../models/core/interaction.js";
+import log from "../../utils/log.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
@@ -34,5 +35,12 @@ export default new Interaction({
       `You are currently in \`${playerEnv.name}\` (aka: <#${playerEnv.channelId}>)`
     );
   },
-  onError: (e) => {},
+  onError: (e) => {
+    log({
+      header: "Error with whereami command",
+      processName: "WhereamiCommand",
+      payload: e,
+      type: "Error",
+    });
+  },
 });

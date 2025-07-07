@@ -23,7 +23,7 @@ async function isImageUrl(url: string) {
 
     const contentType = response.headers.get("content-type");
     return contentType && contentType.startsWith("image/");
-  } catch (error) {
+  } catch {
     return false;
   }
 }

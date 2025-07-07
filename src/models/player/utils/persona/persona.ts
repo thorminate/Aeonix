@@ -4,7 +4,7 @@ export default class Persona extends PlayerSubclassBase {
   name: string;
   avatar: string;
 
-  getClassMap(): Record<string, new (...args: any) => any> {
+  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {};
   }
 

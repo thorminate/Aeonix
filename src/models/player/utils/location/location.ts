@@ -4,7 +4,7 @@ export default class Location extends PlayerSubclassBase {
   id: string;
   channelId: string;
 
-  getClassMap(): Record<string, new (...args: any) => any> {
+  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {};
   }
 

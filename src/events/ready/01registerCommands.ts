@@ -82,7 +82,7 @@ function areCommandsDifferent(
   return false;
 }
 
-export default new Event({
+export default new Event<"ready">({
   callback: async ({ aeonix }) => {
     const localCommands: Interaction<
       "command",

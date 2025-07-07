@@ -1,10 +1,9 @@
-import { Message, OmitPartialGroupDMChannel } from "discord.js";
+import { Message } from "discord.js";
 import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
+import log from "../../utils/log.js";
 
-export default new Event<
-  [message: OmitPartialGroupDMChannel<Message<boolean>>]
->({
+export default new Event<"messageCreate">({
   async callback({ args: [context] }) {
     if (!(context instanceof Message)) return;
 
@@ -40,5 +39,12 @@ export default new Event<
       await context.delete(),
     ]);
   },
-  async onError(e) {},
+  async onError(e) {
+    log({
+      header: "Error with messageToPersona event",
+      processName: "MessageToPersonaEvent",
+      payload: e,
+      type: "Error",
+    });
+  },
 });

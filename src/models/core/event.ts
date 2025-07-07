@@ -10,15 +10,15 @@ export class EventParams<Args extends AeonixEvents[keyof AeonixEvents]> {
   }
 }
 
-export default class Event<T extends AeonixEvents[keyof AeonixEvents]> {
-  callback: (event: EventParams<T>) => Promise<void>;
+export default class Event<T extends keyof AeonixEvents> {
+  callback: (event: EventParams<AeonixEvents[T]>) => Promise<void>;
   onError: (e: unknown) => Promise<void>;
 
   constructor({
     callback,
     onError,
   }: {
-    callback: (event: EventParams<T>) => Promise<void>;
+    callback: (event: EventParams<AeonixEvents[T]>) => Promise<void>;
     onError: (e: unknown) => Promise<void>;
   }) {
     this.callback = callback;

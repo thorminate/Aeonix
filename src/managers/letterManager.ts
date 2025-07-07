@@ -3,6 +3,7 @@ import path from "path";
 import url from "url";
 import getAllFiles from "../utils/getAllFiles.js";
 import Letter from "../models/player/utils/inbox/letter.js";
+import ConcreteConstructor from "../models/core/concreteConstructor.js";
 
 type Holds = Letter;
 
@@ -32,9 +33,10 @@ export default class LetterManager extends CachedManager<Letter> {
     for (const file of files) {
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
-      const importedFile: Holds = (await import(fileUrl.toString())).default;
+      const importedFile = (await import(fileUrl.toString()))
+        .default as ConcreteConstructor<Holds>;
 
-      const instance = new (importedFile as any)() as Holds;
+      const instance = new importedFile();
 
       const id = instance.type;
 

@@ -3,6 +3,7 @@ import path from "path";
 import url from "url";
 import getAllFiles from "../utils/getAllFiles.js";
 import Item from "../models/item/item.js";
+import ConcreteConstructor from "../models/core/concreteConstructor.js";
 
 type Holds = Item;
 
@@ -32,9 +33,10 @@ export default class ItemManager extends CachedManager<Item> {
     for (const file of files) {
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
-      const importedFile: Holds = (await import(fileUrl.toString())).default;
+      const importedFile = (await import(fileUrl.toString()))
+        .default as ConcreteConstructor<Holds>;
 
-      const instance = new (importedFile as any)() as Holds;
+      const instance = new importedFile();
 
       const id = instance.type;
 

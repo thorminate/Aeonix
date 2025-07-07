@@ -8,6 +8,7 @@ import hardMerge from "../../utils/hardMerge.js";
 import { randomUUID } from "crypto";
 import Item from "../item/item.js";
 import log from "../../utils/log.js";
+import ConcreteConstructor from "../core/concreteConstructor.js";
 
 export default abstract class Environment {
   private _id: string = "";
@@ -114,15 +115,15 @@ export default abstract class Environment {
     }
   }
 
-  _getClassMap(): Record<string, new (...args: any) => any> {
+  _getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {
-      items: Item as any,
+      items: Item as ConcreteConstructor<Item>,
     };
   }
 
-  abstract getClassMap(): Record<string, new (...args: any) => any>;
+  abstract getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
 
-  getFullClassMap(): Record<string, new (...args: any) => any> {
+  getFullClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {
       ...this._getClassMap(),
       ...this.getClassMap(),

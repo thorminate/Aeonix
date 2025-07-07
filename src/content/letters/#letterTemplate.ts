@@ -1,4 +1,3 @@
-import Player from "../../models/player/player.js";
 import Letter from "../../models/player/utils/inbox/letter.js";
 
 export default class LetterTemplate extends Letter {
@@ -9,6 +8,4 @@ export default class LetterTemplate extends Letter {
   interactable: boolean = true;
   interactionType: string = "yes";
   canDismiss: boolean = true;
-
-  override onInteract(player: Player): void {}
 }

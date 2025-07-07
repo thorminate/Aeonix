@@ -251,7 +251,7 @@ export default class Player {
     return instance;
   }
 
-  protected getClassMap(): Record<string, new (...args: any) => any> {
+  protected getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     const result = {
       persona: Persona,
       location: Location,
@@ -262,11 +262,13 @@ export default class Player {
       statusEffects: StatusEffects,
     };
 
-    const map: Record<string, new (...args: any) => any> = {};
+    const map: Record<string, new (...args: unknown[]) => unknown> = {};
 
     // Loop through all own properties
     for (const key of Object.keys(this)) {
-      const value = (this as any)[key] as PlayerSubclassBase;
+      const value = (this as unknown as Record<string, unknown>)[
+        key
+      ] as PlayerSubclassBase;
       // Check if it has getClassMap method
       if (
         value &&
@@ -276,12 +278,17 @@ export default class Player {
         const subMap = value.getClassMap();
 
         for (const [subKey, classRef] of Object.entries(subMap)) {
-          map[`${key}.${subKey}`] = classRef as new (...args: any) => any;
+          map[`${key}.${subKey}`] = classRef as new (
+            ...args: unknown[]
+          ) => unknown;
         }
       }
     }
 
-    return { ...map, ...result };
+    return { ...map, ...result } as Record<
+      string,
+      new (...args: unknown[]) => unknown
+    >;
   }
 
   constructor(user?: User, displayName?: string, personaAvatar?: string) {

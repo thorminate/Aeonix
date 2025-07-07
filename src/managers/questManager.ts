@@ -3,6 +3,7 @@ import path from "path";
 import url from "url";
 import getAllFiles from "../utils/getAllFiles.js";
 import Quest from "../models/player/utils/quests/quest.js";
+import ConcreteConstructor from "../models/core/concreteConstructor.js";
 
 type Holds = Quest;
 
@@ -32,15 +33,16 @@ export default class QuestManager extends CachedManager<Quest> {
     for (const file of files) {
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
-      const importedFile: Holds = (await import(fileUrl.toString())).default;
+      const importedFile = (await import(fileUrl.toString()))
+        .default as ConcreteConstructor<Holds>;
 
-      const instance = new (importedFile as any)() as Holds;
+      const instance = new importedFile();
 
       const id = instance.type;
 
       if (id && (!noDuplicates || !this.cache.has(id))) {
-        this.cache.set(id, importedFile);
-        total.push(importedFile);
+        this.cache.set(id, instance);
+        total.push(instance);
       }
     }
 

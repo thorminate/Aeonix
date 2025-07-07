@@ -6,7 +6,6 @@ import {
   PermissionFlagsBits,
   PermissionsBitField,
   SlashCommandBuilder,
-  Interaction as DJSInteraction,
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
@@ -85,7 +84,7 @@ export async function findLocalUserSelectMenus(useCache = true) {
   return await aeonix.userSelectMenus.loadAll();
 }
 
-export default new Event<[data: DJSInteraction<CacheType>]>({
+export default new Event<"interactionCreate">({
   callback: async ({ args: [context] }) => {
     let type = "";
 

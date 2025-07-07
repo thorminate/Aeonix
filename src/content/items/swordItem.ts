@@ -1,5 +1,4 @@
 import Item from "../../models/item/item.js";
-import ItemUsageContext from "../../models/item/utils/itemUsageContext.js";
 import ItemUsageResult from "../../models/item/utils/itemUsageResult.js";
 
 interface ISwordData {
@@ -23,7 +22,7 @@ export default class SwordItem extends Item {
       wear: 0,
     };
   }
-  async use(context: ItemUsageContext): Promise<ItemUsageResult> {
+  async use(): Promise<ItemUsageResult> {
     this.data.wear++;
     return new ItemUsageResult("Sword Swung!", true);
   }

@@ -147,7 +147,7 @@ export default class Aeonix extends Client {
       type: "Info",
     });
 
-    let statusMgr = new StatusManager<false>(undefined);
+    const statusMgr = new StatusManager<false>(undefined);
 
     super({
       presence: {
@@ -245,7 +245,7 @@ export default class Aeonix extends Client {
           });
         });
 
-        makeAllCaches(this).then((newAeonix) => {
+        makeAllCaches(this).then(() => {
           log({
             header: "All caches made",
             processName: "AeonixConstructor",
@@ -273,7 +273,7 @@ export default class Aeonix extends Client {
     event: Event,
     listener: (...args: AeonixEvents[Event]) => void
   ): this;
-  override on(event: string, listener: (...args: any[]) => void): this {
+  override on(event: string, listener: (...args: unknown[]) => void): this {
     super.on(event, listener);
     return this;
   }
@@ -282,7 +282,7 @@ export default class Aeonix extends Client {
     event: Event,
     listener: (...args: AeonixEvents[Event]) => void
   ): this;
-  override once(event: string, listener: (...args: any[]) => void): this {
+  override once(event: string, listener: (...args: unknown[]) => void): this {
     super.once(event, listener);
     return this;
   }
@@ -291,7 +291,7 @@ export default class Aeonix extends Client {
     event: Event,
     ...args: AeonixEvents[Event]
   ): boolean;
-  override emit(event: string, ...args: any[]): boolean {
+  override emit(event: string, ...args: unknown[]): boolean {
     return super.emit(event, ...args);
   }
 
@@ -299,7 +299,7 @@ export default class Aeonix extends Client {
     event: Event,
     listener: (...args: AeonixEvents[Event]) => void
   ): this;
-  override off(event: string, listener: (...args: any[]) => void): this {
+  override off(event: string, listener: (...args: unknown[]) => void): this {
     super.off(event, listener);
     return this;
   }

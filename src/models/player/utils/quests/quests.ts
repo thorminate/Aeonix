@@ -1,3 +1,4 @@
+import ConcreteConstructor from "../../../core/concreteConstructor.js";
 import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
 import Quest from "./quest.js";
 
@@ -9,11 +10,10 @@ export default class Quests extends PlayerSubclassBase {
     this[quest.completed ? "completed" : "pending"].push(quest);
   }
 
-  getClassMap(): Record<string, object> {
+  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {
-      active: Quest,
-      completed: Quest,
-      pending: Quest,
+      completed: Quest as ConcreteConstructor<Quest>,
+      pending: Quest as ConcreteConstructor<Quest>,
     };
   }
 

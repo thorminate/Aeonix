@@ -3,7 +3,7 @@ import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 
-export default new Event({
+export default new Event<"ready">({
   callback: async ({ aeonix }) => {
     if (!aeonix.user) {
       log({
@@ -47,9 +47,7 @@ export default new Event({
 
     // #region Environment
 
-    let startEnvironment;
-
-    startEnvironment = await aeonix.environments.cache.get("start");
+    const startEnvironment = await aeonix.environments.cache.get("start");
 
     if (!startEnvironment) {
       log({

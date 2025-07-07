@@ -34,7 +34,7 @@ export default class Stats extends PlayerSubclassBase {
     this.giveXp(randomFromRange);
   }
 
-  getClassMap(): Record<string, new (...args: any) => any> {
+  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {};
   }
 }

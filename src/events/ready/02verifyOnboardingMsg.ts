@@ -28,7 +28,7 @@ export const welcomeImage = new AttachmentBuilder("./assets/welcome.png", {
   name: "welcome.png",
 });
 
-export default new Event({
+export default new Event<"ready">({
   callback: async ({ aeonix }) => {
     const onboardingChannelId = aeonix.onboardingChannelId;
 

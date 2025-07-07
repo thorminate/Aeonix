@@ -1,3 +1,4 @@
+import ConcreteConstructor from "../../../core/concreteConstructor.js";
 import Item from "../../../item/item.js";
 import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
 
@@ -39,9 +40,9 @@ export default class Inventory extends PlayerSubclassBase {
     this.entries = [];
   }
 
-  getClassMap(): Record<string, new (...args: any) => any> {
+  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {
-      entries: Item as any,
+      entries: Item as ConcreteConstructor<Item>,
     };
   }
 
