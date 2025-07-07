@@ -1,0 +1,22 @@
+name: TSC
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - run: npm ci
+      - name: Compile TypeScript
+        uses: icrawl/action-tsc@v1
+      - name: Run ESLint
+        run: npm run lint

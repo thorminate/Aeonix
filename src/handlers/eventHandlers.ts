@@ -35,7 +35,7 @@ export default async (aeonix: Aeonix) => {
           const filePath = path.resolve(eventFile);
           const fileUrl = url.pathToFileURL(filePath);
           const eventModule: {
-            default: Event<AeonixEvents[keyof AeonixEvents]>;
+            default: Event<keyof AeonixEvents>;
           } = await import(fileUrl.toString());
 
           await eventModule.default

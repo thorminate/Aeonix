@@ -1,3 +1,4 @@
+import ConcreteConstructor from "../../../core/concreteConstructor.js";
 import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
 import Letter from "./letter.js";
 
@@ -44,9 +45,9 @@ export default class Inbox extends PlayerSubclassBase {
     return letter;
   }
 
-  getClassMap(): Record<string, object> {
+  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {
-      letters: Letter as object,
+      letters: Letter as ConcreteConstructor<Letter>,
     };
   }
 }

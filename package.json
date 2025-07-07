@@ -17,7 +17,7 @@
     "dev": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/index.js",
     "start": "node --trace-warnings ./dist/aeonix.js",
     "build": "node ./scripts/reset.js && tsc",
-    "lint": "eslint . --ext .ts --fix --config ./eslint.config.js"
+    "lint": "eslint . --ext .ts --fix --config ./eslint.config.js && tsc --noEmit"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.45.2",
