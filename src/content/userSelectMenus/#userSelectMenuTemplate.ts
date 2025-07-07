@@ -1,5 +1,5 @@
 import { UserSelectMenuBuilder } from "discord.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../models/core/interaction.js";
 import log from "../../utils/log.js";
 
 export default new Interaction({
@@ -7,12 +7,8 @@ export default new Interaction({
     .setCustomId("template")
     .setPlaceholder("Template"),
 
-  interactionType: "userSelectMenu",
+  interactionType: ITypes.UserSelectMenu,
   ephemeral: true,
-  acknowledge: true,
-  passPlayer: false,
-  environmentOnly: false,
-  passEnvironment: false,
 
   callback: async ({ context }) => {
     await context.editReply({

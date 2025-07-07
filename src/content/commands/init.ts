@@ -13,19 +13,15 @@ import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
 import onboarding0 from "../buttons/onboarding0.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../models/core/interaction.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
     .setName("init")
     .setDescription("Initializes your persona"),
 
-  interactionType: "command",
-  passPlayer: false,
+  interactionType: ITypes.Command,
   ephemeral: true,
-  acknowledge: true,
-  environmentOnly: false,
-  passEnvironment: false,
 
   callback: async ({ context }) => {
     if (await Player.find(context.user.id)) {

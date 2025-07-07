@@ -10,11 +10,13 @@ import {
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
-import paginator, { paginateFromButton } from "../../utils/buttonPaginator.js";
+import paginator, {
+  buttonPaginatorWithUpdate,
+} from "../../utils/buttonPaginator.js";
 import { randomUUID } from "node:crypto";
 import componentWrapper from "../../utils/componentWrapper.js";
 import Item from "../../models/item/item.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../models/core/interaction.js";
 
 function getButtonsFromEntries(entries: Item[]): ButtonBuilder[] {
   return entries.map((entry: Item): ButtonBuilder => {
@@ -84,7 +86,7 @@ function createCollectors(
 
       switch (useType) {
         case "close": {
-          paginateFromButton(context, buttons, "**Inventory:**");
+          buttonPaginatorWithUpdate(context, buttons, "**Inventory:**");
           break;
         }
 
@@ -192,7 +194,7 @@ function createCollectors(
 }
 
 export default new Interaction({
-  interactionType: "command",
+  interactionType: ITypes.Command,
 
   data: new SlashCommandBuilder()
     .setName("inventory")

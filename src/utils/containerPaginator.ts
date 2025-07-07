@@ -116,7 +116,7 @@ function createCollectors(
           paginate(buttonContext, containers, currentPage, false, false);
           break;
         }
-        /* case "sh": {
+        /*case "sh": {
           const modal = new ModalBuilder()
             .setTitle("Search")
             .setCustomId("sh")
@@ -142,30 +142,22 @@ function createCollectors(
 
           const searchQuery = search.fields.getTextInputValue("kw");
 
-          const filteredButtons = containers.filter((container) => {
-            return (
-              (button.data as ButtonComponent)?.label
-                ?.toLowerCase()
-                .includes(searchQuery.toLowerCase()) ?? false
-            );
+          const filteredContainers = containers.filter((container) => {
+            return JSON.stringify(container)
+              .split('"')
+              .filter((_, index) => index % 2 === 1) // Only accept the content of strings
+              .join("")
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase());
           });
 
-          if (filteredButtons.length === 0) {
+          if (filteredContainers.length === 0) {
             search.reply({
               content: "No results found.",
               flags: MessageFlags.Ephemeral,
             });
             return;
           }
-
-          const chunks = [];
-          for (let i = 0; i < filteredButtons.length; i += 4) {
-            chunks.push(filteredButtons.slice(i, i + 4));
-          }
-
-          const pages2 = chunks.map((chunk) => {
-            return new ActionRowBuilder<ButtonBuilder>().addComponents(chunk);
-          });
 
           if (!search.isFromMessage()) return;
 
@@ -342,3 +334,42 @@ export default async (
     return undefined;
   }
 };
+
+export async function containerPaginatorWithUpdate(
+  context: ButtonInteraction,
+  containers: ContainerBuilder[]
+): Promise<Message | undefined> {
+  try {
+    if (containers.length === 1) {
+      return await (
+        await context.update({
+          components: [containers[0] as ContainerBuilder],
+          flags: MessageFlags.IsComponentsV2,
+        })
+      ).fetch();
+    }
+
+    return createCollectors(
+      await (
+        await context.update({
+          components: containers[0]
+            ? [
+                containers[0] as ContainerBuilder,
+                paginationRow(0, containers.length - 1),
+              ]
+            : [],
+          flags: MessageFlags.IsComponentsV2,
+        })
+      ).fetch(),
+      containers
+    );
+  } catch (e) {
+    log({
+      header: "Error in setting up paginator",
+      processName: "Paginator",
+      payload: e,
+      type: "Error",
+    });
+    return undefined;
+  }
+}

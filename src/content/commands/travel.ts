@@ -9,7 +9,7 @@ import {
 import log from "../../utils/log.js";
 import Player from "../../models/player/player.js";
 import paginator from "../../utils/buttonPaginator.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../models/core/interaction.js";
 
 function createCollectors(message: Message, player: Player) {
   const collector = message.createMessageComponentCollector({
@@ -64,7 +64,7 @@ export default new Interaction({
     .setName("travel")
     .setDescription("Traverses to a new location"),
 
-  interactionType: "command",
+  interactionType: ITypes.Command,
   passPlayer: true,
   acknowledge: true,
   ephemeral: true,

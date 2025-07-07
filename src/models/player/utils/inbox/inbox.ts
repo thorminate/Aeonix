@@ -4,11 +4,11 @@ import Letter from "./letter.js";
 export default class Inbox extends PlayerSubclassBase {
   letters: Letter[] = [];
 
-  addLetter(letter: Letter): void {
+  add(letter: Letter): void {
     this.letters.push(letter);
   }
 
-  readLetter(letterId: string): Letter | undefined {
+  read(letterId: string): Letter | undefined {
     const letter = this.letters.find((l) => l.id === letterId);
 
     if (!letter) return;
@@ -20,7 +20,7 @@ export default class Inbox extends PlayerSubclassBase {
     return letter;
   }
 
-  archiveLetter(letterId: string): Letter | undefined {
+  archive(letterId: string): Letter | undefined {
     const letter = this.letters.find((l) => l.id === letterId);
 
     if (!letter) return;
@@ -32,7 +32,7 @@ export default class Inbox extends PlayerSubclassBase {
     return letter;
   }
 
-  unarchiveLetter(letterId: string): Letter | undefined {
+  unarchive(letterId: string): Letter | undefined {
     const letter = this.letters.find((l) => l.id === letterId);
 
     if (!letter) return;

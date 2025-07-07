@@ -4,7 +4,10 @@ import log from "../../utils/log.js";
 import deletePlayer from "./deletePlayer.js";
 import onboarding1 from "../modals/onboarding1.js";
 import componentWrapper from "../../utils/componentWrapper.js";
-import Interaction, { ButtonBuilderV2 } from "../../models/core/interaction.js";
+import Interaction, {
+  ButtonBuilderV2,
+  ITypes,
+} from "../../models/core/interaction.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()
@@ -13,7 +16,7 @@ export default new Interaction({
     .setEmoji("👋")
     .setStyle(ButtonStyle.Primary),
 
-  interactionType: "button",
+  interactionType: ITypes.Button,
   ephemeral: true,
   acknowledge: false,
   passPlayer: false,

@@ -388,7 +388,7 @@ export default async (
   }
 };
 
-export async function paginateFromButton(
+export async function buttonPaginatorWithUpdate(
   context: ButtonInteraction,
   buttons: ButtonBuilder[],
   getContent: GetterOrLiteral

@@ -1,12 +1,12 @@
 import { SlashCommandBuilder } from "discord.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../models/core/interaction.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
     .setName("whereami")
     .setDescription("Tells you your current location"),
 
-  interactionType: "command",
+  interactionType: ITypes.Command,
   acknowledge: true,
   ephemeral: true,
   passPlayer: true,

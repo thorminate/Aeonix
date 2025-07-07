@@ -37,14 +37,10 @@ export default new Event({
         header: "Onboarding channel id not found in aeonix object",
         processName: "OnboardingSupervisor",
         type: "Error",
-        payload: [
-          "The onboarding channel id: ",
-          onboardingChannelId ?? "undefined",
-          "process.env: ",
-          process.env,
-          "Aeonix: ",
-          aeonix,
-        ],
+        payload: {
+          "The onboarding channel id: ": onboardingChannelId ?? "undefined",
+          "Aeonix: ": aeonix,
+        },
       });
       return;
     }

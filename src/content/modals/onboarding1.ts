@@ -10,7 +10,7 @@ import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
 import aeonix from "../../index.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../models/core/interaction.js";
 import TutorialQuestLetter from "../letters/tutorialQuestLetter.js";
 
 async function isImageUrl(url: string) {
@@ -52,12 +52,8 @@ export default new Interaction({
           .setRequired(false)
       )
     ),
-  interactionType: "modal",
+  interactionType: ITypes.Modal,
   ephemeral: true,
-  passPlayer: false,
-  acknowledge: true,
-  environmentOnly: false,
-  passEnvironment: false,
 
   callback: async ({ context }) => {
     if (await Player.find(context.user.id)) {
@@ -143,8 +139,7 @@ export default new Interaction({
 
     await player.moveTo("start", true, true, true);
 
-    player.inbox.addLetter(new TutorialQuestLetter());
-    player.inbox.addLetter(new TutorialQuestLetter());
+    player.inbox.add(new TutorialQuestLetter());
 
     await player.commit();
 

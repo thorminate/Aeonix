@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../models/core/interaction.js";
 import log from "../../utils/log.js";
 
 export default new Interaction({
@@ -7,12 +7,8 @@ export default new Interaction({
     .setName("template")
     .setDescription("Template"),
 
-  interactionType: "command",
-  passPlayer: false,
-  acknowledge: true,
+  interactionType: ITypes.Command,
   ephemeral: true,
-  environmentOnly: false,
-  passEnvironment: false,
 
   callback: async ({ context }) => {
     await context.editReply("Template command executed!");

@@ -68,5 +68,3 @@ log({
 const aeonix = new Aeonix(rl);
 
 export default aeonix;
-
-aeonix.channels;

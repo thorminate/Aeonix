@@ -1,13 +1,13 @@
 import { log } from "console";
 import { ChannelSelectMenuBuilder } from "discord.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../models/core/interaction.js";
 
 export default new Interaction({
   data: new ChannelSelectMenuBuilder()
     .setCustomId("template")
     .setPlaceholder("Template"),
 
-  interactionType: "channelSelectMenu",
+  interactionType: ITypes.ChannelSelectMenu,
   ephemeral: true,
   acknowledge: true,
   passPlayer: false,

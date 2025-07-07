@@ -1,6 +1,9 @@
 import { log } from "console";
 import { ButtonStyle } from "discord.js";
-import Interaction, { ButtonBuilderV2 } from "../../models/core/interaction.js";
+import Interaction, {
+  ButtonBuilderV2,
+  ITypes,
+} from "../../models/core/interaction.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()
@@ -8,7 +11,7 @@ export default new Interaction({
     .setLabel("Template")
     .setStyle(ButtonStyle.Primary),
 
-  interactionType: "button",
+  interactionType: ITypes.Button,
   ephemeral: true,
   acknowledge: true,
   passPlayer: false,

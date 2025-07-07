@@ -27,7 +27,8 @@
     "ansis": "^4.1.0",
     "discord.js": "^14.21.0",
     "mongoose": "^8.16.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "zod": "^3.25.74"
   },
   "repository": {
     "type": "git",

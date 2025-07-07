@@ -1,17 +1,12 @@
 import {
   ButtonInteraction,
   CacheType,
-  ChannelSelectMenuInteraction,
   ChatInputCommandInteraction,
-  MentionableSelectMenuInteraction,
   MessageFlags,
-  ModalSubmitInteraction,
   PermissionFlagsBits,
   PermissionsBitField,
-  RoleSelectMenuInteraction,
   SlashCommandBuilder,
-  StringSelectMenuInteraction,
-  UserSelectMenuInteraction,
+  Interaction as DJSInteraction,
 } from "discord.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
@@ -90,19 +85,7 @@ export async function findLocalUserSelectMenus(useCache = true) {
   return await aeonix.userSelectMenus.loadAll();
 }
 
-export default new Event<
-  [
-    data:
-      | ButtonInteraction
-      | ChannelSelectMenuInteraction
-      | ChatInputCommandInteraction
-      | MentionableSelectMenuInteraction
-      | ModalSubmitInteraction
-      | RoleSelectMenuInteraction
-      | StringSelectMenuInteraction
-      | UserSelectMenuInteraction
-  ]
->({
+export default new Event<[data: DJSInteraction<CacheType>]>({
   callback: async ({ args: [context] }) => {
     let type = "";
 
@@ -190,7 +173,10 @@ export default new Event<
 
     if (!interaction) return;
 
-    if (interaction.acknowledge) {
+    if (
+      interaction.acknowledge === true ||
+      interaction.ephemeral === undefined
+    ) {
       await context.deferReply({
         flags: interaction.ephemeral ? MessageFlags.Ephemeral : undefined,
       });
@@ -206,13 +192,16 @@ export default new Event<
       return;
     }
 
-    if (interaction.adminOnly) {
+    if (interaction.adminOnly === true) {
       if (
         !(context.member.permissions as PermissionsBitField).has(
           PermissionFlagsBits.Administrator
         )
       ) {
-        if (interaction.acknowledge) {
+        if (
+          interaction.acknowledge === true ||
+          interaction.ephemeral === undefined
+        ) {
           await context.editReply({
             content: "Only administrators can use this.",
           });
@@ -231,7 +220,10 @@ export default new Event<
         if (
           !(context.member.permissions as PermissionsBitField).has(permission)
         ) {
-          if (interaction.acknowledge) {
+          if (
+            interaction.acknowledge === true ||
+            interaction.ephemeral === undefined
+          ) {
             await context.editReply({
               content: "You don't have permissions to use this.",
             });
@@ -254,7 +246,10 @@ export default new Event<
       player = await Player.find(context.user.id);
 
       if (!player) {
-        if (interaction.acknowledge) {
+        if (
+          interaction.acknowledge === true ||
+          interaction.ephemeral === undefined
+        ) {
           await context.editReply({
             content: "You aren't a player. Register with the `/init` command.",
           });
@@ -269,7 +264,10 @@ export default new Event<
 
       if (interaction.environmentOnly) {
         if (player.location.channelId !== context.channelId) {
-          if (interaction.acknowledge) {
+          if (
+            interaction.acknowledge === true ||
+            interaction.ephemeral === undefined
+          ) {
             await context.editReply({
               content: "You must be in your environment channel to run this.",
             });

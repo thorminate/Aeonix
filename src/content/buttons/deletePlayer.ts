@@ -3,7 +3,10 @@ import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayerConfirmed from "./deletePlayerConfirmed.js";
 import componentWrapper from "../../utils/componentWrapper.js";
-import Interaction, { ButtonBuilderV2 } from "../../models/core/interaction.js";
+import Interaction, {
+  ButtonBuilderV2,
+  ITypes,
+} from "../../models/core/interaction.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()
@@ -11,7 +14,7 @@ export default new Interaction({
     .setLabel("Delete")
     .setStyle(ButtonStyle.Danger),
 
-  interactionType: "button",
+  interactionType: ITypes.Button,
   acknowledge: false,
   passPlayer: false,
   environmentOnly: false,

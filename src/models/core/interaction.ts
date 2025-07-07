@@ -1,5 +1,6 @@
 import {
   APIButtonComponentWithCustomId,
+  AutocompleteInteraction,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -14,6 +15,8 @@ import {
   RoleSelectMenuBuilder,
   RoleSelectMenuInteraction,
   SlashCommandBuilder,
+  SlashCommandOptionsOnlyBuilder,
+  SlashCommandSubcommandsOnlyBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
   UserSelectMenuBuilder,
@@ -63,6 +66,17 @@ export type UserSelectMenuContext = Omit<
   "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
 >;
 
+export enum ITypes {
+  Button = "button",
+  ChannelSelectMenu = "channelSelectMenu",
+  Command = "command",
+  MentionableSelectMenu = "mentionableSelectMenu",
+  Modal = "modal",
+  RoleSelectMenu = "roleSelectMenu",
+  StringSelectMenu = "stringSelectMenu",
+  UserSelectMenu = "userSelectMenu",
+}
+
 export type InteractionTypes =
   | "button"
   | "channelSelectMenu"
@@ -92,7 +106,10 @@ type BuilderTypeFromInteractionType<T extends InteractionTypes> =
     : T extends "channelSelectMenu"
     ? ChannelSelectMenuBuilder
     : T extends "command"
-    ? SlashCommandBuilder
+    ?
+        | SlashCommandBuilder
+        | SlashCommandSubcommandsOnlyBuilder
+        | SlashCommandOptionsOnlyBuilder
     : T extends "mentionableSelectMenu"
     ? MentionableSelectMenuBuilder
     : T extends "modal"
@@ -159,13 +176,36 @@ export interface SeeInteractionErrorPropertyForMoreDetails_2 {
   error: never;
 }
 
-export interface SeeInteractionErrorPropertyForMoreDetails_3 {
+export interface SeeInteractionErrorPropertyForMoreDetails_3<> {
   /**
    * ❌ ERROR: `passPlayer` must be `true` if `passEnvironment` is `true` or `environmentOnly` is `true`.
    * Fix your arguments to the interaction constructor.
    */
   error: never;
 }
+
+type AutocompleteCallback<PassPlayer extends boolean> = PassPlayer extends true
+  ? (masterContext: {
+      context: AutocompleteInteraction<CacheType>;
+      player: Player;
+    }) => Promise<{ name: string; value: string }[]>
+  : (masterContext: {
+      context: AutocompleteInteraction<CacheType>;
+    }) => Promise<{ name: string; value: string }[]>;
+
+class AutocompleteHandler<PassPlayer extends boolean> {
+  passPlayer!: PassPlayer;
+  callback!: AutocompleteCallback<PassPlayer>;
+
+  constructor(o: AutocompleteHandler<PassPlayer>) {
+    return hardMerge(this, o);
+  }
+}
+
+type TAutocompleteHandler<
+  InteractionType extends InteractionTypes,
+  PassPlayer extends boolean
+> = InteractionType extends "command" ? AutocompleteHandler<PassPlayer> : never;
 
 // im sorry for this abomination -- it does its job pretty well though
 type InteractionCallback<
@@ -233,10 +273,11 @@ export default class Interaction<
   Acknowledge extends boolean = true,
   PassPlayer extends boolean = false,
   EnvironmentOnly extends boolean = false,
-  PassEnvironment extends boolean = false
+  PassEnvironment extends boolean = false,
+  AutocompletePassPlayer extends boolean = false
 > {
-  interactionType!: InteractionType;
   data!: BuilderTypeFromInteractionType<InteractionType>;
+  interactionType!: InteractionType;
   permissionsRequired?: Array<bigint>;
   adminOnly?: boolean;
   acknowledge?: Acknowledge;
@@ -252,6 +293,7 @@ export default class Interaction<
     EnvironmentOnly,
     InteractionType
   >;
+  autocomplete?: TAutocompleteHandler<InteractionType, AutocompletePassPlayer>;
   onError!: (e: unknown) => void;
 
   constructor(
@@ -260,7 +302,8 @@ export default class Interaction<
       Acknowledge,
       PassPlayer,
       EnvironmentOnly,
-      PassEnvironment
+      PassEnvironment,
+      AutocompletePassPlayer
     >
   ) {
     const interactionTypeToBuilderMap = {
