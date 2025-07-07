@@ -1,4 +1,4 @@
-name: TSC
+name: Lint
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint:
-    name: Lint and check if TS compiles
+    name: Full lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,7 +30,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install tsc eslint
 
       - name: Compile TypeScript
         uses: icrawl/action-tsc@v1

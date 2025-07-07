@@ -18,7 +18,7 @@ export default class Inbox extends PlayerSubclassBase {
       l.id === letterId ? ({ ...l, isRead: true } as Letter) : l
     );
 
-    returnletter;
+    return letter;
   }
 
   archive(letterId: string): Letter | undefined {
