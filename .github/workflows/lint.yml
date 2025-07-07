@@ -10,7 +10,7 @@ on:
 jobs:
   lint:
     name: Full lint
-    runs-on: pi
+    runs-on: self-hosted
     permissions:
       contents: read
       security-events: write
