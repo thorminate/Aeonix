@@ -10,7 +10,7 @@ on:
 jobs:
   lint:
     name: Full lint
-    runs-on: ubuntu-latest
+    runs-on: pi
     permissions:
       contents: read
       security-events: write
