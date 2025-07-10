@@ -1,0 +1,59 @@
+name: Lint
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: ["main"]
+
+jobs:
+  lint:
+    name: Full lint
+    runs-on: self-hosted
+    permissions:
+      contents: write
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install tsc eslint
+
+      - name: Compile TypeScript
+        uses: thorminate/action-build-typescript-pnpm@master
+        with:
+          pushToBranch: true
+          branch: dist
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install ESLint deps
+        run: pnpm install @microsoft/eslint-formatter-sarif@3.1.0
+
+      - name: Run ESLint
+        env:
+          SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
+        run: pnpm exec eslint .
+          --config eslint.config.js
+          --ext .ts
+          --format @microsoft/eslint-formatter-sarif
+          --output-file eslint-results.sarif
+        continue-on-error: true
+
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: eslint-results.sarif
+          wait-for-processing: true
