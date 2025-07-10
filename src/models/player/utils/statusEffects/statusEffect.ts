@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import Player from "../../player.js";
+import Player from "../player.js";
 
 export default abstract class StatusEffect {
   private _id: string = "";

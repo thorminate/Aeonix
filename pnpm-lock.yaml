@@ -26,6 +26,9 @@ importers:
       mongoose:
         specifier: ^8.16.1
         version: 8.16.1(socks@2.8.5)
+      package-json-type:
+        specifier: ^1.0.3
+        version: 1.0.3
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -678,6 +681,9 @@ packages:
   p-locate@5.0.0:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
+
+  package-json-type@1.0.3:
+    resolution: {integrity: sha512-Bey4gdRuOwDbS8Fj1qA3/pTq5r8pqiI5E3tjSqCdhaLSsyGG364VFzXLTIexN5AaNGe/vgdBzLfoKdr7EVg2KQ==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -1536,6 +1542,8 @@ snapshots:
   p-locate@5.0.0:
     dependencies:
       p-limit: 3.1.0
+
+  package-json-type@1.0.3: {}
 
   parent-module@1.0.1:
     dependencies:

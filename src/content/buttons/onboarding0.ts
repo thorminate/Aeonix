@@ -1,5 +1,4 @@
 import { ButtonStyle, MessageFlags } from "discord.js";
-import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayer from "./deletePlayer.js";
 import onboarding1 from "../modals/onboarding1.js";
@@ -23,8 +22,8 @@ export default new Interaction({
   environmentOnly: false,
   passEnvironment: false,
 
-  callback: async ({ context }) => {
-    if (await Player.find(context.user.id)) {
+  callback: async ({ context, aeonix }) => {
+    if (aeonix.players.exists(context.user.id)) {
       await context.reply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",

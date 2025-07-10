@@ -1,5 +1,4 @@
 import { ButtonStyle } from "discord.js";
-import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayerConfirmed from "./deletePlayerConfirmed.js";
 import componentWrapper from "../../utils/componentWrapper.js";
@@ -20,8 +19,8 @@ export default new Interaction({
   environmentOnly: false,
   passEnvironment: false,
 
-  callback: async ({ context }) => {
-    if (!(await Player.find(context.user.id))) {
+  callback: async ({ context, aeonix }) => {
+    if (!aeonix.players.exists(context.user.id)) {
       await context.update({
         content:
           "You don't exist in the database, therefore you cannot be deleted.",

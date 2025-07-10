@@ -22,9 +22,10 @@ import {
   UserSelectMenuBuilder,
   UserSelectMenuInteraction,
 } from "discord.js";
-import Player from "../player/player.js";
+import Player from "../player/utils/player.js";
 import hardMerge from "../../utils/hardMerge.js";
 import Environment from "../environment/environment.js";
+import Aeonix from "../../aeonix.js";
 
 export type ButtonContext = Omit<
   ButtonInteraction<CacheType>,
@@ -221,10 +222,12 @@ type InteractionCallback<
           context: ContextTypeFromInteractionType<InteractionType>;
           player: Player;
           environment: Environment;
+          aeonix: Aeonix;
         }) => Promise<void>
       : (masterContext: {
           context: ContextTypeFromInteractionType<InteractionType>;
           player: Player;
+          aeonix: Aeonix;
         }) => Promise<void>
     : PassEnvironment extends true
     ? EnvironmentOnly extends true
@@ -240,6 +243,7 @@ type InteractionCallback<
       }) => Promise<void>
     : (masterContext: {
         context: ContextTypeFromInteractionType<InteractionType>;
+        aeonix: Aeonix;
       }) => Promise<void>
   : PassPlayer extends true
   ? PassEnvironment extends true
@@ -247,10 +251,12 @@ type InteractionCallback<
         context: RawInteractionTypeFromInteractionType<InteractionType>;
         player: Player;
         environment: Environment;
+        aeonix: Aeonix;
       }) => Promise<void>
     : (masterContext: {
         context: RawInteractionTypeFromInteractionType<InteractionType>;
         player: Player;
+        aeonix: Aeonix;
       }) => Promise<void>
   : PassEnvironment extends true
   ? EnvironmentOnly extends true
@@ -266,6 +272,7 @@ type InteractionCallback<
     }) => Promise<void>
   : (masterContext: {
       context: RawInteractionTypeFromInteractionType<InteractionType>;
+      aeonix: Aeonix;
     }) => Promise<void>;
 
 export default class Interaction<

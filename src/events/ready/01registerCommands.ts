@@ -1,7 +1,6 @@
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import { ApplicationCommand } from "discord.js";
-import { findLocalCommands } from "../interactionCreate/handleInteractions.js";
 import Interaction from "../../models/core/interaction.js";
 import Aeonix from "../../aeonix.js";
 
@@ -90,7 +89,7 @@ export default new Event<"ready">({
       boolean,
       boolean,
       boolean
-    >[] = await findLocalCommands(false);
+    >[] = await aeonix.commands.loadAll();
     const applicationCommands = await getApplicationCommands(
       aeonix,
       "1267928656877977670"

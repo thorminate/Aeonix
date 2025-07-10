@@ -1,15 +1,14 @@
 import { Message } from "discord.js";
 import Event from "../../models/core/event.js";
-import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 
 export default new Event<"messageCreate">({
-  async callback({ args: [context] }) {
+  async callback({ args: [context], aeonix }) {
     if (!(context instanceof Message)) return;
 
     if (context.author.bot) return;
 
-    const player = await Player.find(context.author.id);
+    const player = await aeonix.players.get(context.author.id);
 
     if (!player) {
       context.reply({

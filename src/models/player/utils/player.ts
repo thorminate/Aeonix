@@ -12,25 +12,25 @@ import {
   TextDisplayBuilder,
   User,
 } from "discord.js";
-import Stats from "./utils/stats/stats.js";
-import Inventory from "./utils/inventory/inventory.js";
-import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
-import aeonix from "../../index.js";
-import log from "../../utils/log.js";
-import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
-import Inbox from "./utils/inbox/inbox.js";
-import Location from "./utils/location/location.js";
-import Persona from "./utils/persona/persona.js";
-import StatusEffects from "./utils/statusEffects/statusEffects.js";
-import { PlayerSubclassBase } from "./utils/types/PlayerSubclassBase.js";
-import hardMerge from "../../utils/hardMerge.js";
+import Stats from "./stats/stats.js";
+import Inventory from "./inventory/inventory.js";
+import calculateXpRequirement from "./stats/calculateXpRequirement.js";
+import aeonix from "../../../index.js";
+import log from "../../../utils/log.js";
+import PlayerMoveToResult from "./types/playerMoveToResult.js";
+import Inbox from "./inbox/inbox.js";
+import Location from "./location/location.js";
+import Persona from "./persona/persona.js";
+import StatusEffects from "./statusEffects/statusEffects.js";
+import { PlayerSubclassBase } from "./types/PlayerSubclassBase.js";
+import hardMerge from "../../../utils/hardMerge.js";
 import {
   getModelForClass,
   modelOptions,
   prop,
   Severity,
 } from "@typegoose/typegoose";
-import Quests from "./utils/quests/quests.js";
+import Quests from "./quests/quests.js";
 
 @modelOptions({
   options: {
@@ -65,7 +65,7 @@ export default class Player {
   }
 
   async fetchEnvironment() {
-    return aeonix.environments.cache.get(this.location.id);
+    return aeonix.environments.get(this.location.id);
   }
 
   async moveTo(
@@ -74,7 +74,7 @@ export default class Player {
     disregardAlreadyHere = false,
     disregardOldEnvironment = false
   ): Promise<PlayerMoveToResult> {
-    const env = aeonix.environments.cache.get(location);
+    const env = await aeonix.environments.get(location);
 
     if (!env) return "invalid location";
 
@@ -233,25 +233,19 @@ export default class Player {
       new: true,
       setDefaultsOnInsert: true,
     });
+
+    aeonix.players.set(this._id, this);
   }
 
   async delete(): Promise<void> {
     await playerModel.findByIdAndDelete({
       _id: this._id,
     } as Record<string, string>);
+
+    await aeonix.players.delete(this._id);
   }
 
-  static async find(identifier: string): Promise<Player | undefined> {
-    const doc = await playerModel.findById(identifier);
-    if (!doc) return undefined;
-
-    const newThis = new this() as Player;
-
-    const instance = hardMerge(newThis, doc.toObject(), newThis.getClassMap());
-    return instance;
-  }
-
-  protected getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
+  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     const result = {
       persona: Persona,
       location: Location,

@@ -1,91 +1,34 @@
 import {
   ButtonInteraction,
   CacheType,
+  ChannelSelectMenuInteraction,
   ChatInputCommandInteraction,
+  MentionableSelectMenuInteraction,
   MessageFlags,
+  ModalSubmitInteraction,
   PermissionFlagsBits,
   PermissionsBitField,
-  SlashCommandBuilder,
+  RoleSelectMenuInteraction,
+  StringSelectMenuInteraction,
+  UserSelectMenuInteraction,
 } from "discord.js";
-import Player from "../../models/player/player.js";
+import Player from "../../models/player/utils/player.js";
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import Environment from "../../models/environment/environment.js";
-import Interaction, {
-  ButtonContext,
-  InteractionTypes,
-  SeeInteractionErrorPropertyForMoreDetails_1,
-  SeeInteractionErrorPropertyForMoreDetails_2,
-  SeeInteractionErrorPropertyForMoreDetails_3,
-} from "../../models/core/interaction.js";
-import aeonix from "../../index.js";
+import Aeonix from "../../aeonix.js";
 
-export async function findLocalButtons(useCache = true) {
-  if (useCache) {
-    return [...aeonix.buttons.cache.values()];
-  }
-
-  return await aeonix.buttons.loadAll();
-}
-
-export async function findLocalChannelSelectMenus(useCache = true) {
-  if (useCache) {
-    return [...aeonix.channelSelectMenus.cache.values()];
-  }
-
-  return await aeonix.channelSelectMenus.loadAll();
-}
-
-export async function findLocalCommands(useCache = true) {
-  if (useCache) {
-    return [...aeonix.commands.cache.values()];
-  }
-
-  return await aeonix.commands.loadAll();
-}
-
-export async function findLocalMentionableSelectMenus(useCache = true) {
-  if (useCache) {
-    return [...aeonix.mentionableSelectMenus.cache.values()];
-  }
-
-  return await aeonix.mentionableSelectMenus.loadAll();
-}
-
-export async function findLocalModals(useCache = true) {
-  if (useCache) {
-    return [...aeonix.modals.cache.values()];
-  }
-
-  return await aeonix.modals.loadAll();
-}
-
-export async function findLocalRoleSelectMenus(useCache = true) {
-  if (useCache) {
-    return [...aeonix.roleSelectMenus.cache.values()];
-  }
-
-  return await aeonix.roleSelectMenus.loadAll();
-}
-
-export async function findLocalStringSelectMenus(useCache = true) {
-  if (useCache) {
-    return [...aeonix.stringSelectMenus.cache.values()];
-  }
-
-  return await aeonix.stringSelectMenus.loadAll();
-}
-
-export async function findLocalUserSelectMenus(useCache = true) {
-  if (useCache) {
-    return [...aeonix.userSelectMenus.cache.values()];
-  }
-
-  return await aeonix.userSelectMenus.loadAll();
-}
+type AnyInteraction<CT extends CacheType> = ButtonInteraction<CT> &
+  ChannelSelectMenuInteraction<CT> &
+  ChatInputCommandInteraction<CT> &
+  MentionableSelectMenuInteraction<CT> &
+  ModalSubmitInteraction<CT> &
+  RoleSelectMenuInteraction<CT> &
+  StringSelectMenuInteraction<CT> &
+  UserSelectMenuInteraction<CT>;
 
 export default new Event<"interactionCreate">({
-  callback: async ({ args: [context] }) => {
+  callback: async ({ args: [context], aeonix }) => {
     let type = "";
 
     if (context.isButton()) {
@@ -116,26 +59,31 @@ export default new Event<"interactionCreate">({
       return;
     }
 
-    const localInteractions =
+    const id =
+      context.isAnySelectMenu() || context.isButton() || context.isModalSubmit()
+        ? context.customId
+        : context.commandName;
+
+    const interaction =
       type === "button"
-        ? await findLocalButtons()
+        ? await aeonix.buttons.get(id)
         : type === "channelSelectMenu"
-        ? await findLocalChannelSelectMenus()
+        ? await aeonix.channelSelectMenus.get(id)
         : type === "command"
-        ? await findLocalCommands()
+        ? await aeonix.commands.get(id)
         : type === "mentionableSelectMenu"
-        ? await findLocalMentionableSelectMenus()
+        ? await aeonix.mentionableSelectMenus.get(id)
         : type === "modal"
-        ? await findLocalModals()
+        ? await aeonix.modals.get(id)
         : type === "roleSelectMenu"
-        ? await findLocalRoleSelectMenus()
+        ? await aeonix.roleSelectMenus.get(id)
         : type === "stringSelectMenu"
-        ? await findLocalStringSelectMenus()
+        ? await aeonix.stringSelectMenus.get(id)
         : type === "userSelectMenu"
-        ? await findLocalUserSelectMenus()
+        ? await aeonix.userSelectMenus.get(id)
         : undefined;
 
-    if (!localInteractions) {
+    if (!interaction) {
       log({
         header:
           "An interaction was received but no local content were found matching it.",
@@ -145,30 +93,6 @@ export default new Event<"interactionCreate">({
       });
       return;
     }
-
-    const interaction:
-      | Interaction<InteractionTypes, boolean, boolean, boolean, boolean>
-      | undefined = localInteractions.find(
-      (
-        interaction: Interaction<
-          InteractionTypes,
-          boolean,
-          boolean,
-          boolean,
-          boolean
-        >
-      ) => {
-        return type === "command"
-          ? (interaction.data as SlashCommandBuilder).name ===
-              (context as ChatInputCommandInteraction).commandName
-          : "data" in interaction.data
-          ? "custom_id" in interaction.data.data
-            ? interaction.data.data.custom_id ===
-              (context as ButtonInteraction).customId
-            : false
-          : false;
-      }
-    );
 
     if (!interaction) return;
 
@@ -242,7 +166,7 @@ export default new Event<"interactionCreate">({
     let environment: Environment | undefined;
 
     if (interaction.passPlayer) {
-      player = await Player.find(context.user.id);
+      player = await aeonix.players.get(context.user.id);
 
       if (!player) {
         if (
@@ -290,15 +214,13 @@ export default new Event<"interactionCreate">({
         context,
         player,
         environment,
+        aeonix,
       } as {
         error: never;
-        context: ButtonInteraction<CacheType> &
-          ButtonContext &
-          SeeInteractionErrorPropertyForMoreDetails_1 &
-          SeeInteractionErrorPropertyForMoreDetails_2 &
-          SeeInteractionErrorPropertyForMoreDetails_3;
+        context: AnyInteraction<CacheType>;
         player: Player;
         environment: Environment;
+        aeonix: Aeonix;
       })
       .catch((e: unknown) => {
         try {

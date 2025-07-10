@@ -53,8 +53,8 @@ export default class StringSelectMenuManager extends CachedManager<
 
       const id = importedFile.data.data.custom_id;
 
-      if (id && (!noDuplicates || !this.cache.has(id))) {
-        this.cache.set(id, importedFile);
+      if (id && (!noDuplicates || !this.exists(id))) {
+        this.set(id, importedFile);
         total.push(importedFile);
       }
     }

@@ -15,7 +15,7 @@ import containerPaginator, {
   containerPaginatorWithUpdate,
 } from "../../utils/containerPaginator.js";
 import log from "../../utils/log.js";
-import Player from "../../models/player/player.js";
+import Player from "../../models/player/utils/player.js";
 
 function createContainerPages({ inbox, persona }: Player): ContainerBuilder[] {
   const addHeader = (page: ContainerBuilder) => {

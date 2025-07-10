@@ -5,11 +5,10 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import Player from "../../models/player/player.js";
+import Player from "../../models/player/utils/player.js";
 import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";
-import aeonix from "../../index.js";
 import Interaction, { ITypes } from "../../models/core/interaction.js";
 import TutorialQuestLetter from "../letters/tutorialQuestLetter.js";
 
@@ -55,8 +54,8 @@ export default new Interaction({
   interactionType: ITypes.Modal,
   ephemeral: true,
 
-  callback: async ({ context }) => {
-    if (await Player.find(context.user.id)) {
+  callback: async ({ context, aeonix }) => {
+    if (aeonix.players.exists(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 
       await context.editReply({
@@ -114,7 +113,7 @@ export default new Interaction({
     }
 
     const startChannel = await (
-      await aeonix.environments.cache.get("start")
+      await aeonix.environments.get("start")
     )?.fetchChannel();
 
     if (!startChannel) {

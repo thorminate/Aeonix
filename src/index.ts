@@ -52,19 +52,18 @@ if (!existsSync("./.env")) {
 }
 
 // Load environment variables
-const __dotenvx = config({
+const dotenvx = config({
   quiet: true,
 });
 
 log({
   header: `Injecting env (${
-    Object.keys(__dotenvx.parsed ?? {}).length
+    Object.keys(dotenvx.parsed ?? {}).length
   }) from .env`,
   processName: "Dotenvx",
   type: "Info",
 });
 
-// Export the Aeonix object
 const aeonix = new Aeonix(rl);
 
 export default aeonix;

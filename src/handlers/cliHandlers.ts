@@ -151,6 +151,7 @@ export default async (aeonix: Aeonix) => {
 
       case "info": {
         const deps = aeonix.packageJson.dependencies;
+        const devDeps = aeonix.packageJson.devDependencies;
         log({
           header: "Info",
           processName: "CLI",
@@ -165,11 +166,20 @@ export default async (aeonix: Aeonix) => {
             " ",
             redBright`Dependencies:`,
             "  Node.js: " + process.version,
-            `  Discord.js: ${deps["discord.js"].replace("^", "v")}`,
-            `  Mongoose: ${deps.mongoose.replace("^", "v")}`,
-            `  Dotenvx: ${deps["@dotenvx/dotenvx"].replace("^", "v")}`,
-            `  Ansis: ` + deps.ansis.replace("^", "v"),
-            `  TypeScript: ${deps.typescript.replace("^", "v")}`,
+            `  Discord.js: ${deps?.["discord.js"] || "N/A"}`,
+            `  Mongoose: ${deps?.mongoose || "N/A"}`,
+            `  Dotenvx: ${deps?.["@dotenvx/dotenvx"] || "N/A"}`,
+            `  Ansis: ` + deps?.ansis || "N/A",
+            `  TypeScript: ${deps?.typescript || "N/A"}`,
+            `  Typegoose: ${deps?.["@typegoose/typegoose"] || "N/A"}`,
+            `  Node Types: ${deps?.["@types/node"] || "N/A"}`,
+            `  Zod: ${deps?.zod || "N/A"}`,
+            " ",
+            blueBright`Dev Dependencies:`,
+            `  ESLint: ${devDeps?.eslint || "N/A"}`,
+            `  ESLint JS: ${devDeps?.["@eslint/js"] || "N/A"}`,
+            `  TypeScript ESLint: ${devDeps?.["typescript-eslint"] || "N/A"}`,
+            `  Globals: ${devDeps?.globals || "N/A"}`,
             " ",
           ],
           type: "Info",

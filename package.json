@@ -2,16 +2,20 @@
   "name": "aeonix",
   "version": "alpha",
   "main": "dist/index.js",
-  "author": "Thorminate",
   "license": "MIT",
   "type": "module",
-  "packageManager": "pnpm@10.12.4",
+  "packageManager": "pnpm@10.13.1",
   "engineStrict": true,
   "homepage": "https://github.com/thorminate/Aeonix#readme",
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "keywords": [],
   "engines": {
     "node": "24.3.0"
+  },
+  "author": {
+    "name": "thorminate",
+    "email": "inquiries@thorminate.com",
+    "url": "https://github.com/thorminate"
   },
   "scripts": {
     "dev": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/index.js",
@@ -26,6 +30,7 @@
     "ansis": "^4.1.0",
     "discord.js": "^14.21.0",
     "mongoose": "^8.16.1",
+    "package-json-type": "^1.0.3",
     "typescript": "^5.8.3",
     "zod": "^3.25.74"
   },

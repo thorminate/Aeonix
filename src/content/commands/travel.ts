@@ -7,7 +7,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import log from "../../utils/log.js";
-import Player from "../../models/player/player.js";
+import Player from "../../models/player/utils/player.js";
 import paginator from "../../utils/buttonPaginator.js";
 import Interaction, { ITypes } from "../../models/core/interaction.js";
 

@@ -1,4 +1,4 @@
-import Player from "../../models/player/player.js";
+import Player from "../../models/player/utils/player.js";
 import StatusEffect from "../../models/player/utils/statusEffects/statusEffect.js";
 
 export default class StatusEffectTemplate extends StatusEffect {

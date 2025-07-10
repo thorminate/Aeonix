@@ -11,7 +11,6 @@ import mongoose from "mongoose";
 import { readFileSync } from "fs";
 import eventManager from "./handlers/eventHandlers.js";
 import cliManager from "./handlers/cliHandlers.js";
-import Player from "./models/player/player.js";
 import ButtonManager from "./managers/buttonManager.js";
 import CommandManager from "./managers/commandManager.js";
 import ChannelSelectMenuManager from "./managers/channelSelectMenuManager.js";
@@ -25,39 +24,13 @@ import StatusEffectManager from "./managers/statusEffectManager.js";
 import StringSelectMenuManager from "./managers/stringSelectMenuManager.js";
 import UserSelectMenuManager from "./managers/userSelectMenuManager.js";
 import StatusManager from "./managers/statusManager.js";
+import PlayerManager from "./managers/playerManager.js";
+import QuestManager from "./managers/questManager.js";
+import { IPackageJson } from "package-json-type";
 
 export type AeonixEvents = ClientEvents & {
   tick: [currentTime: number];
 };
-
-interface PackageJson {
-  name: string;
-  version: string;
-  main: string;
-  author: string;
-  license: string;
-  type: string;
-  homepage: string;
-  description: string;
-  keywords: [];
-  scripts: {
-    start: string;
-  };
-  dependencies: {
-    "@dotenvx/dotenvx": string;
-    ansis: string;
-    "discord.js": string;
-    mongoose: string;
-    typescript: string;
-  };
-  repository: {
-    type: string;
-    url: string;
-  };
-  bugs: {
-    url: string;
-  };
-}
 
 export default class Aeonix extends Client {
   rl: readline.Interface;
@@ -70,11 +43,11 @@ export default class Aeonix extends Client {
   onboardingChannelId: string = process.env.ONBOARDING_CHANNEL || "";
   rulesChannelId: string = process.env.RULES_CHANNEL || "";
   masterRoleId: string = process.env.MASTER_ROLE || "";
-  packageJson: PackageJson = JSON.parse(
+  packageJson: IPackageJson = JSON.parse(
     readFileSync("./package.json").toString()
   );
 
-  players: typeof Player = Player;
+  players = new PlayerManager(this);
   buttons = new ButtonManager(this);
   channelSelectMenus = new ChannelSelectMenuManager(this);
   commands = new CommandManager(this);
@@ -83,7 +56,7 @@ export default class Aeonix extends Client {
   letters = new LetterManager(this);
   mentionableSelectMenus = new MentionableSelectMenuManager(this);
   modals = new ModalManager(this);
-  quests = new ModalManager(this);
+  quests = new QuestManager(this);
   roleSelectMenus = new RoleSelectMenuManager(this);
   statusEffects = new StatusEffectManager(this);
   stringSelectMenus = new StringSelectMenuManager(this);

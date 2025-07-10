@@ -40,8 +40,8 @@ export default class ItemManager extends CachedManager<Item> {
 
       const id = instance.type;
 
-      if (id && (!noDuplicates || !this.cache.has(id))) {
-        this.cache.set(id, instance);
+      if (id && (!noDuplicates || !this.exists(id))) {
+        this.set(id, instance);
         total.push(instance);
       }
     }

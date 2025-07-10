@@ -4,7 +4,6 @@ import {
   SlashCommandBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import Player from "../../models/player/player.js";
 import {
   welcomeImage,
   welcomeMessage,
@@ -23,8 +22,8 @@ export default new Interaction({
   interactionType: ITypes.Command,
   ephemeral: true,
 
-  callback: async ({ context }) => {
-    if (await Player.find(context.user.id)) {
+  callback: async ({ context, aeonix }) => {
+    if (aeonix.players.exists(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 
       await context.editReply({

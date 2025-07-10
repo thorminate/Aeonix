@@ -4,14 +4,13 @@ import {
   PermissionsBitField,
   AutocompleteInteraction,
 } from "discord.js";
-import Player from "../../models/player/player.js";
+import Player from "../../models/player/utils/player.js";
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import Interaction from "../../models/core/interaction.js";
-import { findLocalCommands } from "./handleInteractions.js";
 
 export default new Event<"interactionCreate">({
-  callback: async ({ args: [context] }) => {
+  callback: async ({ args: [context], aeonix }) => {
     if (!context.isAutocomplete()) {
       return;
     }
@@ -26,7 +25,7 @@ export default new Event<"interactionCreate">({
       return;
     }
 
-    const localInteractions = await findLocalCommands();
+    const localInteractions = aeonix.commands.array();
 
     if (!localInteractions) {
       log({
@@ -96,7 +95,7 @@ export default new Event<"interactionCreate">({
     let player: Player | undefined;
 
     if (interaction.autocomplete?.passPlayer) {
-      player = await Player.find(context.user.id);
+      player = await aeonix.players.get(context.user.id);
 
       if (!player) {
         await context.respond([

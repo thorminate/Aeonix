@@ -1,6 +1,5 @@
 import log from "../../utils/log.js";
 import { ButtonStyle, GuildMemberRoleManager } from "discord.js";
-import aeonix from "../../index.js";
 import Interaction, {
   ButtonBuilderV2,
   ITypes,
@@ -17,7 +16,7 @@ export default new Interaction({
   acknowledge: false,
   passPlayer: true,
 
-  callback: async ({ context, player }) => {
+  callback: async ({ context, player, aeonix }) => {
     const channel = await player.fetchEnvironmentChannel();
 
     if (!channel) {

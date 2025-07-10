@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import Player from "../../player.js";
+import Player from "../player.js";
 
 export default abstract class Letter {
   private _id = "";

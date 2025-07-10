@@ -1,6 +1,6 @@
 import BackpackItem from "../../content/items/backpackItem.js";
 import Event from "../../models/core/event.js";
-import Player from "../../models/player/player.js";
+import Player from "../../models/player/utils/player.js";
 import log from "../../utils/log.js";
 
 export default new Event<"ready">({
@@ -47,13 +47,13 @@ export default new Event<"ready">({
 
     // #region Environment
 
-    const startEnvironment = await aeonix.environments.cache.get("start");
+    const startEnvironment = await aeonix.environments.get("start");
 
     if (!startEnvironment) {
       log({
         header: "Test Error, start environment is falsy",
         processName: "TestRunner",
-        payload: aeonix.environments.cache,
+        payload: aeonix.environments.array(),
         type: "Error",
       });
       test = false;
