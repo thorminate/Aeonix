@@ -30,10 +30,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install tsc eslint
-
-      - name: Install ESLint deps
-        run: pnpm install @microsoft/eslint-formatter-sarif@3.1.0
+        run: pnpm install @microsoft/eslint-formatter-sarif@3.1.0 eslint
 
       - name: Run ESLint
         env:
@@ -50,10 +47,3 @@ jobs:
         with:
           sarif_file: eslint-results.sarif
           wait-for-processing: true
-
-      - name: Compile TypeScript
-        uses: thorminate/action-build-typescript-pnpm@master
-        with:
-          pushToBranch: true
-          branch: dist
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
