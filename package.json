@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.45.2",
+    "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@typegoose/typegoose": "^12.17.0",
     "@types/node": "^24.0.10",
     "ansis": "^4.1.0",
