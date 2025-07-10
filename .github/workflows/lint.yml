@@ -33,9 +33,11 @@ jobs:
         run: pnpm install tsc eslint
 
       - name: Compile TypeScript
-        uses: icrawl/action-tsc@v1
+        uses: alexthemaster/action-build-typescript@v1.3.1
         with:
-          project: "tsconfig.json"
+          pushToBranch: true
+          branch: dist
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install ESLint deps
         run: pnpm install @microsoft/eslint-formatter-sarif@3.1.0
