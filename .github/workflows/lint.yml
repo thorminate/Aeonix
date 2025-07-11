@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint:
-    name: Full lint
+    name: Run ESLint
     runs-on: self-hosted
     permissions:
       contents: write
@@ -47,3 +47,31 @@ jobs:
         with:
           sarif_file: eslint-results.sarif
           wait-for-processing: true
+
+  compile:
+    name: Compile TypeScript
+    runs-on: self-hosted
+    permissions:
+      contents: write
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Compile TypeScript
+        uses: thorminate/action-build-typescript-pnpm@master
+        with:
+          pushToBranch: true
+          branch: dist
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
