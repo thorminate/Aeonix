@@ -70,8 +70,4 @@ jobs:
           cache: "pnpm"
 
       - name: Compile TypeScript
-        uses: thorminate/action-build-typescript-pnpm@master
-        with:
-          pushToBranch: true
-          branch: dist
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+        uses: icrawl/action-tsc@v1
