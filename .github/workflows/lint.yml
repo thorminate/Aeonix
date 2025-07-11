@@ -92,7 +92,6 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: actions
-          dependency-caching: true
 
       - name: Setup proxy for registries
         uses: github/codeql-action/start-proxy@v3
