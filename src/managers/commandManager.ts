@@ -3,7 +3,6 @@ import CachedManager from "../models/core/cachedManager.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../utils/getAllFiles.js";
-import log from "../utils/log.js";
 
 type Holds = Interaction<"command", boolean, boolean, boolean, boolean>;
 
@@ -44,12 +43,6 @@ export default class CommandManager extends CachedManager<
       const importedFile: Holds = (await import(fileUrl.toString())).default;
 
       const id = importedFile.data.name;
-
-      log({
-        header: "Loaded command " + id,
-        type: "Info",
-        payload: importedFile,
-      });
 
       if (id && (!noDuplicates || !this.exists(id))) {
         this.set(id, importedFile);
