@@ -195,14 +195,6 @@ export default class Aeonix extends Client {
           return;
         }
 
-        eventManager(this).then(() => {
-          log({
-            header: "Event handler ready to rumble!",
-            processName: "EventHandler",
-            type: "Info",
-          });
-        });
-
         await Promise.all([
           mongoose.connect(mdbToken),
           this.login(dscToken),
@@ -218,10 +210,12 @@ export default class Aeonix extends Client {
           });
         });
 
-        makeAllCaches(this).then(() => {
+        await makeAllCaches(this);
+
+        eventManager(this).then(() => {
           log({
-            header: "All caches made",
-            processName: "AeonixConstructor",
+            header: "Event handler ready to rumble!",
+            processName: "EventHandler",
             type: "Info",
           });
         });
@@ -287,6 +281,12 @@ export default class Aeonix extends Client {
 }
 
 async function makeAllCaches(o: Aeonix) {
+  log({
+    header: "Making all caches",
+    processName: "AeonixConstructor",
+    type: "Info",
+  });
+
   await Promise.all([
     o.buttons.loadAll(),
     o.channelSelectMenus.loadAll(),
@@ -297,6 +297,7 @@ async function makeAllCaches(o: Aeonix) {
     o.mentionableSelectMenus.loadAll(),
     o.modals.loadAll(),
     o.quests.loadAll(),
+    o.players.loadAll(),
     o.roleSelectMenus.loadAll(),
     o.statusEffects.loadAll(),
     o.stringSelectMenus.loadAll(),

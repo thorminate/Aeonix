@@ -50,6 +50,9 @@ export default class ButtonManager extends CachedManager<
       }
     }
 
+    this._ready = true;
+    this.emit("ready", total);
+
     return total;
   }
 }

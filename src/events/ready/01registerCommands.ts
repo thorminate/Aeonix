@@ -83,13 +83,7 @@ function areCommandsDifferent(
 
 export default new Event<"ready">({
   callback: async ({ aeonix }) => {
-    const localCommands: Interaction<
-      "command",
-      boolean,
-      boolean,
-      boolean,
-      boolean
-    >[] = await aeonix.commands.loadAll();
+    const localCommands = await aeonix.commands.getAll();
     const applicationCommands = await getApplicationCommands(
       aeonix,
       "1267928656877977670"
@@ -127,7 +121,6 @@ export default new Event<"ready">({
             processName: "CommandRegistrant",
             type: "Info",
           });
-          continue;
         }
       } else {
         if (localCommand.deleted) {
@@ -145,6 +138,10 @@ export default new Event<"ready">({
           type: "Info",
         });
       }
+
+      localCommand.id = existingCommand?.id;
+
+      aeonix.commands.set(localCommand.data.name, localCommand);
     }
 
     for (const existingCommand of applicationCommands.cache.values()) {
@@ -159,6 +156,8 @@ export default new Event<"ready">({
           processName: "CommandRegistrant",
           type: "Info",
         });
+
+        continue;
       }
     }
 

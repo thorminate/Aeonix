@@ -46,6 +46,9 @@ export default class EnvironmentManager extends CachedManager<Environment> {
       }
     }
 
+    this._ready = true;
+    this.emit("ready", total);
+
     return total;
   }
 }

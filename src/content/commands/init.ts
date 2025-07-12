@@ -44,7 +44,9 @@ export default new Interaction({
             },
           },
         ]),
-        new TextDisplayBuilder().setContent(welcomeMessage),
+        new TextDisplayBuilder().setContent(
+          welcomeMessage((await aeonix.commands.get("init"))?.id ?? "")
+        ),
         ...componentWrapper(onboarding0.data),
       ],
       flags: MessageFlags.IsComponentsV2,

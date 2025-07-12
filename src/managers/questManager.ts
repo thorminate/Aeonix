@@ -46,6 +46,9 @@ export default class QuestManager extends CachedManager<Quest> {
       }
     }
 
+    this._ready = true;
+    this.emit("ready", total);
+
     return total;
   }
 }

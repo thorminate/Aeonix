@@ -53,6 +53,8 @@ export default class RoleSelectMenuManager extends CachedManager<
       }
     }
 
+    this._ready = true;
+    this.emit("ready", total);
     return total;
   }
 }

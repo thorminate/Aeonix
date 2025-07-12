@@ -283,6 +283,7 @@ export default class Interaction<
   PassEnvironment extends boolean = false,
   AutocompletePassPlayer extends boolean = false
 > {
+  id?: string;
   data!: BuilderTypeFromInteractionType<InteractionType>;
   interactionType!: InteractionType;
   permissionsRequired?: Array<bigint>;

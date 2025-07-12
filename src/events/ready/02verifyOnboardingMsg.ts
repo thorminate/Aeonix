@@ -14,7 +14,8 @@ import onboarding0 from "../../content/buttons/onboarding0.js";
 
 // turn on word wrap to see the full message
 
-export const welcomeMessage = `Hello, and welcome to Aeonix! This server is primarily for testing my bot, although we have tons of RP mashed in too!
+export function welcomeMessage(initCommandId: string) {
+  return `Hello, and welcome to Aeonix! This server is primarily for testing my bot, although we have tons of RP mashed in too!
 
 You are currently not able to see any channels other than a few for the onboarding process and the non-player-hangout area. These channels are for setting you up, (such as initializing your persona into the database, the persona being your digital presence with Aeonix) we will also go through the skill system and how other important stats work.
 
@@ -22,7 +23,8 @@ When you have read through the information, please press the button below, and A
 
 By pressing 'Begin', you agree to the [Terms of Service](<https://github.com/thorminate/Aeonix/wiki/Terms-of-Service>) and [Privacy Policy](<https://github.com/thorminate/Aeonix/wiki/Privacy-Policy>).
 
-If the Begin button doesn't work (like 'this interaction failed'), you can run \`\`/init\`\` to refresh the prompt.`;
+If the Begin button doesn't work (like 'this interaction failed'), you can run </init:${initCommandId}> to refresh the prompt.`;
+}
 
 export const welcomeImage = new AttachmentBuilder("./assets/welcome.png", {
   name: "welcome.png",
@@ -68,7 +70,10 @@ export default new Event<"ready">({
       if (
         (lastMessage.components[1] as TextDisplayComponent).data.content
           .split("\n")
-          .join("") == welcomeMessage.split("\n").join("")
+          .join("") ==
+        welcomeMessage((await aeonix.commands.get("init"))?.id ?? "")
+          .split("\n")
+          .join("")
       ) {
         log({
           header: "Onboarding message already sent",
@@ -103,7 +108,9 @@ export default new Event<"ready">({
             },
           },
         ]),
-        new TextDisplayBuilder().setContent(welcomeMessage),
+        new TextDisplayBuilder().setContent(
+          welcomeMessage((await aeonix.commands.get("init"))?.id ?? "")
+        ),
         ...componentWrapper(onboarding0.data),
       ],
       flags: MessageFlags.IsComponentsV2,

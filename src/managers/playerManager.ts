@@ -29,6 +29,9 @@ export default class PlayerManager extends CachedManager<Player> {
       this.set(doc._id, instance);
     }
 
+    this._ready = true;
+    this.emit("ready", total);
+
     return total;
   }
 }
