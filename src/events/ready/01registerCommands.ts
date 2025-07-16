@@ -83,6 +83,12 @@ function areCommandsDifferent(
 
 export default new Event<"ready">({
   callback: async ({ aeonix }) => {
+    log({
+      header: "Registering commands",
+      processName: "CommandRegistrant",
+      type: "Info",
+    });
+
     const localCommands = await aeonix.commands.getAll();
     const applicationCommands = await getApplicationCommands(
       aeonix,

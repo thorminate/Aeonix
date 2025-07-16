@@ -9,8 +9,8 @@ import readline from "readline/promises";
 import log from "./utils/log.js";
 import mongoose from "mongoose";
 import { readFileSync } from "fs";
-import eventManager from "./handlers/eventHandlers.js";
-import cliManager from "./handlers/cliHandlers.js";
+import eventManager from "./handlers/eventHandler.js";
+import cliManager from "./handlers/cliHandler.js";
 import ButtonManager from "./managers/buttonManager.js";
 import CommandManager from "./managers/commandManager.js";
 import ChannelSelectMenuManager from "./managers/channelSelectMenuManager.js";
@@ -236,6 +236,8 @@ export default class Aeonix extends Client {
     }, 60 * 1000);
   }
 
+  // TODO: event handler doesn't wanna event handle!
+
   override on<Event extends keyof AeonixEvents>(
     event: Event,
     listener: (...args: AeonixEvents[Event]) => void
@@ -281,12 +283,6 @@ export default class Aeonix extends Client {
 }
 
 async function makeAllCaches(o: Aeonix) {
-  log({
-    header: "Making all caches",
-    processName: "AeonixConstructor",
-    type: "Info",
-  });
-
   await Promise.all([
     o.buttons.loadAll(),
     o.channelSelectMenus.loadAll(),
@@ -303,6 +299,12 @@ async function makeAllCaches(o: Aeonix) {
     o.stringSelectMenus.loadAll(),
     o.userSelectMenus.loadAll(),
   ]);
+
+  log({
+    header: "All caches made",
+    processName: "CacheOrchestrator",
+    type: "Info",
+  });
 
   return o;
 }

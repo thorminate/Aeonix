@@ -20,12 +20,10 @@ export default abstract class CachedManager<Holds> extends BaseManager {
     }
   }
 
-  abstract loadAll(noDuplicates: boolean): Promise<Holds[]>;
+  abstract loadAll(noDuplicates?: boolean): Promise<Holds[]>;
   async getAll(noCache = false) {
     await this.waitUntilReady();
-
-    const data = Array.from(this._cache.values());
-    return data.length > 0 && !noCache ? data : this.loadAll(noCache);
+    return !noCache ? this.array() : this.loadAll();
   }
 
   exists(id: string) {
