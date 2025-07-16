@@ -30,7 +30,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile && pnpm install -g @microsoft/eslint-formatter-sarif@3.1.0 eslint
+        run: pnpm install --frozen-lockfile && pnpm install @microsoft/eslint-formatter-sarif@3.1.0 eslint
 
       - name: Run ESLint
         env:
