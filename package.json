@@ -24,7 +24,7 @@
     "lint": "eslint . --ext .ts --fix --config ./eslint.config.js && tsc --noEmit"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.45.2",
+    "@dotenvx/dotenvx": "^1.48.2",
     "@typegoose/typegoose": "^12.17.0",
     "@types/node": "^24.0.14",
     "ansis": "^4.1.0",
