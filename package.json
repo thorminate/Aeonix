@@ -29,7 +29,7 @@
     "@types/node": "^24.0.15",
     "ansis": "^4.1.0",
     "discord.js": "^14.21.0",
-    "mongoose": "^8.16.4",
+    "mongoose": "^8.16.5",
     "package-json-type": "^1.0.3",
     "typescript": "^5.8.3",
     "zod": "^4.0.5"
