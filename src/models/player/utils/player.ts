@@ -59,15 +59,35 @@ export default class Player {
   @prop({ default: {}, type: Object })
   statusEffects: StatusEffects;
 
-  @prop({ type: () => String, required: true })
+  @prop({ type: () => Number, required: true })
   lastAccessed: number;
+
+  async refresh() {
+    const fresh = await aeonix.players.get(this._id);
+    if (!fresh) {
+      log({
+        header: "Player not found",
+        processName: "Player.refresh",
+        payload: this._id,
+        type: "Warn",
+      });
+      return;
+    }
+    Object.assign(this, fresh);
+  }
+
+  async refreshIfStale() {
+    if (!aeonix.players.exists(this._id)) await this.refresh();
+  }
 
   fetchUser(): User | undefined {
     return aeonix.users.cache.get(this._id);
   }
 
   async fetchEnvironmentChannel() {
-    return aeonix.channels.cache.get(this.location.channelId) as TextChannel;
+    return aeonix.channels.cache.get(this.location.channelId) as
+      | TextChannel
+      | undefined;
   }
 
   async fetchEnvironment() {
@@ -239,8 +259,6 @@ export default class Player {
       new: true,
       setDefaultsOnInsert: true,
     });
-
-    aeonix.players.set(this);
   }
 
   async delete(): Promise<void> {

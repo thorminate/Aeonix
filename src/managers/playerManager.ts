@@ -1,8 +1,8 @@
-import CachedManager from "../models/core/cachedManager.js";
+import LifecycleCachedManager from "../models/core/lifecycleCachedManager.js";
 import Player, { playerModel } from "../models/player/utils/player.js";
 import hardMerge from "../utils/hardMerge.js";
 
-export default class PlayerManager extends CachedManager<Player> {
+export default class PlayerManager extends LifecycleCachedManager<Player> {
   getKey(instance: Player): string {
     return instance._id;
   }

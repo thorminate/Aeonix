@@ -13,7 +13,6 @@ export default class StatusManager extends BaseManager {
     "Discovering",
     "Researching",
     "Delving into",
-    "Examining",
     "Investigating",
   ];
   nouns: string[] = [

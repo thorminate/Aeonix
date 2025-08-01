@@ -5,7 +5,7 @@ export default abstract class CachedManager<
   Holds,
   Key = string
 > extends BaseManager {
-  private _cache: Collection<Key, Holds> = new Collection<Key, Holds>();
+  protected _cache: Collection<Key, Holds> = new Collection<Key, Holds>();
   protected _ready = false;
   abstract getKey(instance: Holds): Key;
   onAccess?(instance: Holds): void;
@@ -15,20 +15,20 @@ export default abstract class CachedManager<
     await this.waitUntilReady();
 
     let instance = this._cache.get(id);
-    if (!instance) instance = await this.load(id);
+    if (!instance) {
+      instance = await this.load(id);
+      if (!instance) return;
+    }
 
-    if (!instance) return;
+    this.set(instance);
 
     if (runOnAccess) this.onAccess?.(instance);
     return instance;
   }
-  async refresh(id: Key) {
+  async prefetch(id: Key) {
     const instance = await this.load(id);
-    if (instance) {
-      this.set(instance);
-      this.onAccess?.(instance);
-    }
-    return instance;
+    if (!instance) return;
+    this.set(instance);
   }
 
   abstract loadAll(noDuplicates?: boolean): Promise<Holds[]>;
@@ -38,13 +38,11 @@ export default abstract class CachedManager<
     if (runOnAccess) instances.forEach((instance) => this.onAccess?.(instance));
     return instances;
   }
-  async refreshAll(noDuplicates?: boolean) {
-    const instances = await this.loadAll(noDuplicates);
+  async prefetchMultiple(ids: Key[]) {
+    const instances = await Promise.all(ids.map((id) => this.load(id)));
     instances.forEach((instance) => {
-      this.set(instance);
-      this.onAccess?.(instance);
+      if (instance) this.set(instance);
     });
-    return instances;
   }
 
   exists(id: Key) {
