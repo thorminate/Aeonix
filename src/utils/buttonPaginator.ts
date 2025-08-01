@@ -102,7 +102,7 @@ function createCollectors(
   let currentPage = 0;
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    time: 5 * 60 * 1000,
+    time: 15 * 60 * 1000,
   });
   collector.on("collect", async (buttonContext: ButtonInteraction) => {
     try {

@@ -3,6 +3,10 @@ import Player, { playerModel } from "../models/player/utils/player.js";
 import hardMerge from "../utils/hardMerge.js";
 
 export default class PlayerManager extends CachedManager<Player> {
+  override getKey(instance: Player): string {
+    return instance._id;
+  }
+
   async load(id: string): Promise<Player | undefined> {
     const doc = await playerModel.findById(id);
     if (!doc) return undefined;
@@ -10,7 +14,7 @@ export default class PlayerManager extends CachedManager<Player> {
     const player = new Player();
     const instance = hardMerge(player, doc.toObject(), player.getClassMap());
 
-    this.set(instance._id, instance);
+    this.set(instance);
     return instance;
   }
 
@@ -26,7 +30,7 @@ export default class PlayerManager extends CachedManager<Player> {
       const instance = hardMerge(player, doc.toObject(), player.getClassMap());
 
       total.push(instance);
-      this.set(doc._id, instance);
+      this.set(instance);
     }
 
     this._ready = true;

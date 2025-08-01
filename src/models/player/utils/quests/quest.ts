@@ -20,9 +20,7 @@ export default abstract class Quest {
 
     if (this.onFulfill) this.onFulfill(player);
 
-    player.commit().catch((e) => {
-      console.error("Error saving player after quest fulfillment:", e);
-    });
+    //await player.commit()
   }
 
   abstract onFulfill(player: Player): void;

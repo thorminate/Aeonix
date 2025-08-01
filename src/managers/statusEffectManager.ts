@@ -12,6 +12,10 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const folderPath = path.join(__dirname, "..", "content", "statusEffects");
 
 export default class StatusEffectManager extends CachedManager<StatusEffect> {
+  getKey(instance: StatusEffect): string {
+    return instance.type;
+  }
+
   async load(customId: string): Promise<StatusEffect | undefined> {
     const files = await getAllFiles(folderPath);
 
@@ -38,10 +42,10 @@ export default class StatusEffectManager extends CachedManager<StatusEffect> {
 
       const instance = new importedFile();
 
-      const id = instance.type;
+      const id = this.getKey(instance);
 
       if (id && (!noDuplicates || !this.exists(id))) {
-        this.set(id, instance);
+        this.set(instance);
         total.push(instance);
       }
     }

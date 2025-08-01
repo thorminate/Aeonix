@@ -9,42 +9,6 @@ export default class Inbox extends PlayerSubclassBase {
     this.letters.push(letter);
   }
 
-  read(letterId: string): Letter | undefined {
-    const letter = this.letters.find((l) => l.id === letterId);
-
-    if (!letter) return;
-
-    this.letters = this.letters.map((l) =>
-      l.id === letterId ? ({ ...l, isRead: true } as Letter) : l
-    );
-
-    return letter;
-  }
-
-  archive(letterId: string): Letter | undefined {
-    const letter = this.letters.find((l) => l.id === letterId);
-
-    if (!letter) return;
-
-    this.letters = this.letters.map((l) =>
-      l.id === letterId ? ({ ...l, isArchived: true } as Letter) : l
-    );
-
-    return letter;
-  }
-
-  unarchive(letterId: string): Letter | undefined {
-    const letter = this.letters.find((l) => l.id === letterId);
-
-    if (!letter) return;
-
-    this.letters = this.letters.map((l) =>
-      l.id === letterId ? ({ ...l, isArchived: false } as Letter) : l
-    );
-
-    return letter;
-  }
-
   getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {
       letters: Letter as ConcreteConstructor<Letter>,

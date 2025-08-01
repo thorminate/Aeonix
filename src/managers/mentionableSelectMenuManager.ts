@@ -24,6 +24,21 @@ const folderPath = path.join(
 export default class MentionableSelectMenuManager extends CachedManager<
   Interaction<"mentionableSelectMenu", boolean, boolean, boolean, boolean>
 > {
+  getKey(
+    instance: Interaction<
+      "mentionableSelectMenu",
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      false
+    >
+  ): string {
+    const key = instance.data.data.custom_id;
+    if (!key) throw new Error("No custom_id found in mentionableSelectMenu");
+    return key;
+  }
+
   async load(
     customId: string
   ): Promise<
@@ -59,7 +74,7 @@ export default class MentionableSelectMenuManager extends CachedManager<
       const id = importedFile.data.data.custom_id;
 
       if (id && (!noDuplicates || !this.exists(id))) {
-        this.set(id, importedFile);
+        this.set(importedFile);
         total.push(importedFile);
       }
     }

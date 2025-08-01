@@ -12,6 +12,12 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const folderPath = path.join(__dirname, "..", "content", "letters");
 
 export default class LetterManager extends CachedManager<Letter> {
+  getKey(instance: Letter): string {
+    const id = instance.type;
+    if (!id) throw new Error("No type found in letter");
+    return id;
+  }
+
   async load(customId: string): Promise<Letter | undefined> {
     const files = await getAllFiles(folderPath);
 
@@ -38,10 +44,10 @@ export default class LetterManager extends CachedManager<Letter> {
 
       const instance = new importedFile();
 
-      const id = instance.type;
+      const id = this.getKey(instance);
 
       if (id && (!noDuplicates || !this.exists(id))) {
-        this.set(id, instance);
+        this.set(instance);
         total.push(instance);
       }
     }

@@ -13,6 +13,20 @@ const folderPath = path.join(__dirname, "..", "content", "roleSelectMenus");
 export default class RoleSelectMenuManager extends CachedManager<
   Interaction<"roleSelectMenu", boolean, boolean, boolean, boolean>
 > {
+  getKey(
+    instance: Interaction<
+      "roleSelectMenu",
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      false
+    >
+  ): string {
+    const key = instance.data.data.custom_id;
+    if (!key) throw new Error("No custom_id found in roleSelectMenu");
+    return key;
+  }
   async load(
     customId: string
   ): Promise<
@@ -45,10 +59,10 @@ export default class RoleSelectMenuManager extends CachedManager<
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile: Holds = (await import(fileUrl.toString())).default;
 
-      const id = importedFile.data.data.custom_id;
+      const id = this.getKey(importedFile);
 
       if (id && (!noDuplicates || !this.exists(id))) {
-        this.set(id, importedFile);
+        this.set(importedFile);
         total.push(importedFile);
       }
     }

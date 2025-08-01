@@ -1,41 +1,48 @@
 import { Collection } from "discord.js";
 import BaseManager from "./baseManager.js";
 
-export default abstract class CachedManager<Holds> extends BaseManager {
-  private _cache: Collection<string, Holds> = new Collection<string, Holds>();
-
+export default abstract class CachedManager<
+  Holds,
+  Key = string
+> extends BaseManager {
+  private _cache: Collection<Key, Holds> = new Collection<Key, Holds>();
   protected _ready = false;
 
-  isReady() {
-    return this._ready;
-  }
+  abstract getKey(instance: Holds): Key;
 
-  abstract load(id: string): Promise<Holds | undefined>;
-  async get(id: string, noCache = false) {
+  abstract load(id: Key): Promise<Holds | undefined>;
+  async get(id: Key) {
     await this.waitUntilReady();
-    if (noCache) {
-      return this.load(id);
-    } else {
-      return this._cache.get(id);
-    }
+    return this._cache.get(id);
+  }
+  async refresh(id: Key) {
+    const instance = await this.load(id);
+    if (instance) this.set(instance);
+    return instance;
   }
 
   abstract loadAll(noDuplicates?: boolean): Promise<Holds[]>;
-  async getAll(noCache = false) {
+  async getAll() {
     await this.waitUntilReady();
-    return !noCache ? this.array() : this.loadAll();
+    return this.array();
+  }
+  async refreshAll(noDuplicates?: boolean) {
+    const instances = await this.loadAll(noDuplicates);
+    instances.forEach((instance) => this.set(instance));
+    return instances;
   }
 
-  exists(id: string) {
+  exists(id: Key) {
     return this._cache.has(id);
   }
 
-  delete(id: string) {
+  delete(id: Key) {
     this._cache.delete(id);
   }
 
-  set(id: string, data: Holds) {
-    this._cache.set(id, data);
+  set(data: Holds) {
+    const key = this.getKey(data);
+    this._cache.set(key, data);
   }
 
   array() {
@@ -49,8 +56,6 @@ export default abstract class CachedManager<Holds> extends BaseManager {
           resolve();
         });
       });
-    } else {
-      return Promise.resolve();
     }
   }
 }

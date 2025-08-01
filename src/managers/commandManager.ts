@@ -13,6 +13,13 @@ const folderPath = path.join(__dirname, "..", "content", "commands");
 export default class CommandManager extends CachedManager<
   Interaction<"command", boolean, boolean, boolean, boolean>
 > {
+  getKey(
+    instance: Interaction<"command", boolean, boolean, boolean, boolean, false>
+  ): string {
+    const key = instance.data.name;
+    if (!key) throw new Error("No name found in command");
+    return key;
+  }
   async load(
     customId: string
   ): Promise<
@@ -42,10 +49,10 @@ export default class CommandManager extends CachedManager<
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile: Holds = (await import(fileUrl.toString())).default;
 
-      const id = importedFile.data.name;
+      const id = this.getKey(importedFile);
 
       if (id && (!noDuplicates || !this.exists(id))) {
-        this.set(id, importedFile);
+        this.set(importedFile);
         total.push(importedFile);
       }
     }

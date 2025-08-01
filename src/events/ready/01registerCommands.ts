@@ -147,7 +147,7 @@ export default new Event<"ready">({
 
       localCommand.id = existingCommand?.id;
 
-      aeonix.commands.set(localCommand.data.name, localCommand);
+      aeonix.commands.set(localCommand);
     }
 
     for (const existingCommand of applicationCommands.cache.values()) {

@@ -42,7 +42,7 @@ function createCollectors(message: Message, player: Player) {
         return;
       }
 
-      await player.commit();
+      //await player.commit();
 
       await buttonContext.update({
         content: `You have moved to ${buttonContext.customId.split("-")[1]}.`,

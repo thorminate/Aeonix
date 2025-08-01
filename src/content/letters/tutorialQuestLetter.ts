@@ -10,7 +10,7 @@ export default class TutorialQuestLetter extends Letter {
     "I'm looking for some help. Can you help me? I'll give more details if you accept the quest.";
   interactable: boolean = true;
   interactionType: string = "Accept quest";
-  canDismiss: boolean = true;
+  canDismiss: boolean = false;
 
   override onInteract(player: Player): void {
     player.quests.append(new TutorialQuest());

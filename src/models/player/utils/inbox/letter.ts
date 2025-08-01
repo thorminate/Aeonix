@@ -10,8 +10,8 @@ export default abstract class Letter {
   abstract interactable: boolean;
   abstract interactionType: string;
   abstract canDismiss?: boolean;
-  isRead = false;
-  isArchived = false;
+  isRead: boolean = false;
+  isArchived: boolean = false;
 
   get id() {
     if (!this._id) this._id = randomUUID();

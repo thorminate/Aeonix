@@ -27,9 +27,15 @@ import StatusManager from "./managers/statusManager.js";
 import PlayerManager from "./managers/playerManager.js";
 import QuestManager from "./managers/questManager.js";
 import { IPackageJson } from "package-json-type";
+import { commitAllPlayers } from "./events/tick/commitAllPlayers.js";
 
 export type AeonixEvents = ClientEvents & {
-  tick: [currentTime: number];
+  tick: [
+    currentTime: number,
+    currentDay: number,
+    currentMonth: number,
+    currentYear: number
+  ];
 };
 
 export default class Aeonix extends Client {
@@ -37,6 +43,9 @@ export default class Aeonix extends Client {
   db = mongoose;
 
   private _currentTime = 1;
+  private _currentDay = 1;
+  private _currentMonth = 1;
+  private _currentYear = 1;
 
   playerRoleId: string = process.env.PLAYER_ROLE || "";
   guildId: string = process.env.GUILD_ID || "";
@@ -83,10 +92,25 @@ export default class Aeonix extends Client {
   tick() {
     this._currentTime += 1;
     if (this._currentTime > 24) {
-      this._currentTime = 1; // Reset to 1 if the time exceeds 24
+      this._currentTime = 1;
+      this._currentDay += 1;
+      if (this._currentDay > 30) {
+        this._currentDay = 1;
+        this._currentMonth += 1;
+        if (this._currentMonth > 12) {
+          this._currentMonth = 1;
+          this._currentYear += 1;
+        }
+      }
     }
 
-    this.emit("tick", this.currentTime);
+    this.emit(
+      "tick",
+      this.currentTime,
+      this._currentDay,
+      this._currentMonth,
+      this._currentYear
+    );
   }
 
   async exit(code: number = 0) {
@@ -97,6 +121,7 @@ export default class Aeonix extends Client {
       doNotPrompt: true,
     });
     try {
+      commitAllPlayers(this);
       if (this.user) {
         this.user.setPresence({ status: "invisible" });
       }
@@ -115,7 +140,7 @@ export default class Aeonix extends Client {
 
   constructor(rl: readline.Interface) {
     log({
-      header: "Initializing Aeonix...",
+      header: "Starting boot-up sequence",
       processName: "AeonixConstructor",
       type: "Info",
     });
@@ -195,6 +220,14 @@ export default class Aeonix extends Client {
           return;
         }
 
+        eventManager(this).then(() => {
+          log({
+            header: "Event handler initialized.",
+            processName: "EventHandler",
+            type: "Info",
+          });
+        });
+
         await Promise.all([
           mongoose.connect(mdbToken),
           this.login(dscToken),
@@ -211,14 +244,6 @@ export default class Aeonix extends Client {
         });
 
         await makeAllCaches(this);
-
-        eventManager(this).then(() => {
-          log({
-            header: "Event handler ready to rumble!",
-            processName: "EventHandler",
-            type: "Info",
-          });
-        });
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",
@@ -233,10 +258,8 @@ export default class Aeonix extends Client {
     setInterval(() => {
       this.status.refresh();
       this.tick();
-    }, 60 * 1000);
+    }, 15 * 60 * 1000);
   }
-
-  // TODO: event handler doesn't wanna event handle!
 
   override on<Event extends keyof AeonixEvents>(
     event: Event,

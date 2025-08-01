@@ -121,7 +121,7 @@ function createCollectors(
 
           player.inventory.entries[activeEntryIndex] = item;
 
-          await player.commit();
+          //await player.commit();
 
           await context.update({
             content: `**${item.name}**\n${usageResult.message}`,

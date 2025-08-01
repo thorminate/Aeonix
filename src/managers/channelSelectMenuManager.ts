@@ -19,6 +19,21 @@ const folderPath = path.join(__dirname, "..", "content", "channelSelectMenus");
 export default class ChannelSelectMenuManager extends CachedManager<
   Interaction<"channelSelectMenu", boolean, boolean, boolean, boolean>
 > {
+  getKey(
+    instance: Interaction<
+      "channelSelectMenu",
+      boolean,
+      boolean,
+      boolean,
+      boolean,
+      false
+    >
+  ): string {
+    const key = instance.data.data.custom_id;
+    if (!key) throw new Error("No custom_id found in channelSelectMenu");
+    return key;
+  }
+
   async load(
     customId: string
   ): Promise<
@@ -51,10 +66,10 @@ export default class ChannelSelectMenuManager extends CachedManager<
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile: Holds = (await import(fileUrl.toString())).default;
 
-      const id = importedFile.data.data.custom_id;
+      const id = this.getKey(importedFile);
 
       if (id && (!noDuplicates || !this.exists(id))) {
-        this.set(id, importedFile);
+        this.set(importedFile);
         total.push(importedFile);
       }
     }

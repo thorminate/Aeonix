@@ -83,17 +83,6 @@ export default new Event<"interactionCreate">({
         ? await aeonix.userSelectMenus.get(id)
         : undefined;
 
-    if (!interaction) {
-      log({
-        header:
-          "An interaction was received but no local content were found matching it.",
-        processName: "InteractionHandler",
-        payload: context,
-        type: "Error",
-      });
-      return;
-    }
-
     if (!interaction) return;
 
     if (

@@ -12,6 +12,12 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const folderPath = path.join(__dirname, "..", "content", "environments");
 
 export default class EnvironmentManager extends CachedManager<Environment> {
+  getKey(instance: Environment): string {
+    const key = instance.type;
+    if (!key) throw new Error("No type found in environment");
+    return key;
+  }
+
   async load(customId: string): Promise<Environment | undefined> {
     const files = await getAllFiles(folderPath);
 
@@ -41,7 +47,7 @@ export default class EnvironmentManager extends CachedManager<Environment> {
       const id = instance.type;
 
       if (id && (!noDuplicates || !this.exists(id))) {
-        this.set(id, instance);
+        this.set(instance);
         total.push(instance);
       }
     }

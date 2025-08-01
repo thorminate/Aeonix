@@ -31,6 +31,7 @@ import {
   Severity,
 } from "@typegoose/typegoose";
 import Quests from "./quests/quests.js";
+import Settings from "./settings/settings.js";
 
 @modelOptions({
   options: {
@@ -42,19 +43,21 @@ export default class Player {
   _id: string;
 
   @prop({ default: {}, type: Object })
-  persona: Persona;
-  @prop({ default: {}, type: Object })
-  location: Location;
-  @prop({ default: {}, type: Object })
-  statusEffects: StatusEffects;
+  inbox: Inbox;
   @prop({ default: {}, type: Object })
   inventory: Inventory;
   @prop({ default: {}, type: Object })
-  stats: Stats;
+  location: Location;
   @prop({ default: {}, type: Object })
-  inbox: Inbox;
+  persona: Persona;
   @prop({ default: {}, type: Object })
   quests: Quests;
+  @prop({ default: {}, type: Object })
+  settings: Settings;
+  @prop({ default: {}, type: Object })
+  stats: Stats;
+  @prop({ default: {}, type: Object })
+  statusEffects: StatusEffects;
 
   fetchUser(): User | undefined {
     return aeonix.users.cache.get(this._id);
@@ -234,7 +237,7 @@ export default class Player {
       setDefaultsOnInsert: true,
     });
 
-    aeonix.players.set(this._id, this);
+    aeonix.players.set(this);
   }
 
   async delete(): Promise<void> {
@@ -287,13 +290,14 @@ export default class Player {
 
   constructor(user?: User, displayName?: string, personaAvatar?: string) {
     this._id = user?.id ?? "";
-    this.persona = new Persona(displayName || "", personaAvatar || "");
-    this.statusEffects = new StatusEffects();
-    this.stats = new Stats();
-    this.inventory = new Inventory();
     this.inbox = new Inbox();
-    this.quests = new Quests();
+    this.inventory = new Inventory();
     this.location = new Location();
+    this.persona = new Persona(displayName || "", personaAvatar || "");
+    this.quests = new Quests();
+    this.settings = new Settings();
+    this.stats = new Stats();
+    this.statusEffects = new StatusEffects();
   }
 }
 
