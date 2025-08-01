@@ -27,7 +27,7 @@ import StatusManager from "./managers/statusManager.js";
 import PlayerManager from "./managers/playerManager.js";
 import QuestManager from "./managers/questManager.js";
 import { IPackageJson } from "package-json-type";
-import { commitAllPlayers } from "./events/tick/commitAllPlayers.js";
+import { tickPlayers } from "./events/tick/tickPlayers.js";
 
 export type AeonixEvents = ClientEvents & {
   tick: [
@@ -41,6 +41,8 @@ export type AeonixEvents = ClientEvents & {
 export default class Aeonix extends Client {
   rl: readline.Interface;
   db = mongoose;
+
+  tickInterval: number = 30 * 1000;
 
   private _currentTime = 1;
   private _currentDay = 1;
@@ -121,7 +123,7 @@ export default class Aeonix extends Client {
       doNotPrompt: true,
     });
     try {
-      commitAllPlayers(this);
+      tickPlayers(this);
       if (this.user) {
         this.user.setPresence({ status: "invisible" });
       }
@@ -258,7 +260,7 @@ export default class Aeonix extends Client {
     setInterval(() => {
       this.status.refresh();
       this.tick();
-    }, 15 * 60 * 1000);
+    }, this.tickInterval);
   }
 
   override on<Event extends keyof AeonixEvents>(

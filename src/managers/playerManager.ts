@@ -3,8 +3,12 @@ import Player, { playerModel } from "../models/player/utils/player.js";
 import hardMerge from "../utils/hardMerge.js";
 
 export default class PlayerManager extends CachedManager<Player> {
-  override getKey(instance: Player): string {
+  getKey(instance: Player): string {
     return instance._id;
+  }
+
+  override onAccess(instance: Player): void {
+    instance.lastAccessed = Date.now();
   }
 
   async load(id: string): Promise<Player | undefined> {

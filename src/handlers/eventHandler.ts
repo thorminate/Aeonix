@@ -41,14 +41,7 @@ export default async (aeonix: Aeonix) => {
           await eventModule.default
             .callback(new EventParams(aeonix, ...args))
             .catch((e: unknown) => {
-              eventModule.default.onError(e).catch((e: unknown) =>
-                log({
-                  header: `Error in event ${eventName}`,
-                  processName: "EventHandler",
-                  type: "Error",
-                  payload: e,
-                })
-              );
+              eventModule.default.onError(e);
             });
         }
       });

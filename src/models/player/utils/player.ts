@@ -59,6 +59,9 @@ export default class Player {
   @prop({ default: {}, type: Object })
   statusEffects: StatusEffects;
 
+  @prop({ type: () => String, required: true })
+  lastAccessed: number;
+
   fetchUser(): User | undefined {
     return aeonix.users.cache.get(this._id);
   }
@@ -245,7 +248,7 @@ export default class Player {
       _id: this._id,
     } as Record<string, string>);
 
-    await aeonix.players.delete(this._id);
+    aeonix.players.release(this._id);
   }
 
   getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
@@ -298,6 +301,8 @@ export default class Player {
     this.settings = new Settings();
     this.stats = new Stats();
     this.statusEffects = new StatusEffects();
+
+    this.lastAccessed = Date.now();
   }
 }
 
