@@ -1,5 +1,5 @@
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
-import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
+import { PlayerSubclassBase } from "../types/playerSubclassBase.js";
 import Quest from "./quest.js";
 
 export default class Quests extends PlayerSubclassBase {

@@ -1,4 +1,4 @@
-import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
+import { PlayerSubclassBase } from "../types/playerSubclassBase.js";
 import calculateXpRequirement from "./calculateXpRequirement.js";
 
 export default class Stats extends PlayerSubclassBase {

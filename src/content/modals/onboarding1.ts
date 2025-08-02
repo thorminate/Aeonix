@@ -140,7 +140,9 @@ export default new Interaction({
 
     player.inbox.add(new TutorialQuestLetter());
 
-    //await player.commit();
+    await player.commit();
+
+    aeonix.players.set(player);
 
     await startChannel.send({
       content: `<@${context.user.id}> has joined the game! Please check your inbox for further instructions (\`/inbox\`).`,

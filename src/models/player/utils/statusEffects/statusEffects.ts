@@ -1,5 +1,5 @@
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
-import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
+import { PlayerSubclassBase } from "../types/playerSubclassBase.js";
 import StatusEffect from "./statusEffect.js";
 
 export default class StatusEffects extends PlayerSubclassBase {

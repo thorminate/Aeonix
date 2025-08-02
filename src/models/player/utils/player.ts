@@ -22,7 +22,7 @@ import Inbox from "./inbox/inbox.js";
 import Location from "./location/location.js";
 import Persona from "./persona/persona.js";
 import StatusEffects from "./statusEffects/statusEffects.js";
-import { PlayerSubclassBase } from "./types/PlayerSubclassBase.js";
+import { PlayerSubclassBase } from "./types/playerSubclassBase.js";
 import hardMerge from "../../../utils/hardMerge.js";
 import {
   getModelForClass,
@@ -62,34 +62,14 @@ export default class Player {
   @prop({ type: () => Number, required: true })
   lastAccessed: number;
 
-  async refresh() {
-    const fresh = await aeonix.players.get(this._id);
-    if (!fresh) {
-      log({
-        header: "Player not found",
-        processName: "Player.refresh",
-        payload: this._id,
-        type: "Warn",
-      });
-      return;
-    }
-    Object.assign(this, fresh);
-  }
-
-  async refreshIfStale() {
-    if (!aeonix.players.exists(this._id)) await this.refresh();
-  }
-
-  fetchUser(): User | undefined {
+  async fetchUser() {
     return aeonix.users.cache.get(this._id);
   }
-
   async fetchEnvironmentChannel() {
     return aeonix.channels.cache.get(this.location.channelId) as
       | TextChannel
       | undefined;
   }
-
   async fetchEnvironment() {
     return aeonix.environments.get(this.location.id);
   }
@@ -190,7 +170,7 @@ export default class Player {
       return false;
     }
 
-    const thisUser = this.fetchUser();
+    const thisUser = await this.fetchUser();
 
     if (!thisUser) return false;
 
@@ -260,7 +240,6 @@ export default class Player {
       setDefaultsOnInsert: true,
     });
   }
-
   async delete(): Promise<void> {
     await playerModel.findByIdAndDelete({
       _id: this._id,

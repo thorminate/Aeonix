@@ -88,7 +88,7 @@ function lettersOnlyContainArchived(letters: Letter[]) {
   return letters.every((letter) => letter.isArchived === true);
 }
 
-function generateEndOfPageActionRow(showArchived: boolean) {
+function generatePageActionRow(showArchived: boolean) {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId("#toggleArchived")
@@ -109,7 +109,7 @@ function generateContainerPages({
       )
     );
 
-    page.addActionRowComponents(generateEndOfPageActionRow(showArchived));
+    page.addActionRowComponents(generatePageActionRow(showArchived));
 
     page.addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large)
@@ -233,7 +233,6 @@ export default new Interaction({
             });
             break;
           }
-
           case "#toggleArchived": {
             player.settings.indexShowArchived =
               !player.settings.indexShowArchived;

@@ -1,6 +1,6 @@
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
 import Item from "../../../item/item.js";
-import { PlayerSubclassBase } from "../types/PlayerSubclassBase.js";
+import { PlayerSubclassBase } from "../types/playerSubclassBase.js";
 
 export default class Inventory extends PlayerSubclassBase {
   capacity: number = 10;
