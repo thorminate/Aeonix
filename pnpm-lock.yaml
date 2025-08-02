@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@dotenvx/dotenvx':
-        specifier: ^1.48.2
-        version: 1.48.2
+        specifier: ^1.48.3
+        version: 1.48.3
       '@typegoose/typegoose':
         specifier: ^12.17.0
         version: 12.17.0(mongoose@8.16.5(socks@2.8.5))
@@ -79,8 +79,8 @@ packages:
     resolution: {integrity: sha512-wPlQDxEmlDg5IxhJPuxXr3Vy9AjYq5xCvFWGJyD7w7Np8ZGu+Mc+97LCoEc/+AYCo2IDpKioiH0/c/mj5ZR9Uw==}
     engines: {node: '>=16.11.0'}
 
-  '@dotenvx/dotenvx@1.48.2':
-    resolution: {integrity: sha512-6ui++YMlQwXsP3p5wmwwxK79Xe6a4PLI64aN2mdbAf2154wrsLEhKNsAqk8QXyra/kBFKgdO3ssBzoIWaont8g==}
+  '@dotenvx/dotenvx@1.48.3':
+    resolution: {integrity: sha512-7Tk0Rzgz0SEkaJRGijbKtVDHHztHz9fyXwcDT86VtD1fGVRirk4aBKUud1PEQdhwcg+jDblKGoXeA+I7J60CxQ==}
     hasBin: true
 
   '@ecies/ciphers@0.2.4':
@@ -907,7 +907,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@dotenvx/dotenvx@1.48.2':
+  '@dotenvx/dotenvx@1.48.3':
     dependencies:
       commander: 11.1.0
       dotenv: 16.6.1
