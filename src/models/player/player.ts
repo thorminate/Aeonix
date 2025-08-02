@@ -22,7 +22,6 @@ import Inbox from "./utils/inbox/inbox.js";
 import Location from "./utils/location/location.js";
 import Persona from "./utils/persona/persona.js";
 import StatusEffects from "./utils/statusEffects/statusEffects.js";
-import { PlayerSubclassBase } from "./utils/types/playerSubclassBase.js";
 import hardMerge from "../../utils/hardMerge.js";
 import {
   getModelForClass,
@@ -32,6 +31,8 @@ import {
 } from "@typegoose/typegoose";
 import Quests from "./utils/quests/quests.js";
 import Settings from "./utils/settings/settings.js";
+import { PlayerSubclassBase } from "./utils/types/playerSubclassBase.js";
+import PlayerRef from "./utils/types/playerRef.js";
 
 @modelOptions({
   options: {
@@ -286,6 +287,9 @@ export default class Player {
       string,
       new (...args: unknown[]) => unknown
     >;
+  }
+  toRef() {
+    return new PlayerRef(this._id, this);
   }
 
   constructor(user?: User, displayName?: string, personaAvatar?: string) {

@@ -45,8 +45,14 @@ export default abstract class CachedManager<
     });
   }
 
-  exists(id: Key) {
+  has(id: Key) {
     return this._cache.has(id);
+  }
+
+  async exists(id: Key) {
+    if (this._cache.has(id)) return true;
+    else if (await this.load(id)) return true;
+    else return false;
   }
 
   release(id: Key) {
@@ -69,6 +75,13 @@ export default abstract class CachedManager<
           resolve();
         });
       });
+    }
+  }
+
+  markReady() {
+    if (!this._ready) {
+      this._ready = true;
+      this.emit("ready");
     }
   }
 }

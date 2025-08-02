@@ -1,9 +1,9 @@
-import Player from "../../player/player.js";
+import PlayerRef from "../../player/utils/types/playerRef.js";
 
 export default class ItemUsageContext {
-  player: Player;
+  player: PlayerRef;
 
-  constructor(player: Player) {
+  constructor(player: PlayerRef) {
     this.player = player;
   }
 }

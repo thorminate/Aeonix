@@ -15,14 +15,16 @@ export default new Interaction({
   passEnvironment: false,
 
   callback: async ({ context, player }) => {
-    const playerEnv = await player.fetchEnvironment();
+    const playerEnv = await player.use(async (p) => {
+      return await p.fetchEnvironment();
+    });
 
     if (!playerEnv) {
       await context.editReply("You are not in an environment.");
       return;
     }
 
-    const isAdmin = await player.isAdmin();
+    const isAdmin = await player.use(async (p) => p.isAdmin());
 
     if (isAdmin) {
       await context.editReply(

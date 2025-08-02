@@ -35,10 +35,10 @@ export default class WeaponItem extends Item {
     return new ItemEventResult("Your weapon took damage!", true);
   }
 
-  async use(context: ItemUsageContext): Promise<ItemUsageResult> {
-    const { player } = context;
-
-    player.stats.giveXpFromRange(5, 10);
+  async use({ player }: ItemUsageContext): Promise<ItemUsageResult> {
+    await player.use(async (p) => {
+      p.stats.giveXpFromRange(5, 10);
+    });
     this.data.wear++;
     return new ItemUsageResult("Sword Swung!", true);
   }

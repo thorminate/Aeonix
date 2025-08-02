@@ -33,10 +33,10 @@ export default abstract class Environment {
     });
   }
 
-  async fetchChannel(): Promise<TextChannel | null> {
+  async fetchChannel(): Promise<TextChannel | undefined> {
     return (await aeonix.channels
       .fetch(this.channelId, { force: true })
-      .catch(() => null)) as TextChannel | null;
+      .catch(() => undefined)) as TextChannel | undefined;
   }
 
   adjacentTo(environment: Environment | string): boolean {

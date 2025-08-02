@@ -52,8 +52,7 @@ export default class EnvironmentManager extends CachedManager<Environment> {
       }
     }
 
-    this._ready = true;
-    this.emit("ready", total);
+    this.markReady();
 
     return total;
   }

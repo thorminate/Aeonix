@@ -42,7 +42,7 @@ export default class Aeonix extends Client {
   rl: readline.Interface;
   db = mongoose;
 
-  tickInterval: number = 15 * 60 * 1000;
+  tickInterval: number = 10 * 1000;
 
   private _currentTime = 1;
   private _currentDay = 1;
@@ -317,8 +317,8 @@ async function makeAllCaches(o: Aeonix) {
     o.letters.loadAll(),
     o.mentionableSelectMenus.loadAll(),
     o.modals.loadAll(),
+    o.players.markReady(),
     o.quests.loadAll(),
-    o.players.loadAll(),
     o.roleSelectMenus.loadAll(),
     o.statusEffects.loadAll(),
     o.stringSelectMenus.loadAll(),

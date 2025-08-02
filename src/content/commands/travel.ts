@@ -7,11 +7,12 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import log from "../../utils/log.js";
-import Player from "../../models/player/player.js";
 import paginator from "../../utils/buttonPaginator.js";
 import Interaction, { ITypes } from "../../models/core/interaction.js";
+import PlayerRef from "../../models/player/utils/types/playerRef.js";
+import PlayerMoveToResult from "../../models/player/utils/types/playerMoveToResult.js";
 
-function createCollectors(message: Message, player: Player) {
+function createCollectors(message: Message, player: PlayerRef) {
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
     time: 5 * 60 * 1000,
@@ -19,9 +20,12 @@ function createCollectors(message: Message, player: Player) {
 
   collector.on("collect", async (buttonContext: ButtonInteraction) => {
     try {
-      const result = await player.moveTo(
-        buttonContext.customId.split("-")[1] || ""
-      );
+      let result: undefined | PlayerMoveToResult;
+      player.use(async (p) => {
+        result = await p.moveTo(buttonContext.customId.split("-")[1] || "");
+      });
+
+      if (!result) buttonContext.update({ content: "Something went wrong." });
 
       if (
         result === "invalid location" ||
@@ -41,8 +45,6 @@ function createCollectors(message: Message, player: Player) {
         });
         return;
       }
-
-      //await player.commit();
 
       await buttonContext.update({
         content: `You have moved to ${buttonContext.customId.split("-")[1]}.`,

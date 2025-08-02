@@ -23,7 +23,7 @@ export default new Interaction({
   passEnvironment: false,
 
   callback: async ({ context, aeonix }) => {
-    if (aeonix.players.exists(context.user.id)) {
+    if (await aeonix.players.exists(context.user.id)) {
       await context.reply({
         content:
           "You have already initialized your persona. Do you wish to delete it?",

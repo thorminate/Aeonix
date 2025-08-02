@@ -23,7 +23,7 @@ export default new Interaction({
   ephemeral: true,
 
   callback: async ({ context, aeonix }) => {
-    if (aeonix.players.exists(context.user.id)) {
+    if (await aeonix.players.exists(context.user.id)) {
       const buttons = componentWrapper(deletePlayer.data);
 
       await context.editReply({

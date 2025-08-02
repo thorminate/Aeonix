@@ -17,7 +17,9 @@ export default new Interaction({
   passPlayer: true,
 
   callback: async ({ context, player, aeonix }) => {
-    const channel = await player.fetchEnvironmentChannel();
+    const channel = await player.use(
+      async (p) => await p.fetchEnvironmentChannel()
+    );
 
     if (!channel) {
       log({
@@ -35,7 +37,9 @@ export default new Interaction({
       "Player deleted"
     );
 
-    await player.delete();
+    await player.use(async (p) => {
+      await p.delete();
+    });
 
     await context.update({
       content: "Your persona has been deleted.",

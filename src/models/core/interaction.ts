@@ -22,10 +22,10 @@ import {
   UserSelectMenuBuilder,
   UserSelectMenuInteraction,
 } from "discord.js";
-import Player from "../player/player.js";
 import hardMerge from "../../utils/hardMerge.js";
 import Environment from "../environment/environment.js";
 import Aeonix from "../../aeonix.js";
+import PlayerRef from "../player/utils/types/playerRef.js";
 
 export type ButtonContext = Omit<
   ButtonInteraction<CacheType>,
@@ -188,7 +188,7 @@ export interface SeeInteractionErrorPropertyForMoreDetails_3<> {
 type AutocompleteCallback<PassPlayer extends boolean> = PassPlayer extends true
   ? (masterContext: {
       context: AutocompleteInteraction<CacheType>;
-      player: Player;
+      player: PlayerRef;
     }) => Promise<{ name: string; value: string }[]>
   : (masterContext: {
       context: AutocompleteInteraction<CacheType>;
@@ -220,13 +220,13 @@ type InteractionCallback<
     ? PassEnvironment extends true
       ? (masterContext: {
           context: ContextTypeFromInteractionType<InteractionType>;
-          player: Player;
+          player: PlayerRef;
           environment: Environment;
           aeonix: Aeonix;
         }) => Promise<void>
       : (masterContext: {
           context: ContextTypeFromInteractionType<InteractionType>;
-          player: Player;
+          player: PlayerRef;
           aeonix: Aeonix;
         }) => Promise<void>
     : PassEnvironment extends true
@@ -249,13 +249,13 @@ type InteractionCallback<
   ? PassEnvironment extends true
     ? (masterContext: {
         context: RawInteractionTypeFromInteractionType<InteractionType>;
-        player: Player;
+        player: PlayerRef;
         environment: Environment;
         aeonix: Aeonix;
       }) => Promise<void>
     : (masterContext: {
         context: RawInteractionTypeFromInteractionType<InteractionType>;
-        player: Player;
+        player: PlayerRef;
         aeonix: Aeonix;
       }) => Promise<void>
   : PassEnvironment extends true

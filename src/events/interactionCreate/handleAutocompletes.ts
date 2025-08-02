@@ -4,10 +4,11 @@ import {
   PermissionsBitField,
   AutocompleteInteraction,
 } from "discord.js";
-import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import Interaction from "../../models/core/interaction.js";
+import PlayerRef from "../../models/player/utils/types/playerRef.js";
+import Player from "../../models/player/player.js";
 
 export default new Event<"interactionCreate">({
   callback: async ({ args: [context], aeonix }) => {
@@ -93,6 +94,7 @@ export default new Event<"interactionCreate">({
     }
 
     let player: Player | undefined;
+    let playerRef: PlayerRef | undefined;
 
     if (interaction.autocomplete?.passPlayer) {
       player = await aeonix.players.get(context.user.id);
@@ -118,15 +120,18 @@ export default new Event<"interactionCreate">({
           return;
         }
       }
+
+      playerRef = player.toRef();
+      player = undefined;
     }
     await context.respond([
       ...((await interaction.autocomplete
         ?.callback({
           context,
-          player,
+          player: playerRef,
         } as {
           context: AutocompleteInteraction<CacheType>;
-          player: Player;
+          player: PlayerRef;
         })
         .catch((e: unknown) => {
           try {

@@ -51,8 +51,7 @@ export default class ItemManager extends CachedManager<Item> {
       }
     }
 
-    this._ready = true;
-    this.emit("ready", total);
+    this.markReady();
 
     return total;
   }

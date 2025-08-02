@@ -197,7 +197,25 @@ export default new Interaction({
   environmentOnly: true,
 
   callback: async ({ context, player }) => {
-    let pages = generateContainerPages(player);
+    let pages = (await player.use(async (p) => {
+      return generateContainerPages(p);
+    })) as ContainerBuilder[];
+
+    log({
+      header: "Generated pages",
+      processName: "InboxCommand",
+      type: "Info",
+      payload: [...pages],
+    });
+
+    if (!pages) {
+      log({
+        header: "Could not generate pages",
+        processName: "InboxCommand",
+        type: "Error",
+      });
+      return;
+    }
 
     const msg = await containerPaginator(context, pages);
 
@@ -226,7 +244,19 @@ export default new Interaction({
 
         switch (type) {
           case "#open": {
-            const [letter] = findLetterFromIdStrict(player.inbox.letters, id);
+            const [letter] =
+              (await player.use(async (p) => {
+                return findLetterFromIdStrict(p.inbox.letters, id);
+              })) ?? [];
+
+            if (!letter) {
+              log({
+                header: "Could not find letter",
+                processName: "InboxCommand",
+                type: "Error",
+              });
+              return;
+            }
 
             await buttonContext.update({
               components: generateMailContainer(letter),
@@ -234,52 +264,58 @@ export default new Interaction({
             break;
           }
           case "#toggleArchived": {
-            player.settings.indexShowArchived =
-              !player.settings.indexShowArchived;
-            //await player.commit();
-            pages = generateContainerPages(player);
+            pages = ((await player.use(async (p) => {
+              p.settings.indexShowArchived = !p.settings.indexShowArchived;
+
+              return generateContainerPages(p);
+            })) ?? []) as ContainerBuilder[];
+
             await containerPaginatorWithUpdate(buttonContext, pages);
+
             break;
           }
 
           // Buttons in mail containers
           case "#close": {
-            pages = generateContainerPages(player);
+            pages = (await player.use(async (p) => {
+              return generateContainerPages(p);
+            })) as ContainerBuilder[];
             await containerPaginatorWithUpdate(buttonContext, pages);
             break;
           }
           case "#archive": {
-            const [letter, index] = findLetterFromIdStrict(
-              player.inbox.letters,
-              id
-            );
+            await player.use(async (p) => {
+              const [letter, index] = findLetterFromIdStrict(
+                p.inbox.letters,
+                id
+              );
 
-            letter.isArchived = true;
+              letter.isArchived = true;
 
-            player.inbox.letters[index] = letter;
+              p.inbox.letters[index] = letter;
 
-            //await player.commit();
-
-            await buttonContext.update({
-              components: generateMailContainer(letter),
+              await buttonContext.update({
+                components: generateMailContainer(letter),
+              });
             });
             break;
           }
           case "#unarchive": {
-            const [letter, index] = findLetterFromIdStrict(
-              player.inbox.letters,
-              id
-            );
+            await player.use(async (p) => {
+              const [letter, index] = findLetterFromIdStrict(
+                p.inbox.letters,
+                id
+              );
 
-            letter.isArchived = false;
+              letter.isArchived = false;
 
-            player.inbox.letters[index] = letter;
+              p.inbox.letters[index] = letter;
 
-            //await player.commit();
-
-            await buttonContext.update({
-              components: generateMailContainer(letter),
+              await buttonContext.update({
+                components: generateMailContainer(letter),
+              });
             });
+
             break;
           }
         }

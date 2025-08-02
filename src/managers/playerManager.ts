@@ -1,5 +1,6 @@
 import LifecycleCachedManager from "../models/core/lifecycleCachedManager.js";
 import Player, { playerModel } from "../models/player/player.js";
+import PlayerRef from "../models/player/utils/types/playerRef.js";
 import hardMerge from "../utils/hardMerge.js";
 
 export default class PlayerManager extends LifecycleCachedManager<Player> {
@@ -28,7 +29,7 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
 
     const total: Player[] = [];
     for (const doc of allDocs) {
-      if (noDuplicates && this.exists(doc._id)) continue;
+      if (noDuplicates && this.has(doc._id)) continue;
 
       const player = new Player();
       const instance = hardMerge(player, doc.toObject(), player.getClassMap());
@@ -37,9 +38,13 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
       this.set(instance);
     }
 
-    this._ready = true;
-    this.emit("ready", total);
+    this.markReady();
 
     return total;
+  }
+
+  async getRef(id: string): Promise<PlayerRef | undefined> {
+    const exists = await this.exists(id);
+    return exists ? new PlayerRef(id) : undefined;
   }
 }

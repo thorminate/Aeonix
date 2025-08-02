@@ -17,6 +17,7 @@ import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import Environment from "../../models/environment/environment.js";
 import Aeonix from "../../aeonix.js";
+import PlayerRef from "../../models/player/utils/types/playerRef.js";
 
 type AnyInteraction<CT extends CacheType> = ButtonInteraction<CT> &
   ChannelSelectMenuInteraction<CT> &
@@ -151,6 +152,7 @@ export default new Event<"interactionCreate">({
     }
 
     let player: Player | undefined;
+    let playerRef: PlayerRef | undefined;
 
     let environment: Environment | undefined;
 
@@ -196,18 +198,21 @@ export default new Event<"interactionCreate">({
       if (interaction.passEnvironment) {
         environment = await player.fetchEnvironment().catch(() => undefined);
       }
+
+      playerRef = player.toRef();
+      player = undefined;
     }
 
     await interaction
       .callback({
         context,
-        player,
+        player: playerRef,
         environment,
         aeonix,
       } as {
         error: never;
         context: AnyInteraction<CacheType>;
-        player: Player;
+        player: PlayerRef;
         environment: Environment;
         aeonix: Aeonix;
       })

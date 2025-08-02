@@ -16,9 +16,11 @@ export default new Interaction({
   passEnvironment: false,
 
   callback: async ({ context, player }) => {
-    await context.editReply({
-      components: [await player.getStatsEmbed()],
-      flags: MessageFlags.IsComponentsV2,
+    await player.use(async (p) => {
+      await context.editReply({
+        components: [await p.getStatsEmbed()],
+        flags: MessageFlags.IsComponentsV2,
+      });
     });
   },
 

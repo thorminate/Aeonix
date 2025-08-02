@@ -28,10 +28,10 @@ export default class BackpackItem extends Item {
     return new ItemEventResult("Your backpack took damage!", true);
   }
 
-  async use(context: ItemUsageContext): Promise<ItemUsageResult> {
-    const { player } = context;
-
-    player.stats.giveXpFromRange(5, 10);
+  async use({ player }: ItemUsageContext): Promise<ItemUsageResult> {
+    await player.use(async (p) => {
+      p.stats.giveXpFromRange(5, 10);
+    });
     return new ItemUsageResult("Wow!", true);
   }
 }

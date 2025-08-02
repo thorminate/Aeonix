@@ -40,6 +40,10 @@ export default function hardMerge<T extends object>(
   source: any,
   classMap: Record<string, new (...args: any[]) => any> = {}
 ): T {
+  if (Array.isArray(source) && !Array.isArray(target)) {
+    target = [] as T;
+  }
+
   for (const key of Object.keys(source)) {
     const sourceValue = source[key];
     const targetHasProperty = key in target;

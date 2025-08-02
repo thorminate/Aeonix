@@ -8,7 +8,6 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import paginator, {
   buttonPaginatorWithUpdate,
@@ -17,6 +16,8 @@ import { randomUUID } from "node:crypto";
 import componentWrapper from "../../utils/componentWrapper.js";
 import Item from "../../models/item/item.js";
 import Interaction, { ITypes } from "../../models/core/interaction.js";
+import Inventory from "../../models/player/utils/inventory/inventory.js";
+import PlayerRef from "../../models/player/utils/types/playerRef.js";
 
 function getButtonsFromEntries(entries: Item[]): ButtonBuilder[] {
   return entries.map((entry: Item): ButtonBuilder => {
@@ -27,7 +28,7 @@ function getButtonsFromEntries(entries: Item[]): ButtonBuilder[] {
   });
 }
 
-function scrambleDuplicates(buttons: ButtonBuilder[], player: Player) {
+function scrambleDuplicates(buttons: ButtonBuilder[], inventory: Inventory) {
   const seen = new Set();
   const duplicates = new Set();
   for (const button of buttons) {
@@ -47,12 +48,12 @@ function scrambleDuplicates(buttons: ButtonBuilder[], player: Player) {
         const uuid = randomUUID();
         button.setCustomId(uuid);
 
-        const entry = player.inventory.entries.find((e) => e.id === id);
+        const entry = inventory.entries.find((e) => e.id === id);
         if (!entry) {
           log({
             header: "Could not find entry in player inventory, skipping",
             processName: "Inventory",
-            payload: [id, player.inventory.entries],
+            payload: [id, inventory.entries],
             type: "Warn",
           });
           return button;
@@ -69,7 +70,7 @@ function scrambleDuplicates(buttons: ButtonBuilder[], player: Player) {
 function createCollectors(
   message: Message,
   buttons: ButtonBuilder[],
-  player: Player
+  player: PlayerRef
 ) {
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
@@ -99,17 +100,19 @@ function createCollectors(
         }
 
         case "use": {
-          const activeEntryIndex = player.inventory.entries.findIndex(
+          const inventory =
+            (await player.use(async (p) => p.inventory)) ?? ({} as Inventory);
+          const activeEntryIndex = inventory.entries.findIndex(
             (e) => e.id === useData
           );
 
-          const item = player.inventory.entries[activeEntryIndex];
+          const item = inventory.entries[activeEntryIndex];
 
           if (!item) {
             log({
               header: "Item not found in inventory",
               processName: "InventoryCommand",
-              payload: [player.inventory.entries, useData, activeEntryIndex],
+              payload: [inventory.entries, useData, activeEntryIndex],
               type: "Error",
             });
             return;
@@ -119,9 +122,9 @@ function createCollectors(
             player,
           });
 
-          player.inventory.entries[activeEntryIndex] = item;
-
-          //await player.commit();
+          await player.use(async (p) => {
+            p.inventory.entries[activeEntryIndex] = item;
+          });
 
           await context.update({
             content: `**${item.name}**\n${usageResult.message}`,
@@ -147,7 +150,9 @@ function createCollectors(
 
         default:
           {
-            const currentItem = player.inventory.entries.find(
+            const inventory =
+              (await player.use(async (p) => p.inventory)) ?? ({} as Inventory);
+            const currentItem = inventory.entries.find(
               (entry: Item) => entry.id === useType
             );
 
@@ -155,7 +160,7 @@ function createCollectors(
               log({
                 header: "Item not found in inventory",
                 processName: "InventoryCommand",
-                payload: [useType, player.inventory.entries],
+                payload: [useType, inventory.entries],
                 type: "Error",
               });
               return;
@@ -207,17 +212,13 @@ export default new Interaction({
   passEnvironment: false,
 
   callback: async ({ context, player }): Promise<void> => {
-    if (!player) {
-      log({
-        header: "Player could not be passed to inventory command",
-        processName: "InventoryCommand",
-        type: "Error",
-      });
-      return;
-    }
-    const unsanitizedButtons = getButtonsFromEntries(player.inventory.entries);
+    const inventory =
+      (await player.use(async (p) => p.inventory as Inventory)) ??
+      ({} as Inventory);
 
-    const buttons = scrambleDuplicates(unsanitizedButtons, player);
+    const unsanitizedButtons = getButtonsFromEntries(inventory.entries);
+
+    const buttons = scrambleDuplicates(unsanitizedButtons, inventory);
 
     const message = await paginator(context, buttons, (pg) =>
       pg

@@ -52,8 +52,7 @@ export default class LetterManager extends CachedManager<Letter> {
       }
     }
 
-    this._ready = true;
-    this.emit("ready", total);
+    this.markReady();
 
     return total;
   }

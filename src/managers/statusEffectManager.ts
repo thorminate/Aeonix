@@ -50,8 +50,7 @@ export default class StatusEffectManager extends CachedManager<StatusEffect> {
       }
     }
 
-    this._ready = true;
-    this.emit("ready", total);
+    this.markReady();
 
     return total;
   }

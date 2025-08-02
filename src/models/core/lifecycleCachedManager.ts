@@ -1,3 +1,4 @@
+import log from "../../utils/log.js";
 import CachedManager from "./cachedManager.js";
 import { Collection } from "discord.js";
 
@@ -20,12 +21,17 @@ export default abstract class LifecycleCachedManager<
 
     let instance = this._cache.get(id);
     if (instance) {
+      log({ header: "Cache hit", processName: "LifecycleCachedManager.get" });
       this.onAccess?.(instance);
       return instance;
     }
 
     const revived = this._weakRefs.get(id)?.deref();
     if (revived) {
+      log({
+        header: "WeakCache hit",
+        processName: "LifecycleCachedManager.get",
+      });
       this.set(revived);
       this.onAccess?.(revived);
       return revived;
@@ -33,6 +39,7 @@ export default abstract class LifecycleCachedManager<
 
     instance = await this.load(id);
     if (instance) {
+      log({ header: "Cache miss", processName: "LifecycleCachedManager.get" });
       this.onAccess?.(instance);
       this.set(instance);
       this._weakRefs.set(id, new WeakRef(instance));

@@ -8,7 +8,7 @@ export default new Event<"messageCreate">({
 
     if (context.author.bot) return;
 
-    const player = await aeonix.players.get(context.author.id);
+    const player = await aeonix.players.getRef(context.author.id);
 
     if (!player) {
       context.reply({
@@ -17,26 +17,26 @@ export default new Event<"messageCreate">({
       return;
     }
 
-    const playerEnvChannel = await (
-      await player?.fetchEnvironment()
-    )?.fetchChannel();
+    await player.use(async (p) => {
+      const channel = await (await p.fetchEnvironment())?.fetchChannel();
 
-    if (!playerEnvChannel) return;
+      if (!channel) return;
 
-    if (playerEnvChannel.id !== context.channelId) return;
+      if (channel.id !== context.channelId) return;
 
-    const webhook = (await playerEnvChannel.fetchWebhooks()).first();
+      const webhook = (await channel.fetchWebhooks()).first();
 
-    if (!webhook) throw new Error("Webhook not found");
+      if (!webhook) throw new Error("Webhook not found");
 
-    await Promise.all([
-      await webhook.send({
-        content: context.content,
-        username: player.persona.name,
-        avatarURL: player.persona.avatar,
-      }),
-      await context.delete(),
-    ]);
+      await Promise.all([
+        await webhook.send({
+          content: context.content,
+          username: p.persona.name,
+          avatarURL: p.persona.avatar,
+        }),
+        await context.delete(),
+      ]);
+    });
   },
   async onError(e) {
     log({
