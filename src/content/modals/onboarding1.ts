@@ -5,7 +5,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import Player from "../../models/player/utils/player.js";
+import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import deletePlayer from "../buttons/deletePlayer.js";
 import componentWrapper from "../../utils/componentWrapper.js";

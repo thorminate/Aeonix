@@ -22,7 +22,7 @@ import {
   UserSelectMenuBuilder,
   UserSelectMenuInteraction,
 } from "discord.js";
-import Player from "../player/utils/player.js";
+import Player from "../player/player.js";
 import hardMerge from "../../utils/hardMerge.js";
 import Environment from "../environment/environment.js";
 import Aeonix from "../../aeonix.js";

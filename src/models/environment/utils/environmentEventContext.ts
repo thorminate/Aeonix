@@ -1,5 +1,5 @@
 import Item from "../../item/item.js";
-import Player from "../../player/utils/player.js";
+import Player from "../../player/player.js";
 
 interface ExtraContext {
   item?: Item;

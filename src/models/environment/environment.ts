@@ -1,6 +1,6 @@
 import { TextChannel } from "discord.js";
 import aeonix from "../../index.js";
-import Player from "../player/utils/player.js";
+import Player from "../player/player.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";

@@ -15,7 +15,7 @@ import containerPaginator, {
   containerPaginatorWithUpdate,
 } from "../../utils/containerPaginator.js";
 import log from "../../utils/log.js";
-import Player from "../../models/player/utils/player.js";
+import Player from "../../models/player/player.js";
 import Letter from "../../models/player/utils/inbox/letter.js";
 
 function generateMailContainer(letter: Letter) {

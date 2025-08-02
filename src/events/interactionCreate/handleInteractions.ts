@@ -12,7 +12,7 @@ import {
   StringSelectMenuInteraction,
   UserSelectMenuInteraction,
 } from "discord.js";
-import Player from "../../models/player/utils/player.js";
+import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import Environment from "../../models/environment/environment.js";

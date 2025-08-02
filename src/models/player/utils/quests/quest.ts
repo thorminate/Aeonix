@@ -1,7 +1,7 @@
 // ABANDONED UNTIL FURTHER NOTICE
 
 import { randomUUID } from "crypto";
-import Player from "../player.js";
+import Player from "../../player.js";
 
 export default abstract class Quest {
   private _id: string = "";

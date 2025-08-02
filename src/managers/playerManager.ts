@@ -1,5 +1,5 @@
 import LifecycleCachedManager from "../models/core/lifecycleCachedManager.js";
-import Player, { playerModel } from "../models/player/utils/player.js";
+import Player, { playerModel } from "../models/player/player.js";
 import hardMerge from "../utils/hardMerge.js";
 
 export default class PlayerManager extends LifecycleCachedManager<Player> {

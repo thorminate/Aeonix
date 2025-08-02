@@ -12,26 +12,26 @@ import {
   TextDisplayBuilder,
   User,
 } from "discord.js";
-import Stats from "./stats/stats.js";
-import Inventory from "./inventory/inventory.js";
-import calculateXpRequirement from "./stats/calculateXpRequirement.js";
-import aeonix from "../../../index.js";
-import log from "../../../utils/log.js";
-import PlayerMoveToResult from "./types/playerMoveToResult.js";
-import Inbox from "./inbox/inbox.js";
-import Location from "./location/location.js";
-import Persona from "./persona/persona.js";
-import StatusEffects from "./statusEffects/statusEffects.js";
-import { PlayerSubclassBase } from "./types/playerSubclassBase.js";
-import hardMerge from "../../../utils/hardMerge.js";
+import Stats from "./utils/stats/stats.js";
+import Inventory from "./utils/inventory/inventory.js";
+import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
+import aeonix from "../../index.js";
+import log from "../../utils/log.js";
+import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
+import Inbox from "./utils/inbox/inbox.js";
+import Location from "./utils/location/location.js";
+import Persona from "./utils/persona/persona.js";
+import StatusEffects from "./utils/statusEffects/statusEffects.js";
+import { PlayerSubclassBase } from "./utils/types/playerSubclassBase.js";
+import hardMerge from "../../utils/hardMerge.js";
 import {
   getModelForClass,
   modelOptions,
   prop,
   Severity,
 } from "@typegoose/typegoose";
-import Quests from "./quests/quests.js";
-import Settings from "./settings/settings.js";
+import Quests from "./utils/quests/quests.js";
+import Settings from "./utils/settings/settings.js";
 
 @modelOptions({
   options: {

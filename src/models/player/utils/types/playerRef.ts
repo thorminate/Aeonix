@@ -1,5 +1,5 @@
 import aeonix from "../../../../index.js";
-import Player from "../player.js";
+import Player from "../../player.js";
 
 type DeepReadonly<T> = {
   readonly [K in keyof T]: DeepReadonly<T[K]>;

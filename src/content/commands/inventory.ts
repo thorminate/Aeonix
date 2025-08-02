@@ -8,7 +8,7 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Player from "../../models/player/utils/player.js";
+import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 import paginator, {
   buttonPaginatorWithUpdate,

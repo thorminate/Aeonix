@@ -1,4 +1,4 @@
-import Player from "../../player/utils/player.js";
+import Player from "../../player/player.js";
 
 export default class ItemUsageContext {
   player: Player;
