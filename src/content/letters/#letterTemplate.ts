@@ -8,4 +8,5 @@ export default class LetterTemplate extends Letter {
   interactable: boolean = true;
   interactionType: string = "yes";
   canDismiss: boolean = true;
+  oneTimeInteraction: boolean = true;
 }

@@ -1,29 +1,6 @@
 import { log } from "console";
 import aeonix from "../../../../index.js";
 import Player from "../../player.js";
-import hardMerge from "../../../../utils/hardMerge.js";
-
-function deepFreeze<T>(obj: T): T {
-  Object.freeze(obj);
-  Object.getOwnPropertyNames(obj).forEach((prop) => {
-    const value = (obj as Record<string, unknown>)[prop];
-    if (
-      value !== null &&
-      (typeof value === "object" || typeof value === "function") &&
-      !Object.isFrozen(value)
-    ) {
-      deepFreeze(value);
-    }
-  });
-  return obj;
-}
-
-function toReadonlyPlainObject<T>(obj: T): Readonly<T> {
-  if (!obj || typeof obj !== "object") return obj;
-  const result = hardMerge({}, obj) as Readonly<T>;
-  return deepFreeze(result);
-}
-
 export default class PlayerRef {
   private weak?: WeakRef<Player>;
 
@@ -37,9 +14,19 @@ export default class PlayerRef {
 
   async use<T>(
     fn: (player: Player) => Promise<T>
-  ): Promise<Readonly<Awaited<T>> | undefined> {
-    let player = this.weak?.deref() ?? (await aeonix.players.get(this.id));
-    if (!player) return;
+  ): Promise<Readonly<T> | undefined> {
+    if (aeonix.players.isDeleted(this.id)) return;
+
+    let player = this.weak?.deref();
+    if (!player) {
+      player = await aeonix.players.load(this.id);
+      if (!player) return;
+
+      this.weak = new WeakRef(player);
+    } else {
+      aeonix.players.set(player);
+    }
+
     const result = await fn(player).catch((err) => {
       log({
         header: "PlayerRef.use",
@@ -49,6 +36,6 @@ export default class PlayerRef {
       throw err;
     });
     player = undefined;
-    return toReadonlyPlainObject(result);
+    return result as Readonly<T>;
   }
 }

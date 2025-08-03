@@ -18,21 +18,36 @@ export default class EnvironmentManager extends CachedManager<Environment> {
     return key;
   }
 
-  async load(customId: string): Promise<Environment | undefined> {
+  override async loadRaw(
+    id: string
+  ): Promise<ConcreteConstructor<Environment> | undefined> {
     const files = await getAllFiles(folderPath);
 
-    const filePath = files.find((f) => f.includes(customId + ".js"));
+    const filePath = files.find((f) => f.includes(id + ".js"));
 
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
-    const importedFile: Holds = (await import(fileUrl.toString())).default;
+    const importedFile = (await import(fileUrl.toString()))
+      .default as ConcreteConstructor<Holds>;
 
     return importedFile;
   }
 
-  async loadAll(noDuplicates = false): Promise<Environment[]> {
-    const total: Holds[] = [];
+  async load(id: string): Promise<Environment | undefined> {
+    const raw = await this.loadRaw(id);
+
+    if (!raw) return;
+
+    const instance = new raw();
+
+    this.set(instance);
+
+    return instance;
+  }
+
+  override async loadAllRaw(): Promise<ConcreteConstructor<Environment>[]> {
+    const total: ConcreteConstructor<Holds>[] = [];
 
     const files = await getAllFiles(folderPath);
 
@@ -42,9 +57,21 @@ export default class EnvironmentManager extends CachedManager<Environment> {
       const importedClass = (await import(fileUrl.toString()))
         .default as ConcreteConstructor<Holds>;
 
-      const instance = new importedClass();
+      total.push(importedClass);
+    }
 
-      const id = instance.type;
+    return total;
+  }
+
+  async loadAll(noDuplicates = false): Promise<Environment[]> {
+    const raw = await this.loadAllRaw();
+
+    const total: Environment[] = [];
+
+    for (const rawClass of raw) {
+      const instance = new rawClass();
+
+      const id = this.getKey(instance);
 
       if (id && (!noDuplicates || !this.exists(id))) {
         this.set(instance);

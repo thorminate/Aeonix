@@ -4,6 +4,7 @@ import {
   ButtonStyle,
   ContainerBuilder,
   GuildChannel,
+  GuildMemberRoleManager,
   OverwriteType,
   SectionBuilder,
   SeparatorBuilder,
@@ -242,11 +243,32 @@ export default class Player {
     });
   }
   async delete(): Promise<void> {
+    const channel = await this.fetchEnvironmentChannel();
+
+    if (!channel) {
+      log({
+        header: "Environment channel not found",
+        processName: "Player.delete",
+        type: "Error",
+      });
+      return;
+    }
+
+    await channel.permissionOverwrites.delete(this._id);
+
+    await (
+      (
+        await aeonix.guilds.cache.get(aeonix.guildId)?.members.fetch(this._id)
+      )?.roles as GuildMemberRoleManager
+    ).remove(aeonix.playerRoleId, "Player deleted");
+
     await playerModel.findByIdAndDelete({
       _id: this._id,
     } as Record<string, string>);
 
     aeonix.players.release(this._id);
+    aeonix.players._weakRefs.delete(this._id);
+    aeonix.players.markDeleted(this._id);
   }
 
   getClassMap(): Record<string, new (...args: unknown[]) => unknown> {

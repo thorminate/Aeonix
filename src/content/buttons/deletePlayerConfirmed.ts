@@ -1,5 +1,5 @@
 import log from "../../utils/log.js";
-import { ButtonStyle, GuildMemberRoleManager } from "discord.js";
+import { ButtonStyle } from "discord.js";
 import Interaction, {
   ButtonBuilderV2,
   ITypes,
@@ -16,27 +16,7 @@ export default new Interaction({
   acknowledge: false,
   passPlayer: true,
 
-  callback: async ({ context, player, aeonix }) => {
-    const channel = await player.use(
-      async (p) => await p.fetchEnvironmentChannel()
-    );
-
-    if (!channel) {
-      log({
-        header: "Environment channel not found",
-        processName: "DeletePlayerConfirmedButton",
-        type: "Error",
-      });
-      return;
-    }
-
-    await channel.permissionOverwrites.delete(context.user.id);
-
-    await (context.member?.roles as GuildMemberRoleManager).remove(
-      aeonix.playerRoleId,
-      "Player deleted"
-    );
-
+  callback: async ({ context, player }) => {
     await player.use(async (p) => {
       await p.delete();
     });

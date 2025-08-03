@@ -3,11 +3,10 @@ import { PlayerSubclassBase } from "../types/playerSubclassBase.js";
 import Quest from "./quest.js";
 
 export default class Quests extends PlayerSubclassBase {
-  completed: Quest[] = [];
-  pending: Quest[] = [];
+  quests: Quest[] = [];
 
   append(quest: Quest) {
-    this[quest.completed ? "completed" : "pending"].push(quest);
+    this.quests.push(quest);
   }
 
   getClassMap(): Record<string, new (...args: unknown[]) => unknown> {

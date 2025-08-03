@@ -18,51 +18,6 @@ import log from "../../utils/log.js";
 import Player from "../../models/player/player.js";
 import Letter from "../../models/player/utils/inbox/letter.js";
 
-function generateMailContainer(letter: Letter) {
-  return [
-    new ContainerBuilder()
-      .addSectionComponents(
-        new SectionBuilder()
-          .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(
-              `**${letter.sender}: ** ${letter.subject}`
-            )
-          )
-          .setButtonAccessory(
-            letter.canDismiss === true
-              ? letter.isArchived === false
-                ? new ButtonBuilder()
-                    .setCustomId("#archive-" + letter.id)
-                    .setLabel("Archive")
-                    .setStyle(ButtonStyle.Danger)
-                : new ButtonBuilder()
-                    .setCustomId("#unarchive-" + letter.id)
-                    .setLabel("Unarchive")
-                    .setStyle(ButtonStyle.Secondary)
-              : new ButtonBuilder()
-                  .setDisabled(true)
-                  .setLabel("Can't archive")
-                  .setCustomId("#locked")
-                  .setStyle(ButtonStyle.Secondary)
-          )
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(letter.body)
-      )
-      .addActionRowComponents(
-        new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId("#close")
-            .setLabel("Close")
-            .setStyle(ButtonStyle.Secondary)
-        )
-      ),
-  ];
-}
-
 function findLetterFromIdStrict(
   letters: Letter[],
   id: string
@@ -95,6 +50,77 @@ function generatePageActionRow(showArchived: boolean) {
       .setLabel(showArchived ? "Hide archived" : "Show archived")
       .setStyle(showArchived ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
+}
+
+function generateMailContainer(letter: Letter) {
+  log({
+    header: "Generating mail container",
+    processName: "InboxCommand",
+    type: "Info",
+    payload: { letter },
+  });
+  return [
+    new ContainerBuilder()
+      .addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `**${letter.sender}: ** ${letter.subject}`
+            )
+          )
+          .setButtonAccessory(
+            letter.canDismiss === true
+              ? letter.isArchived === false
+                ? new ButtonBuilder()
+                    .setCustomId("#archive-" + letter.id)
+                    .setLabel("Archive")
+                    .setStyle(ButtonStyle.Danger)
+                : new ButtonBuilder()
+                    .setCustomId("#archive-" + letter.id)
+                    .setLabel("Unarchive")
+                    .setStyle(ButtonStyle.Secondary)
+              : new ButtonBuilder()
+                  .setDisabled(true)
+                  .setLabel("Can't archive")
+                  .setCustomId("#placeholder")
+                  .setStyle(ButtonStyle.Secondary)
+          )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(letter.body)
+      )
+      .addActionRowComponents(
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          letter.interactable === true
+            ? [
+                new ButtonBuilder()
+                  .setCustomId("#close")
+                  .setLabel("Close")
+                  .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                  .setCustomId("#use-" + letter.id)
+                  .setLabel(letter.interactionType ?? "Interact")
+                  .setStyle(ButtonStyle.Primary)
+                  .setDisabled(
+                    letter.oneTimeInteraction === true
+                      ? letter.isInteracted === true
+                        ? true
+                        : false
+                      : false
+                  ),
+              ]
+            : [
+                new ButtonBuilder()
+                  .setCustomId("#close")
+                  .setLabel("Close")
+                  .setStyle(ButtonStyle.Secondary),
+              ]
+        )
+      ),
+  ];
 }
 
 function generateContainerPages({
@@ -244,22 +270,30 @@ export default new Interaction({
 
         switch (type) {
           case "#open": {
-            const [letter] =
-              (await player.use(async (p) => {
-                return findLetterFromIdStrict(p.inbox.letters, id);
-              })) ?? [];
+            await player.use(async (p) => {
+              const [letter, index] = findLetterFromIdStrict(
+                p.inbox.letters,
+                id
+              );
 
-            if (!letter) {
-              log({
-                header: "Could not find letter",
-                processName: "InboxCommand",
-                type: "Error",
+              if (!letter) {
+                log({
+                  header: "Could not find letter",
+                  processName: "InboxCommand",
+                  type: "Error",
+                });
+                return;
+              }
+
+              letter.onRead?.(p);
+
+              await buttonContext.update({
+                components: generateMailContainer(letter),
               });
-              return;
-            }
 
-            await buttonContext.update({
-              components: generateMailContainer(letter),
+              letter.isInteracted = true;
+
+              p.inbox.letters[index] = letter;
             });
             break;
           }
@@ -290,7 +324,7 @@ export default new Interaction({
                 id
               );
 
-              letter.isArchived = true;
+              letter.isArchived = !letter.isArchived;
 
               p.inbox.letters[index] = letter;
 
@@ -300,20 +334,44 @@ export default new Interaction({
             });
             break;
           }
-          case "#unarchive": {
-            await player.use(async (p) => {
+          case "#use": {
+            log({
+              header: "Interacting with letter",
+              processName: "InboxCommand",
+              type: "Info",
+              payload: id,
+            });
+            const letter = await player.use(async (p) => {
               const [letter, index] = findLetterFromIdStrict(
                 p.inbox.letters,
                 id
               );
 
-              letter.isArchived = false;
+              letter.onInteract?.(p);
 
               p.inbox.letters[index] = letter;
 
-              await buttonContext.update({
-                components: generateMailContainer(letter),
+              log({
+                header: "Interacted with letter",
+                processName: "InboxCommand",
+                type: "Info",
+                payload: [letter, p],
               });
+
+              return letter;
+            });
+
+            if (!letter) {
+              log({
+                header: "Could not find letter",
+                processName: "InboxCommand",
+                type: "Error",
+              });
+              return;
+            }
+
+            await buttonContext.update({
+              components: generateMailContainer(letter),
             });
 
             break;

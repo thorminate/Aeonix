@@ -18,21 +18,33 @@ export default class LetterManager extends CachedManager<Letter> {
     return id;
   }
 
-  async load(customId: string): Promise<Letter | undefined> {
+  override async loadRaw(
+    id: string
+  ): Promise<ConcreteConstructor<Letter> | undefined> {
     const files = await getAllFiles(folderPath);
 
-    const filePath = files.find((f) => f.includes(customId + ".js"));
+    const filePath = files.find((f) => f.includes(id + ".js"));
 
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
-    const importedFile: Holds = (await import(fileUrl.toString())).default;
+    const importedFile = (await import(fileUrl.toString()))
+      .default as ConcreteConstructor<Holds>;
 
     return importedFile;
   }
 
-  async loadAll(noDuplicates = false): Promise<Letter[]> {
-    const total: Holds[] = [];
+  async load(id: string): Promise<Letter | undefined> {
+    const raw = await this.loadRaw(id);
+    if (!raw) return;
+
+    const instance = new raw();
+    this.set(instance);
+    return instance;
+  }
+
+  override async loadAllRaw(): Promise<ConcreteConstructor<Letter>[]> {
+    const total: ConcreteConstructor<Holds>[] = [];
 
     const files = await getAllFiles(folderPath);
 
@@ -42,7 +54,19 @@ export default class LetterManager extends CachedManager<Letter> {
       const importedFile = (await import(fileUrl.toString()))
         .default as ConcreteConstructor<Holds>;
 
-      const instance = new importedFile();
+      total.push(importedFile);
+    }
+
+    return total;
+  }
+
+  async loadAll(noDuplicates = false): Promise<Letter[]> {
+    const raw = await this.loadAllRaw();
+
+    const total: Letter[] = [];
+
+    for (const rawClass of raw) {
+      const instance = new rawClass();
 
       const id = this.getKey(instance);
 

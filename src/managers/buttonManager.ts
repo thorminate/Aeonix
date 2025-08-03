@@ -33,7 +33,7 @@ export default class ButtonManager extends CachedManager<
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
-    const importedFile: Holds = (await import(fileUrl.toString())).default;
+    const importedFile = (await import(fileUrl.toString())).default as Holds;
 
     return importedFile;
   }

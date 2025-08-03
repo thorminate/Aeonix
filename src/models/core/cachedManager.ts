@@ -1,15 +1,18 @@
 import { Collection } from "discord.js";
 import BaseManager from "./baseManager.js";
+import ConcreteConstructor from "./concreteConstructor.js";
 
 export default abstract class CachedManager<
   Holds,
   Key = string
 > extends BaseManager {
+  private _deletedIds: Set<string> = new Set<string>();
   protected _cache: Collection<Key, Holds> = new Collection<Key, Holds>();
   protected _ready = false;
   abstract getKey(instance: Holds): Key;
   onAccess?(instance: Holds): void;
 
+  loadRaw?(id: Key): Promise<ConcreteConstructor<Holds> | undefined>;
   abstract load(id: Key): Promise<Holds | undefined>;
   async get(id: Key, runOnAccess = true) {
     await this.waitUntilReady();
@@ -31,6 +34,7 @@ export default abstract class CachedManager<
     this.set(instance);
   }
 
+  loadAllRaw?(noDuplicates?: boolean): Promise<ConcreteConstructor<Holds>[]>;
   abstract loadAll(noDuplicates?: boolean): Promise<Holds[]>;
   async getAll(runOnAccess = true) {
     await this.waitUntilReady();
@@ -45,13 +49,26 @@ export default abstract class CachedManager<
     });
   }
 
+  markDeleted(id: string) {
+    this._deletedIds.add(id);
+  }
+
+  markCreated(id: string) {
+    this._deletedIds.delete(id);
+  }
+
+  isDeleted(id: string) {
+    return this._deletedIds.has(id);
+  }
+
   has(id: Key) {
     return this._cache.has(id);
   }
 
   async exists(id: Key) {
     if (this._cache.has(id)) return true;
-    else if (await this.load(id)) return true;
+    else if (this.loadRaw ? await this.loadRaw(id) : await this.load(id))
+      return true;
     else return false;
   }
 

@@ -5,7 +5,7 @@ import ItemEventContext from "./utils/itemEventContext.js";
 import ItemEventResult from "./utils/itemEventResult.js";
 
 export default abstract class Item {
-  private _id: string = "";
+  id: string = randomUUID();
   abstract name: string;
   abstract type: string;
   abstract description: string;
@@ -17,15 +17,6 @@ export default abstract class Item {
 
   abstract createData(): object;
   abstract use(context: ItemUsageContext): Promise<ItemUsageResult>;
-
-  get id() {
-    if (!this._id) this._id = randomUUID();
-    return this._id;
-  }
-
-  set id(id: string) {
-    this._id = id;
-  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDrop(context: ItemEventContext): ItemEventResult {
