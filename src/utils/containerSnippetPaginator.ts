@@ -8,8 +8,11 @@ import {
   InteractionCollector,
   Message,
   MessageFlags,
+  ModalBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
+  TextInputBuilder,
+  TextInputStyle,
 } from "discord.js";
 import { CommandContext } from "../models/core/interaction.js";
 import log from "./log.js";
@@ -26,7 +29,7 @@ interface SnippetPaginatorReturn<
   returnType: ReturnType;
 }
 
-export type ContainerSnippet = (container: ContainerBuilder) => void;
+export type ContainerSnippet = (container: ContainerBuilder) => object;
 
 export interface Page {
   header: ContainerSnippet;
@@ -77,7 +80,11 @@ function buildPages({
   return pages;
 }
 
-function buildPaginationRow(currentPage: number, pages: ContainerBuilder[]) {
+function buildPaginationRow(
+  currentPage: number,
+  pages: ContainerBuilder[],
+  isSearch = false
+) {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId(`#first-page`)
@@ -92,8 +99,8 @@ function buildPaginationRow(currentPage: number, pages: ContainerBuilder[]) {
       .setDisabled(currentPage <= 0),
 
     new ButtonBuilder()
-      .setCustomId(`#search`)
-      .setEmoji("🔎")
+      .setCustomId(isSearch ? `#exit-search` : `#search`)
+      .setEmoji(isSearch ? "✖️" : "🔎")
       .setStyle(ButtonStyle.Primary),
 
     new ButtonBuilder()
@@ -113,8 +120,17 @@ function buildPaginationRow(currentPage: number, pages: ContainerBuilder[]) {
 function listenToCollector(
   collector: InteractionCollector<ButtonInteraction>,
   pages: ContainerBuilder[],
+  snippets: SnippetPaginatorOptions,
+  filterFunction: (
+    keyword: string,
+    value: ContainerSnippet,
+    index: number,
+    array: ContainerSnippet[]
+  ) => boolean,
   { n: currentPage }: { n: number }
 ) {
+  const originalPages = pages;
+  let isSearch = false;
   collector.on("collect", async (buttonContext) => {
     collector.resetTimer();
     try {
@@ -127,7 +143,7 @@ function listenToCollector(
           if (firstPage) {
             currentPage = 0;
             await buttonContext.update({
-              components: [firstPage, buildPaginationRow(0, pages)],
+              components: [firstPage, buildPaginationRow(0, pages, isSearch)],
             });
           }
 
@@ -142,23 +158,92 @@ function listenToCollector(
             await buttonContext.update({
               components: [
                 previousPage,
-                buildPaginationRow(currentPage, pages),
+                buildPaginationRow(currentPage, pages, isSearch),
               ],
             });
           }
           break;
         }
         case "#search": {
-          //TODO:
+          const modal = new ModalBuilder()
+            .setTitle("Search")
+            .setCustomId("#search")
+            .addComponents(
+              new ActionRowBuilder<TextInputBuilder>().addComponents(
+                new TextInputBuilder()
+                  .setCustomId("keyword")
+                  .setLabel("Keyword")
+                  .setStyle(TextInputStyle.Short)
+                  .setRequired(true)
+                  .setMaxLength(64)
+                  .setMinLength(1)
+              )
+            );
+
+          await buttonContext.showModal(modal);
+
+          const modalContext = await buttonContext.awaitModalSubmit({
+            filter: (i) => i.customId === "#search",
+            time: 15 * 60 * 1000,
+          });
+
+          const keyword = modalContext.fields.getTextInputValue("keyword");
+
+          if (!keyword) return;
+
+          const filteredContents = snippets.contents.filter(
+            (value, index, array) =>
+              filterFunction(keyword, value, index, array)
+          );
+
+          if (filteredContents.length === 0) {
+            await modalContext.reply({
+              content: "No results found.",
+              flags: MessageFlags.Ephemeral,
+            });
+            return;
+          }
+
+          if (!modalContext.isFromMessage()) return;
+
+          currentPage = 0;
+          isSearch = true;
+
+          if (filteredContents[currentPage]) {
+            pages = buildPages({ ...snippets, contents: filteredContents });
+            await modalContext.update({
+              components: [
+                pages[currentPage]!,
+                buildPaginationRow(currentPage, pages, true),
+              ],
+            });
+          }
           break;
         }
+        case "#exit-search": {
+          pages = originalPages;
+          currentPage = 0;
+          isSearch = false;
+
+          await buttonContext.update({
+            components: [
+              pages[currentPage]!,
+              buildPaginationRow(currentPage, pages, false),
+            ],
+          });
+          break;
+        }
+
         case "#next-page": {
           const nextPage = pages[currentPage + 1];
 
           if (nextPage) {
             currentPage++;
             await buttonContext.update({
-              components: [nextPage, buildPaginationRow(currentPage, pages)],
+              components: [
+                nextPage,
+                buildPaginationRow(currentPage, pages, isSearch),
+              ],
             });
           }
           break;
@@ -169,7 +254,10 @@ function listenToCollector(
           if (lastPage) {
             currentPage = pages.length - 1;
             await buttonContext.update({
-              components: [lastPage, buildPaginationRow(currentPage, pages)],
+              components: [
+                lastPage,
+                buildPaginationRow(currentPage, pages, isSearch),
+              ],
             });
           }
           break;
@@ -188,7 +276,13 @@ function listenToCollector(
 
 export default async function containerSnippetPaginator(
   context: CommandContext,
-  opts: SnippetPaginatorOptions
+  opts: SnippetPaginatorOptions,
+  filterFunction: (
+    keyword: string,
+    value: ContainerSnippet,
+    index: number,
+    array: ContainerSnippet[]
+  ) => boolean
 ): Promise<SnippetPaginatorReturn<"error" | "ok" | "non-paginated">> {
   const currentPage = { n: 0 };
   const pages = buildPages(opts);
@@ -227,7 +321,7 @@ export default async function containerSnippetPaginator(
     time: 15 * 60 * 1000,
   });
 
-  listenToCollector(collector, pages, currentPage);
+  listenToCollector(collector, pages, opts, filterFunction, currentPage);
 
   return {
     message: msg,

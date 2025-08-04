@@ -14,7 +14,7 @@ export default function generateContainerSnippets({
   inbox: { letters },
   settings: { indexShowArchived: showArchived },
 }: Player): ContainerSnippet[] {
-  const snippets = [];
+  const snippets: ContainerSnippet[] = [];
 
   if (lettersOnlyContainArchived(letters) && showArchived === false) {
     snippets.push((page: ContainerBuilder) =>
@@ -53,6 +53,8 @@ export default function generateContainerSnippets({
               .setStyle(ButtonStyle.Secondary)
           )
       );
+
+      return { letter };
     });
   }
 

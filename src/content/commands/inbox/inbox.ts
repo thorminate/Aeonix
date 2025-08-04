@@ -1,4 +1,8 @@
-import { ComponentType, SlashCommandBuilder } from "discord.js";
+import {
+  ComponentType,
+  ContainerBuilder,
+  SlashCommandBuilder,
+} from "discord.js";
 import Interaction, { ITypes } from "../../../models/core/interaction.js";
 import log from "../../../utils/log.js";
 import containerSnippetPaginator, {
@@ -9,6 +13,9 @@ import generateContainerSnippets from "./utils/generateContainerSnippets.js";
 import addHeader from "./utils/addHeader.js";
 import findLetterFromIdStrict from "./utils/findLetterFromIdStrict.js";
 import generateMailContainer from "./utils/generateMailContainer.js";
+import stringifyLetter from "./utils/stringifyLetter.js";
+import Letter from "../../../models/player/utils/inbox/letter.js";
+import { search } from "../../../utils/levenshtein.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
@@ -34,19 +41,32 @@ export default new Interaction({
       return;
     }
 
-    log({
-      header: "Generated content snippets",
-      processName: "InboxCommand",
-      type: "Info",
-      payload: [...snippets],
-    });
-
     const result = await player.use(async (p) => {
-      return await containerSnippetPaginator(context, {
-        lengthPerPage: 5,
-        contents: snippets as ContainerSnippet[],
-        header: addHeader(p.persona.name, p.settings.indexShowArchived),
-      });
+      return await containerSnippetPaginator(
+        context,
+        {
+          lengthPerPage: 5,
+          contents: snippets as ContainerSnippet[],
+          header: addHeader(p.persona.name, p.settings.indexShowArchived),
+        },
+        (keyword, content) => {
+          const container = new ContainerBuilder();
+          const result = content(container);
+          if (!("letter" in result)) {
+            log({
+              header: "Could not get letter from container",
+              processName: "SnippetPaginator",
+              type: "Error",
+              payload: result,
+            });
+            return false;
+          }
+
+          const stringified = stringifyLetter(result.letter as Letter);
+
+          return search(keyword, stringified);
+        }
+      );
     });
 
     if (!result || result.returnType === "error") {
@@ -69,17 +89,20 @@ export default new Interaction({
       });
       return;
     }
+    let isPureCollector = false;
 
     if (!collector) {
       collector = msg.createMessageComponentCollector({
         componentType: ComponentType.Button,
         time: 15 * 60 * 1000,
       });
+
+      isPureCollector = true;
     }
 
     collector.on("collect", async (buttonContext) => {
       try {
-        collector.resetTimer();
+        if (isPureCollector) collector.resetTimer();
 
         const [type, ...uuid] = buttonContext.customId.split("-");
 
@@ -107,8 +130,6 @@ export default new Interaction({
               await buttonContext.update({
                 components: [generateMailContainer(letter)],
               });
-
-              letter.isInteracted = true;
 
               p.inbox.letters[index] = letter;
             });
@@ -177,6 +198,8 @@ export default new Interaction({
               );
 
               letter.onInteract?.(p);
+
+              letter.isInteracted = true;
 
               p.inbox.letters[index] = letter;
 

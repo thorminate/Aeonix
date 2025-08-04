@@ -19,5 +19,7 @@ export default function addHeader(name: string, showArchived: boolean) {
     page.addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large)
     );
+
+    return {};
   };
 }
