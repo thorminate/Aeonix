@@ -8,16 +8,16 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import log from "../../utils/log.js";
+import log from "../../../utils/log.js";
 import paginator, {
   buttonPaginatorWithUpdate,
-} from "../../utils/buttonPaginator.js";
+} from "../../../utils/buttonPaginator.js";
 import { randomUUID } from "node:crypto";
-import componentWrapper from "../../utils/componentWrapper.js";
-import Item from "../../models/item/item.js";
-import Interaction, { ITypes } from "../../models/core/interaction.js";
-import Inventory from "../../models/player/utils/inventory/inventory.js";
-import PlayerRef from "../../models/player/utils/types/playerRef.js";
+import componentWrapper from "../../../utils/componentWrapper.js";
+import Item from "../../../models/item/item.js";
+import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Inventory from "../../../models/player/utils/inventory/inventory.js";
+import PlayerRef from "../../../models/player/utils/types/playerRef.js";
 
 function getButtonsFromEntries(entries: Item[]): ButtonBuilder[] {
   return entries.map((entry: Item): ButtonBuilder => {

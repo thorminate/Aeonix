@@ -152,6 +152,12 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
     await player.moveTo("start", true, true, true);
 
     player.inbox.add(new TutorialQuestLetter());
+    player.inbox.add(new TutorialQuestLetter());
+    player.inbox.add(new TutorialQuestLetter());
+    player.inbox.add(new TutorialQuestLetter());
+    player.inbox.add(new TutorialQuestLetter());
+    player.inbox.add(new TutorialQuestLetter());
+    player.inbox.add(new TutorialQuestLetter());
 
     await player.commit();
 

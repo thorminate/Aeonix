@@ -12,27 +12,7 @@ export async function tickPlayers(aeonix: Aeonix) {
     if (diff > aeonix.tickInterval) {
       await player.commit();
       aeonix.players.release(player._id);
-      log({
-        header: "Unloading player",
-        processName: "CommitAllPlayersEvent",
-        payload: {
-          id: player._id,
-          name: player.persona.name,
-          diff,
-        },
-        type: "Info",
-      });
     } else {
-      log({
-        header: "Committing player",
-        processName: "CommitAllPlayersEvent",
-        payload: {
-          id: player._id,
-          name: player.persona.name,
-          diff,
-        },
-        type: "Info",
-      });
       await player.commit();
     }
   }

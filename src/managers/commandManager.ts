@@ -8,7 +8,7 @@ type Holds = Interaction<"command", boolean, boolean, boolean, boolean>;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-const folderPath = path.join(__dirname, "..", "content", "commands");
+const masterFolderPath = path.join(__dirname, "..", "content", "commands");
 
 export default class CommandManager extends CachedManager<
   Interaction<"command", boolean, boolean, boolean, boolean>
@@ -25,11 +25,13 @@ export default class CommandManager extends CachedManager<
   ): Promise<
     Interaction<"command", boolean, boolean, boolean, boolean> | undefined
   > {
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    const filePath = files.find((f) => f.includes(customId + ".js"));
+    const folderPath = folders.find((f) => f.includes(customId));
 
-    if (!filePath) return;
+    if (!folderPath) return;
+
+    const filePath = path.resolve(folderPath, `${customId}.js`);
 
     const fileUrl = url.pathToFileURL(filePath);
     const importedFile: Holds = (await import(fileUrl.toString())).default;
@@ -42,9 +44,12 @@ export default class CommandManager extends CachedManager<
   ): Promise<Interaction<"command", boolean, boolean, boolean, boolean>[]> {
     const total: Holds[] = [];
 
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    for (const file of files) {
+    for (const folder of folders) {
+      const dirname = path.basename(folder);
+
+      const file = path.resolve(folder, dirname + ".js");
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile: Holds = (await import(fileUrl.toString())).default;

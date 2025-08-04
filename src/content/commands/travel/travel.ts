@@ -6,11 +6,11 @@ import {
   Message,
   SlashCommandBuilder,
 } from "discord.js";
-import log from "../../utils/log.js";
-import paginator from "../../utils/buttonPaginator.js";
-import Interaction, { ITypes } from "../../models/core/interaction.js";
-import PlayerRef from "../../models/player/utils/types/playerRef.js";
-import PlayerMoveToResult from "../../models/player/utils/types/playerMoveToResult.js";
+import log from "../../../utils/log.js";
+import paginator from "../../../utils/buttonPaginator.js";
+import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import PlayerRef from "../../../models/player/utils/types/playerRef.js";
+import PlayerMoveToResult from "../../../models/player/utils/types/playerMoveToResult.js";
 
 function createCollectors(message: Message, player: PlayerRef) {
   const collector = message.createMessageComponentCollector({

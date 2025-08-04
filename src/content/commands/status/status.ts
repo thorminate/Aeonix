@@ -1,7 +1,7 @@
 // shows your status
 import { HTTPError, MessageFlags, SlashCommandBuilder } from "discord.js";
-import log from "../../utils/log.js";
-import Interaction, { ITypes } from "../../models/core/interaction.js";
+import log from "../../../utils/log.js";
+import Interaction, { ITypes } from "../../../models/core/interaction.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()

@@ -12,9 +12,7 @@ export default class PlayerRef {
     return this.id;
   }
 
-  async use<T>(
-    fn: (player: Player) => Promise<T>
-  ): Promise<Readonly<T> | undefined> {
+  async use<T>(fn: (player: Player) => Promise<T>): Promise<T | undefined> {
     if (aeonix.players.isDeleted(this.id)) return;
 
     let player = this.weak?.deref();
@@ -27,6 +25,8 @@ export default class PlayerRef {
       aeonix.players.set(player);
     }
 
+    player.lastAccessed = Date.now();
+
     const result = await fn(player).catch((err) => {
       log({
         header: "PlayerRef.use",
@@ -36,6 +36,6 @@ export default class PlayerRef {
       throw err;
     });
     player = undefined;
-    return result as Readonly<T>;
+    return result;
   }
 }
