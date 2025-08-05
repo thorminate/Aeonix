@@ -1,4 +1,4 @@
-import Environment from "../../models/environment/environment.js";
+import Environment from "../../../models/environment/environment.js";
 
 export default class SomewhereEnvironment extends Environment {
   type = "somewhere";

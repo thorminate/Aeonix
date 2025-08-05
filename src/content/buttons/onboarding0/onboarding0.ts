@@ -1,7 +1,7 @@
 import { ButtonStyle, MessageFlags } from "discord.js";
 import log from "../../../utils/log.js";
-import deletePlayer from "./deletePlayer.js";
-import onboarding1 from "../../modals/onboarding1.js";
+import deletePlayer from "./../deletePlayer/deletePlayer.js";
+import onboarding1 from "../../modals/onboarding1/onboarding1.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
 import Interaction, {
   ButtonBuilderV2,

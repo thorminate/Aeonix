@@ -6,7 +6,7 @@ import PlayerRef from "../models/player/utils/types/playerRef.js";
 import hardMerge from "../utils/hardMerge.js";
 import aeonix from "../index.js";
 import log from "../utils/log.js";
-import TutorialQuestLetter from "../content/letters/tutorialQuestLetter.js";
+import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -151,12 +151,6 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
 
     await player.moveTo("start", true, true, true);
 
-    player.inbox.add(new TutorialQuestLetter());
-    player.inbox.add(new TutorialQuestLetter());
-    player.inbox.add(new TutorialQuestLetter());
-    player.inbox.add(new TutorialQuestLetter());
-    player.inbox.add(new TutorialQuestLetter());
-    player.inbox.add(new TutorialQuestLetter());
     player.inbox.add(new TutorialQuestLetter());
 
     await player.commit();

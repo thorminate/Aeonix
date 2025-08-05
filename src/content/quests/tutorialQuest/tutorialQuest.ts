@@ -1,4 +1,4 @@
-import Quest from "../../models/player/utils/quests/quest.js";
+import Quest from "../../../models/player/utils/quests/quest.js";
 
 export default class TutorialQuest extends Quest {
   type: string = "tutorialQuest";

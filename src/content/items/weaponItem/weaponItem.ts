@@ -1,7 +1,7 @@
-import Item from "../../models/item/item.js";
-import ItemEventResult from "../../models/item/utils/itemEventResult.js";
-import ItemUsageContext from "../../models/item/utils/itemUsageContext.js";
-import ItemUsageResult from "../../models/item/utils/itemUsageResult.js";
+import Item from "../../../models/item/item.js";
+import ItemEventResult from "../../../models/item/utils/itemEventResult.js";
+import ItemUsageContext from "../../../models/item/utils/itemUsageContext.js";
+import ItemUsageResult from "../../../models/item/utils/itemUsageResult.js";
 
 export interface IWeaponData {
   damage: number;

@@ -1,7 +1,6 @@
-import Player from "../../models/player/player.js";
-import Letter from "../../models/player/utils/inbox/letter.js";
-import log from "../../utils/log.js";
-import TutorialQuest from "../quests/tutorialQuest.js";
+import Player from "../../../models/player/player.js";
+import Letter from "../../../models/player/utils/inbox/letter.js";
+import TutorialQuest from "../../quests/tutorialQuest/tutorialQuest.js";
 
 export default class TutorialQuestLetter extends Letter {
   type: string = "tutorialQuestLetter";
@@ -15,11 +14,8 @@ export default class TutorialQuestLetter extends Letter {
   oneTimeInteraction: boolean = true;
 
   override onInteract(player: Player): void {
-    log({
-      header: "Accepted tutorial quest",
-      processName: "Letter",
-    });
     player.quests.append(new TutorialQuest());
     this.interactionType = "Quest accepted";
+    this.canDismiss = true;
   }
 }

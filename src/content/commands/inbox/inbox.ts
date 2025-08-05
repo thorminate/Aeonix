@@ -127,6 +127,8 @@ export default new Interaction({
 
               letter.onRead?.(p);
 
+              letter.isRead = true;
+
               await buttonContext.update({
                 components: [generateMailContainer(letter)],
               });
@@ -185,12 +187,6 @@ export default new Interaction({
             break;
           }
           case "#use": {
-            log({
-              header: "Interacting with letter",
-              processName: "InboxCommand",
-              type: "Info",
-              payload: id,
-            });
             const letter = await player.use(async (p) => {
               const [letter, index] = findLetterFromIdStrict(
                 p.inbox.letters,
@@ -202,13 +198,6 @@ export default new Interaction({
               letter.isInteracted = true;
 
               p.inbox.letters[index] = letter;
-
-              log({
-                header: "Interacted with letter",
-                processName: "InboxCommand",
-                type: "Info",
-                payload: [letter, p],
-              });
 
               return letter;
             });

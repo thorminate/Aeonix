@@ -1,5 +1,5 @@
-import Player from "../../models/player/player.js";
-import StatusEffect from "../../models/player/utils/statusEffects/statusEffect.js";
+import Player from "../../../models/player/player.js";
+import StatusEffect from "../../../models/player/utils/statusEffects/statusEffect.js";
 
 export default class LightPoison extends StatusEffect {
   type = "lightPoison";

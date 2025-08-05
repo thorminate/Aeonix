@@ -1,6 +1,6 @@
 import { log } from "console";
 import { ChannelSelectMenuBuilder } from "discord.js";
-import Interaction, { ITypes } from "../../models/core/interaction.js";
+import Interaction, { ITypes } from "../../../models/core/interaction.js";
 
 export default new Interaction({
   data: new ChannelSelectMenuBuilder()

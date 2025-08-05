@@ -8,7 +8,12 @@ type Holds = Interaction<"roleSelectMenu", boolean, boolean, boolean, boolean>;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-const folderPath = path.join(__dirname, "..", "content", "roleSelectMenus");
+const masterFolderPath = path.join(
+  __dirname,
+  "..",
+  "content",
+  "roleSelectMenus"
+);
 
 export default class RoleSelectMenuManager extends CachedManager<
   Interaction<"roleSelectMenu", boolean, boolean, boolean, boolean>
@@ -33,10 +38,12 @@ export default class RoleSelectMenuManager extends CachedManager<
     | Interaction<"roleSelectMenu", boolean, boolean, boolean, boolean>
     | undefined
   > {
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    const filePath = files.find((f) => f.includes(customId + ".js"));
+    const folderPath = folders.find((f) => f.includes(customId));
+    if (!folderPath) return;
 
+    const filePath = path.resolve(folderPath, `${customId}.js`);
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
@@ -52,9 +59,12 @@ export default class RoleSelectMenuManager extends CachedManager<
   > {
     const total: Holds[] = [];
 
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    for (const file of files) {
+    for (const folder of folders) {
+      const file = path.resolve(folder, path.basename(folder) + ".js");
+      if (!file) continue;
+
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile: Holds = (await import(fileUrl.toString())).default;

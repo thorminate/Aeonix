@@ -9,7 +9,7 @@ type Holds = StatusEffect;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-const folderPath = path.join(__dirname, "..", "content", "statusEffects");
+const masterFolderPath = path.join(__dirname, "..", "content", "statusEffects");
 
 export default class StatusEffectManager extends CachedManager<StatusEffect> {
   getKey(instance: StatusEffect): string {
@@ -19,11 +19,12 @@ export default class StatusEffectManager extends CachedManager<StatusEffect> {
   override async loadRaw(
     id: string
   ): Promise<ConcreteConstructor<StatusEffect> | undefined> {
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    const filePath = files.find((f) => f.includes(id + ".js"));
+    const folderPath = folders.find((f) => f.includes(id));
+    if (!folderPath) return;
 
-    if (!filePath) return;
+    const filePath = path.resolve(folderPath, `${id}.js`);
 
     const fileUrl = url.pathToFileURL(filePath);
     const importedFile = (await import(fileUrl.toString()))
@@ -44,9 +45,12 @@ export default class StatusEffectManager extends CachedManager<StatusEffect> {
   override async loadAllRaw(): Promise<ConcreteConstructor<StatusEffect>[]> {
     const total: ConcreteConstructor<Holds>[] = [];
 
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    for (const file of files) {
+    for (const folder of folders) {
+      const file = path.resolve(folder, path.basename(folder) + ".js");
+      if (!file) continue;
+
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile = (await import(fileUrl.toString()))

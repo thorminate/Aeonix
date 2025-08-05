@@ -1,5 +1,5 @@
-import Player from "../../models/player/player.js";
-import StatusEffect from "../../models/player/utils/statusEffects/statusEffect.js";
+import Player from "../../../models/player/player.js";
+import StatusEffect from "../../../models/player/utils/statusEffects/statusEffect.js";
 
 export default class StatusEffectTemplate extends StatusEffect {
   type = "#statusEffectTemplate"; // should always be the exact same as the filename

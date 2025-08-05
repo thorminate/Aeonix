@@ -9,7 +9,7 @@ type Holds = Quest;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-const folderPath = path.join(__dirname, "..", "content", "quests");
+const masterFolderPath = path.join(__dirname, "..", "content", "quests");
 
 export default class QuestManager extends CachedManager<Quest> {
   getKey(instance: Quest): string {
@@ -21,11 +21,12 @@ export default class QuestManager extends CachedManager<Quest> {
   override async loadRaw(
     id: string
   ): Promise<ConcreteConstructor<Quest> | undefined> {
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    const filePath = files.find((f) => f.includes(id + ".js"));
+    const folderPath = folders.find((f) => f.includes(id));
+    if (!folderPath) return;
 
-    if (!filePath) return;
+    const filePath = path.resolve(folderPath, `${id}.js`);
 
     const fileUrl = url.pathToFileURL(filePath);
     const importedFile = (await import(fileUrl.toString()))
@@ -49,9 +50,12 @@ export default class QuestManager extends CachedManager<Quest> {
   override async loadAllRaw(): Promise<ConcreteConstructor<Quest>[]> {
     const total: ConcreteConstructor<Holds>[] = [];
 
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    for (const file of files) {
+    for (const folder of folders) {
+      const file = path.resolve(folder, path.basename(folder) + ".js");
+      if (!file) continue;
+
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile = (await import(fileUrl.toString()))

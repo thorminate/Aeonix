@@ -1,4 +1,4 @@
-import BackpackItem from "../../content/items/backpackItem.js";
+import BackpackItem from "../../content/items/backpackItem/backpackItem.js";
 import Event from "../../models/core/event.js";
 import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";

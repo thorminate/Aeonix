@@ -71,4 +71,4 @@ export default aeonix;
 //TODO:
 // 1. DONE.
 // 2. convert all paginator V1 instances to use paginator V2.
-// 3. make all content have folders before main files
+// 3. DONE.

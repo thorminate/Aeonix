@@ -1,11 +1,11 @@
 import { ButtonStyle } from "discord.js";
-import log from "../../utils/log.js";
-import deletePlayerConfirmed from "./deletePlayerConfirmed.js";
-import componentWrapper from "../../utils/componentWrapper.js";
+import log from "../../../utils/log.js";
+import deletePlayerConfirmed from "./../deletePlayerConfirmed/deletePlayerConfirmed.js";
+import componentWrapper from "../../../utils/componentWrapper.js";
 import Interaction, {
   ButtonBuilderV2,
   ITypes,
-} from "../../models/core/interaction.js";
+} from "../../../models/core/interaction.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()
