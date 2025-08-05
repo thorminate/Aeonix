@@ -9,7 +9,7 @@ type Holds = Letter;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-const folderPath = path.join(__dirname, "..", "content", "letters");
+const masterFolderPath = path.join(__dirname, "..", "content", "letters");
 
 export default class LetterManager extends CachedManager<Letter> {
   getKey(instance: Letter): string {
@@ -21,10 +21,12 @@ export default class LetterManager extends CachedManager<Letter> {
   override async loadRaw(
     id: string
   ): Promise<ConcreteConstructor<Letter> | undefined> {
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    const filePath = files.find((f) => f.includes(id + ".js"));
+    const folderPath = folders.find((f) => f.includes(id));
+    if (!folderPath) return;
 
+    const filePath = path.resolve(folderPath, `${id}.js`);
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
@@ -46,9 +48,12 @@ export default class LetterManager extends CachedManager<Letter> {
   override async loadAllRaw(): Promise<ConcreteConstructor<Letter>[]> {
     const total: ConcreteConstructor<Holds>[] = [];
 
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    for (const file of files) {
+    for (const folder of folders) {
+      const file = path.resolve(folder, path.basename(folder) + ".js");
+      if (!file) continue;
+
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile = (await import(fileUrl.toString()))

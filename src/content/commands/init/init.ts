@@ -11,7 +11,7 @@ import {
 import log from "../../../utils/log.js";
 import deletePlayer from "../../buttons/deletePlayer.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
-import onboarding0 from "../../buttons/onboarding0.js";
+import onboarding0 from "../../buttons/onboarding0/onboarding0.js";
 import Interaction, { ITypes } from "../../../models/core/interaction.js";
 
 export default new Interaction({

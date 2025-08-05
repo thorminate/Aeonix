@@ -10,7 +10,7 @@ import {
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import componentWrapper from "../../utils/componentWrapper.js";
-import onboarding0 from "../../content/buttons/onboarding0.js";
+import onboarding0 from "../../content/buttons/onboarding0/onboarding0.js";
 
 // turn on word wrap to see the full message
 

@@ -14,7 +14,12 @@ type Holds = Interaction<
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-const folderPath = path.join(__dirname, "..", "content", "channelSelectMenus");
+const masterFolderPath = path.join(
+  __dirname,
+  "..",
+  "content",
+  "channelSelectMenus"
+);
 
 export default class ChannelSelectMenuManager extends CachedManager<
   Interaction<"channelSelectMenu", boolean, boolean, boolean, boolean>
@@ -40,10 +45,12 @@ export default class ChannelSelectMenuManager extends CachedManager<
     | Interaction<"channelSelectMenu", boolean, boolean, boolean, boolean>
     | undefined
   > {
-    const files = await getAllFiles(folderPath);
+    const files = await getAllFiles(masterFolderPath, true);
 
-    const filePath = files.find((f) => f.includes(customId + ".js"));
+    const folderPath = files.find((f) => f.includes(customId + ".js"));
+    if (!folderPath) return;
 
+    const filePath = path.resolve(folderPath, `${customId}.js`);
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
@@ -59,9 +66,12 @@ export default class ChannelSelectMenuManager extends CachedManager<
   > {
     const total: Holds[] = [];
 
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    for (const file of files) {
+    for (const folder of folders) {
+      const file = path.resolve(folder, path.basename(folder) + ".js");
+      if (!file) continue;
+
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
       const importedFile: Holds = (await import(fileUrl.toString())).default;

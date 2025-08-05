@@ -28,10 +28,10 @@ export default class CommandManager extends CachedManager<
     const folders = await getAllFiles(masterFolderPath, true);
 
     const folderPath = folders.find((f) => f.includes(customId));
-
     if (!folderPath) return;
 
     const filePath = path.resolve(folderPath, `${customId}.js`);
+    if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
     const importedFile: Holds = (await import(fileUrl.toString())).default;

@@ -9,7 +9,7 @@ type Holds = Environment;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-const folderPath = path.join(__dirname, "..", "content", "environments");
+const masterFolderPath = path.join(__dirname, "..", "content", "environments");
 
 export default class EnvironmentManager extends CachedManager<Environment> {
   getKey(instance: Environment): string {
@@ -21,10 +21,12 @@ export default class EnvironmentManager extends CachedManager<Environment> {
   override async loadRaw(
     id: string
   ): Promise<ConcreteConstructor<Environment> | undefined> {
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    const filePath = files.find((f) => f.includes(id + ".js"));
+    const folderPath = folders.find((f) => f.includes(id));
+    if (!folderPath) return;
 
+    const filePath = path.resolve(folderPath, `${id}.js`);
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
@@ -49,9 +51,12 @@ export default class EnvironmentManager extends CachedManager<Environment> {
   override async loadAllRaw(): Promise<ConcreteConstructor<Environment>[]> {
     const total: ConcreteConstructor<Holds>[] = [];
 
-    const files = await getAllFiles(folderPath);
+    const folders = await getAllFiles(masterFolderPath, true);
 
-    for (const file of files) {
+    for (const folder of folders) {
+      const file = path.resolve(folder, path.basename(folder) + ".js");
+      if (!file) continue;
+
       const filePath = path.resolve(file);
       const fileUrl = url.pathToFileURL(filePath);
       const importedClass = (await import(fileUrl.toString()))
