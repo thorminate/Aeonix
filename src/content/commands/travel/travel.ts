@@ -3,63 +3,12 @@ import {
   ButtonInteraction,
   ButtonStyle,
   ComponentType,
-  Message,
   SlashCommandBuilder,
 } from "discord.js";
 import log from "../../../utils/log.js";
 import paginator from "../../../utils/buttonPaginator.js";
 import Interaction, { ITypes } from "../../../models/core/interaction.js";
-import PlayerRef from "../../../models/player/utils/types/playerRef.js";
 import PlayerMoveToResult from "../../../models/player/utils/types/playerMoveToResult.js";
-
-function createCollectors(message: Message, player: PlayerRef) {
-  const collector = message.createMessageComponentCollector({
-    componentType: ComponentType.Button,
-    time: 5 * 60 * 1000,
-  });
-
-  collector.on("collect", async (buttonContext: ButtonInteraction) => {
-    try {
-      let result: undefined | PlayerMoveToResult;
-      player.use(async (p) => {
-        result = await p.moveTo(buttonContext.customId.split("-")[1] || "");
-      });
-
-      if (!result) buttonContext.update({ content: "Something went wrong." });
-
-      if (
-        result === "invalid location" ||
-        result === "not adjacent" ||
-        result === "location channel not found" ||
-        result === "no old environment"
-      ) {
-        await buttonContext.update({
-          content: "Invalid location.",
-        });
-        return;
-      }
-
-      if (result === "already here") {
-        await buttonContext.update({
-          content: "You are already here.",
-        });
-        return;
-      }
-
-      await buttonContext.update({
-        content: `You have moved to ${buttonContext.customId.split("-")[1]}.`,
-        components: [],
-      });
-    } catch (e) {
-      log({
-        header: "Travel command could not be handled correctly",
-        processName: "TravelCommandCollector",
-        payload: e,
-        type: "Error",
-      });
-    }
-  });
-}
 
 export default new Interaction({
   data: new SlashCommandBuilder()
@@ -97,7 +46,52 @@ export default new Interaction({
       return;
     }
 
-    createCollectors(message, player);
+    const collector = message.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      time: 5 * 60 * 1000,
+    });
+
+    collector.on("collect", async (buttonContext: ButtonInteraction) => {
+      try {
+        let result: undefined | PlayerMoveToResult;
+        player.use(async (p) => {
+          result = await p.moveTo(buttonContext.customId.split("-")[1] || "");
+        });
+
+        if (!result) buttonContext.update({ content: "Something went wrong." });
+
+        if (
+          result === "invalid location" ||
+          result === "not adjacent" ||
+          result === "location channel not found" ||
+          result === "no old environment"
+        ) {
+          await buttonContext.update({
+            content: "Invalid location.",
+          });
+          return;
+        }
+
+        if (result === "already here") {
+          await buttonContext.update({
+            content: "You are already here.",
+          });
+          return;
+        }
+
+        await buttonContext.update({
+          content: `You have moved to ${buttonContext.customId.split("-")[1]}.`,
+          components: [],
+        });
+      } catch (e) {
+        log({
+          header: "Travel command could not be handled correctly",
+          processName: "TravelCommandCollector",
+          payload: e,
+          type: "Error",
+        });
+      }
+    });
   },
 
   onError(e) {

@@ -222,7 +222,7 @@ export default class Aeonix extends Client {
           return;
         }
 
-        eventManager(this).then(() => {
+        await eventManager(this).then(() => {
           log({
             header: "Event handler initialized.",
             processName: "EventHandler",
@@ -233,6 +233,7 @@ export default class Aeonix extends Client {
         await Promise.all([
           mongoose.connect(mdbToken),
           this.login(dscToken),
+          makeAllCaches(this),
         ]).then(([db]) => {
           log({
             header: "Connected to external services",
@@ -244,8 +245,6 @@ export default class Aeonix extends Client {
             mongoose.connection.close();
           });
         });
-
-        await makeAllCaches(this);
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",

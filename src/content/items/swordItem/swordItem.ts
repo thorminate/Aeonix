@@ -14,7 +14,11 @@ export default class SwordItem extends Item {
   weight: number = 15;
   value: number = 0;
   data: ISwordData = this.createData();
-  useType: string = "Swing";
+  interactionType: string = "Swing";
+  interactable: boolean = true;
+  oneTimeInteraction: boolean = false;
+  canDrop: boolean = true;
+
   createData(): ISwordData {
     return {
       range: 5,
@@ -23,7 +27,13 @@ export default class SwordItem extends Item {
     };
   }
   async use(): Promise<ItemUsageResult> {
+    if (this.data.wear >= 10) {
+      this.interactable = false;
+      return new ItemUsageResult("Your sword broke!", true);
+    }
+
     this.data.wear++;
+
     return new ItemUsageResult("Sword Swung!", true);
   }
 }

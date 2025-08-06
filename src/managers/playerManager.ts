@@ -7,6 +7,7 @@ import hardMerge from "../utils/hardMerge.js";
 import aeonix from "../index.js";
 import log from "../utils/log.js";
 import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
+import BackpackItem from "../content/items/backpackItem/backpackItem.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -152,6 +153,13 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
     await player.moveTo("start", true, true, true);
 
     player.inbox.add(new TutorialQuestLetter());
+    player.inventory.add(new BackpackItem());
+    player.inventory.add(new BackpackItem());
+    player.inventory.add(new BackpackItem());
+    player.inventory.add(new BackpackItem());
+    player.inventory.add(new BackpackItem());
+    player.inventory.add(new BackpackItem());
+    player.inventory.add(new BackpackItem());
 
     await player.commit();
 

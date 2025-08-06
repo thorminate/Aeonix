@@ -5,26 +5,23 @@ import {
   SectionBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import { ContainerSnippet } from "../../../../utils/containerSnippetPaginator.js";
-import lettersOnlyContainArchived from "./lettersOnlyContainArchived.js";
-import selectRandomFromArray from "../../../../utils/selectRandomFromArray.js";
 import Player from "../../../../models/player/player.js";
+import { ContainerSnippet } from "../../../../utils/containerSnippetPaginator.js";
+import selectRandomFromArray from "../../../../utils/selectRandomFromArray.js";
 
-export default function generateContainerSnippets({
-  inbox: { letters },
-  settings: { indexShowArchived: showArchived },
+export default function generateInventoryContents({
+  inventory: { entries },
 }: Player): ContainerSnippet[] {
   const snippets: ContainerSnippet[] = [];
-
-  if (lettersOnlyContainArchived(letters) && showArchived === false) {
+  if (entries.length === 0) {
     snippets.push((page: ContainerBuilder) =>
       page.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           selectRandomFromArray([
-            "You're in the clear!",
-            "No letters in sight.",
-            "Your inbox is empty.",
-            "You have no letters.",
+            "Seemingly empty.",
+            "You have no items, nada!",
+            "Your inventory is empty.",
+            "You have no items.",
             "Nothin' to see here!",
           ])
         )
@@ -33,28 +30,24 @@ export default function generateContainerSnippets({
     return snippets;
   }
 
-  for (const letter of letters) {
-    if (letter.isArchived === true && showArchived === false) continue;
-
+  for (const entry of entries) {
     snippets.push((page: ContainerBuilder) => {
       page.addSectionComponents(
         new SectionBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### ${letter.sender}:${
-                letter.isArchived === true ? " (Archived)" : ""
-              }\n${letter.subject}`
+              `### ${entry.name}:\n-# ${entry.description}`
             )
           )
           .setButtonAccessory(
             new ButtonBuilder()
-              .setCustomId("#open-" + letter.id)
+              .setCustomId("#open-" + entry.id)
               .setLabel("Open")
               .setStyle(ButtonStyle.Secondary)
           )
       );
 
-      return { letter };
+      return { entry };
     });
   }
 

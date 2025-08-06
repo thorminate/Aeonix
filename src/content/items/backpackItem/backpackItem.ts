@@ -1,7 +1,7 @@
 import Item from "../../../models/item/item.js";
 import ItemEventResult from "../../../models/item/utils/itemEventResult.js";
-import ItemUsageContext from "../../../models/item/utils/itemUsageContext.js";
 import ItemUsageResult from "../../../models/item/utils/itemUsageResult.js";
+import Player from "../../../models/player/player.js";
 
 export interface IBackpackData {
   capacity: number;
@@ -15,7 +15,10 @@ export default class BackpackItem extends Item {
   weight: number = 10;
   value: number = 0;
   data: IBackpackData = this.createData();
-  useType: string = "Open";
+  interactionType: string = "Open";
+  interactable: boolean = true;
+  oneTimeInteraction: boolean = true;
+  canDrop: boolean = true;
 
   createData(capacity: number = 20, entries: Item[] = []): IBackpackData {
     return {
@@ -28,10 +31,9 @@ export default class BackpackItem extends Item {
     return new ItemEventResult("Your backpack took damage!", true);
   }
 
-  async use({ player }: ItemUsageContext): Promise<ItemUsageResult> {
-    await player.use(async (p) => {
-      p.stats.giveXpFromRange(5, 10);
-    });
+  async use(player: Player): Promise<ItemUsageResult> {
+    this.interactionType = "Opened";
+    player.stats.giveXpFromRange(5, 10);
     return new ItemUsageResult("Wow!", true);
   }
 }

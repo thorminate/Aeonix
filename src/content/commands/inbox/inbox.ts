@@ -9,8 +9,8 @@ import containerSnippetPaginator, {
   ContainerSnippet,
   containerSnippetPaginatorWithUpdate,
 } from "../../../utils/containerSnippetPaginator.js";
-import generateContainerSnippets from "./utils/generateContainerSnippets.js";
-import addHeader from "./utils/addHeader.js";
+import generateInboxContents from "./utils/generateInboxContents.js";
+import addHeader from "./utils/inboxHeader.js";
 import findLetterFromIdStrict from "./utils/findLetterFromIdStrict.js";
 import generateMailContainer from "./utils/generateMailContainer.js";
 import stringifyLetter from "./utils/stringifyLetter.js";
@@ -29,7 +29,7 @@ export default new Interaction({
 
   callback: async ({ context, player }) => {
     let snippets = await player.use(async (p) => {
-      return generateContainerSnippets(p);
+      return generateInboxContents(p);
     });
 
     if (!snippets) {
@@ -141,7 +141,7 @@ export default new Interaction({
             snippets = ((await player.use(async (p) => {
               p.settings.indexShowArchived = !p.settings.indexShowArchived;
 
-              return generateContainerSnippets(p);
+              return generateInboxContents(p);
             })) ?? []) as ContainerSnippet[];
 
             player.use(async (p) => {
@@ -157,16 +157,14 @@ export default new Interaction({
 
           // Buttons in mail containers
           case "#close": {
-            snippets = (await player.use(async (p) => {
-              const snippets = generateContainerSnippets(p);
+            await player.use(async (p) => {
+              snippets = generateInboxContents(p);
               await containerSnippetPaginatorWithUpdate(buttonContext, {
                 lengthPerPage: 5,
-                contents: snippets as ContainerSnippet[],
+                contents: snippets,
                 header: addHeader(p.persona.name, p.settings.indexShowArchived),
               });
-              return snippets;
-            })) as ContainerSnippet[];
-
+            });
             break;
           }
           case "#archive": {
@@ -214,7 +212,6 @@ export default new Interaction({
             await buttonContext.update({
               components: [generateMailContainer(letter)],
             });
-
             break;
           }
         }

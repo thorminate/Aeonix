@@ -1,202 +1,18 @@
 import {
-  APIButtonComponentWithCustomId,
-  ButtonBuilder,
   ButtonInteraction,
-  ButtonStyle,
   ComponentType,
-  Message,
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 import log from "../../../utils/log.js";
-import paginator, {
-  buttonPaginatorWithUpdate,
-} from "../../../utils/buttonPaginator.js";
-import { randomUUID } from "node:crypto";
-import componentWrapper from "../../../utils/componentWrapper.js";
-import Item from "../../../models/item/item.js";
 import Interaction, { ITypes } from "../../../models/core/interaction.js";
-import Inventory from "../../../models/player/utils/inventory/inventory.js";
-import PlayerRef from "../../../models/player/utils/types/playerRef.js";
-
-function getButtonsFromEntries(entries: Item[]): ButtonBuilder[] {
-  return entries.map((entry: Item): ButtonBuilder => {
-    return new ButtonBuilder()
-      .setCustomId(entry.id)
-      .setLabel(entry.name)
-      .setStyle(ButtonStyle.Primary);
-  });
-}
-
-function scrambleDuplicates(buttons: ButtonBuilder[], inventory: Inventory) {
-  const seen = new Set();
-  const duplicates = new Set();
-  for (const button of buttons) {
-    const id = (button.data as APIButtonComponentWithCustomId).custom_id;
-    if (seen.has(id)) {
-      duplicates.add(id);
-    } else {
-      seen.add(id);
-    }
-  }
-
-  if (duplicates.size > 0) {
-    buttons = buttons.map((button: ButtonBuilder) => {
-      const id = (button.data as APIButtonComponentWithCustomId).custom_id;
-
-      if (duplicates.has(id)) {
-        const uuid = randomUUID();
-        button.setCustomId(uuid);
-
-        const entry = inventory.entries.find((e) => e.id === id);
-        if (!entry) {
-          log({
-            header: "Could not find entry in player inventory, skipping",
-            processName: "Inventory",
-            payload: [id, inventory.entries],
-            type: "Warn",
-          });
-          return button;
-        }
-
-        entry.id = uuid;
-      }
-      return button;
-    });
-  }
-  return buttons;
-}
-
-function createCollectors(
-  message: Message,
-  buttons: ButtonBuilder[],
-  player: PlayerRef
-) {
-  const collector = message.createMessageComponentCollector({
-    componentType: ComponentType.Button,
-    time: 5 * 60 * 1000,
-  });
-
-  collector.on("collect", async (context: ButtonInteraction) => {
-    try {
-      collector.resetTimer();
-
-      const useType = context.customId.split(":")[0];
-
-      const useData = context.customId.split(":")[1];
-
-      switch (useType) {
-        case "close": {
-          buttonPaginatorWithUpdate(context, buttons, "**Inventory:**");
-          break;
-        }
-
-        case "drop": {
-          await context.reply({
-            content: "Not implemented yet. (Wait for environments first!)",
-            flags: MessageFlags.Ephemeral,
-          });
-          break;
-        }
-
-        case "use": {
-          const inventory =
-            (await player.use(async (p) => p.inventory)) ?? ({} as Inventory);
-          const activeEntryIndex = inventory.entries.findIndex(
-            (e) => e.id === useData
-          );
-
-          const item = inventory.entries[activeEntryIndex];
-
-          if (!item) {
-            log({
-              header: "Item not found in inventory",
-              processName: "InventoryCommand",
-              payload: [inventory.entries, useData, activeEntryIndex],
-              type: "Error",
-            });
-            return;
-          }
-
-          const usageResult = await item.use({
-            player,
-          });
-
-          await player.use(async (p) => {
-            p.inventory.entries[activeEntryIndex] = item;
-          });
-
-          await context.update({
-            content: `**${item.name}**\n${usageResult.message}`,
-            components: componentWrapper(
-              new ButtonBuilder()
-                .setCustomId("close")
-                .setLabel("Close")
-                .setEmoji("✖️")
-                .setStyle(ButtonStyle.Danger),
-              new ButtonBuilder()
-                .setCustomId(`use:${item.id}`)
-                .setLabel(item.useType)
-                .setStyle(ButtonStyle.Success)
-                .setDisabled(usageResult.oneTime),
-              new ButtonBuilder()
-                .setCustomId(`drop:${item.id}`)
-                .setLabel("Drop")
-                .setStyle(ButtonStyle.Secondary)
-            ),
-          });
-          break;
-        }
-
-        default:
-          {
-            const inventory =
-              (await player.use(async (p) => p.inventory)) ?? ({} as Inventory);
-            const currentItem = inventory.entries.find(
-              (entry: Item) => entry.id === useType
-            );
-
-            if (!currentItem) {
-              log({
-                header: "Item not found in inventory",
-                processName: "InventoryCommand",
-                payload: [useType, inventory.entries],
-                type: "Error",
-              });
-              return;
-            }
-
-            await context.update({
-              content: `**${currentItem.name}**`,
-              components: componentWrapper(
-                new ButtonBuilder()
-                  .setCustomId("close")
-                  .setLabel("Close")
-                  .setEmoji("✖️")
-                  .setStyle(ButtonStyle.Danger),
-                new ButtonBuilder()
-                  .setCustomId(`use:${currentItem.id}`)
-                  .setLabel(currentItem.useType)
-                  .setStyle(ButtonStyle.Success),
-                new ButtonBuilder()
-                  .setCustomId(`drop:${currentItem.id}`)
-                  .setLabel("Drop")
-                  .setStyle(ButtonStyle.Secondary)
-              ),
-            });
-          }
-          break;
-      }
-    } catch (e) {
-      log({
-        header: "Error in inventory command component handling",
-        processName: "InventoryCommand",
-        type: "Error",
-        payload: e,
-      });
-    }
-  });
-}
+import containerSnippetPaginator, {
+  containerSnippetPaginatorWithUpdate,
+} from "../../../utils/containerSnippetPaginator.js";
+import inventoryHeader from "./utils/inventoryHeader.js";
+import generateInventoryContents from "./utils/generateInventoryContents.js";
+import findEntryFromIdStrict from "./utils/findEntryFromIdStrict.js";
+import generateEntryContainer from "./utils/generateEntryContainer.js";
 
 export default new Interaction({
   interactionType: ITypes.Command,
@@ -212,21 +28,34 @@ export default new Interaction({
   passEnvironment: false,
 
   callback: async ({ context, player }): Promise<void> => {
-    const inventory =
-      (await player.use(async (p) => p.inventory as Inventory)) ??
-      ({} as Inventory);
+    let snippets = await player.use(async (p) => {
+      return generateInventoryContents(p);
+    });
 
-    const unsanitizedButtons = getButtonsFromEntries(inventory.entries);
+    if (!snippets) {
+      log({
+        header: "Could not generate inventory contents",
+        processName: "InventoryCommand",
+        type: "Error",
+      });
+      return;
+    }
 
-    const buttons = scrambleDuplicates(unsanitizedButtons, inventory);
+    const result = await player.use(async (p) => {
+      return await containerSnippetPaginator(
+        context,
+        {
+          lengthPerPage: 5,
+          header: inventoryHeader(p.persona.name),
+          contents: snippets!,
+        },
+        () => {
+          return false;
+        }
+      );
+    });
 
-    const message = await paginator(context, buttons, (pg) =>
-      pg
-        ? "`**Inventory:**\n-# (select an item to see more details)`"
-        : "You have no items in your inventory."
-    );
-
-    if (!message) {
+    if (!result || !result.returnType || result.returnType === "error") {
       log({
         header: "Paginator returned falsy value",
         processName: "InventoryCommand",
@@ -235,7 +64,133 @@ export default new Interaction({
       return;
     }
 
-    createCollectors(message, buttons, player);
+    const message = result.message;
+    let collector = result.collector;
+
+    if (!message) {
+      log({
+        header: "Paginator did not return a message",
+        processName: "InventoryCommand",
+        type: "Error",
+      });
+      return;
+    }
+
+    let isPureCollector = false;
+
+    if (!collector) {
+      collector = message.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        time: 5 * 60 * 1000,
+      });
+      isPureCollector = true;
+    }
+
+    collector.on("collect", async (buttonContext: ButtonInteraction) => {
+      try {
+        if (isPureCollector) collector.resetTimer();
+
+        const [type, ...useData] = buttonContext.customId.split("-");
+
+        const id = useData.join("-");
+
+        switch (type) {
+          case "#open":
+            {
+              await player.use(async (p) => {
+                const [entry, index] = findEntryFromIdStrict(
+                  p.inventory.entries,
+                  id
+                );
+
+                if (!entry) {
+                  log({
+                    header: "Item not found in inventory",
+                    processName: "InventoryCommand",
+                    payload: [id, p.inventory.entries],
+                    type: "Error",
+                  });
+                  return;
+                }
+
+                await buttonContext.update({
+                  components: [generateEntryContainer(entry)],
+                });
+
+                p.inventory.entries[index] = entry;
+              });
+            }
+            break;
+
+          case "#close": {
+            await player.use(async (p) => {
+              snippets = generateInventoryContents(p);
+              await containerSnippetPaginatorWithUpdate(buttonContext, {
+                lengthPerPage: 5,
+                header: inventoryHeader(p.persona.name),
+                contents: snippets,
+              });
+            });
+            break;
+          }
+          case "#drop": {
+            await buttonContext.reply({
+              content: "Not implemented yet. (Wait for environments first!)",
+              flags: MessageFlags.Ephemeral,
+            });
+            break;
+          }
+          case "#use": {
+            const entry = await player.use(async (p) => {
+              const [entry, index] = findEntryFromIdStrict(
+                p.inventory.entries,
+                id
+              );
+
+              if (!entry) {
+                log({
+                  header: "Item not found in inventory",
+                  processName: "InventoryCommand",
+                  payload: [id, p.inventory.entries],
+                  type: "Error",
+                });
+                return;
+              }
+
+              entry.interact?.(p);
+
+              entry.isInteracted = true;
+
+              p.inventory.entries[index] = entry;
+
+              return entry;
+            });
+
+            if (!entry) {
+              log({
+                header: "Item not found in inventory",
+                processName: "InventoryCommand",
+                payload: [id],
+                type: "Error",
+              });
+              return;
+            }
+
+            await buttonContext.update({
+              components: [generateEntryContainer(entry)],
+            });
+            break;
+          }
+        }
+      } catch (e) {
+        log({
+          header: "Error in inventory command component handling",
+          processName: "InventoryCommand",
+          type: "Error",
+          payload: e,
+        });
+      }
+    });
   },
 
   onError(e) {

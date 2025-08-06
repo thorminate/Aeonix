@@ -13,7 +13,10 @@ export default class ItemTemplate extends Item {
   weight: number = 10;
   value: number = 0;
   data: ITemplateData = this.createData();
-  useType: string = "Use";
+  interactionType: string = "yes";
+  interactable: boolean = true;
+  oneTimeInteraction: boolean = false;
+  canDrop: boolean = false;
 
   createData(num: number = 1): ITemplateData {
     return {
@@ -25,7 +28,7 @@ export default class ItemTemplate extends Item {
     return new ItemEventResult("Something happened!", true);
   }
 
-  async use() {
+  override async interact() {
     return new ItemUsageResult("Wow!", true);
   }
 }
