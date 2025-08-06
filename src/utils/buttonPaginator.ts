@@ -13,7 +13,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import hardMerge from "./hardMerge.js";
+import merge from "./merge.js";
 import log from "./log.js";
 import { CommandContext } from "../models/core/interaction.js";
 
@@ -36,7 +36,7 @@ async function paginate(
   getContent: GetterOrLiteral,
   isSearch = false
 ): Promise<InteractionResponse> {
-  const newPage = hardMerge(
+  const newPage = merge(
     new ActionRowBuilder<ButtonBuilder>(),
     pages[currentPage],
     { components: ButtonBuilder }

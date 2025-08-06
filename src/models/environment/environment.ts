@@ -4,7 +4,7 @@ import Player from "../player/player.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
-import hardMerge from "../../utils/hardMerge.js";
+import merge from "../../utils/merge.js";
 import { randomUUID } from "crypto";
 import Item from "../item/item.js";
 import log from "../../utils/log.js";
@@ -26,7 +26,7 @@ export default abstract class Environment {
   }
 
   async commit(): Promise<void> {
-    await environmentModel.findByIdAndUpdate(this.id, hardMerge({}, this), {
+    await environmentModel.findByIdAndUpdate(this.id, merge({}, this), {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,

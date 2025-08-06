@@ -23,7 +23,7 @@ import Inbox from "./utils/inbox/inbox.js";
 import Location from "./utils/location/location.js";
 import Persona from "./utils/persona/persona.js";
 import StatusEffects from "./utils/statusEffects/statusEffects.js";
-import hardMerge from "../../utils/hardMerge.js";
+import merge from "../../utils/merge.js";
 import {
   getModelForClass,
   modelOptions,
@@ -236,7 +236,7 @@ export default class Player {
   }
 
   async commit(): Promise<void> {
-    await playerModel.findByIdAndUpdate(this._id, hardMerge({}, this), {
+    await playerModel.findByIdAndUpdate(this._id, merge({}, this), {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,

@@ -1,9 +1,15 @@
+import { Model } from "mongoose";
 import CachedManager from "./cachedManager.js";
 import { Collection } from "discord.js";
+import merge from "../../utils/merge.js";
 
 export default abstract class LifecycleCachedManager<
-  T extends object
+  T extends {
+    _id: string;
+    getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
+  }
 > extends CachedManager<T> {
+  _deletedIds: Set<string> = new Set<string>();
   _weakRefs: Collection<string, WeakRef<T>> = new Collection<
     string,
     WeakRef<T>
@@ -14,6 +20,22 @@ export default abstract class LifecycleCachedManager<
     const weak = this._weakRefs.get(id);
     if (!weak?.deref()) this._weakRefs.delete(id);
   });
+
+  abstract model(): Model<T>;
+  abstract inst(): T;
+  abstract onLoad(instance: T): Promise<void>;
+
+  markDeleted(id: string) {
+    this._deletedIds.add(id);
+  }
+
+  markCreated(id: string) {
+    this._deletedIds.delete(id);
+  }
+
+  isDeleted(id: string) {
+    return this._deletedIds.has(id);
+  }
 
   override async get(id: string): Promise<T | undefined> {
     await this.waitUntilReady();
@@ -40,5 +62,62 @@ export default abstract class LifecycleCachedManager<
     }
 
     return instance;
+  }
+  async load(id: string): Promise<T | undefined> {
+    const raw = await this.model().findById(id).lean();
+    if (!raw) return undefined;
+
+    const emptyInst = this.inst();
+    const instance = merge(emptyInst, raw, emptyInst.getClassMap());
+
+    await this.onLoad(instance);
+    this.set(instance);
+    return instance;
+  }
+  async preload(id: string) {
+    await this.get(id);
+  }
+
+  override async getAll(): Promise<T[]> {
+    return await this.loadAll();
+  }
+  async loadAll(noDuplicates = false): Promise<T[]> {
+    const allDocs = await this.model().find({}).lean();
+    if (!allDocs || !allDocs.length || allDocs.length === 0) return [];
+
+    const total: T[] = [];
+    const batchSize = 50;
+    for (let i = 0; i < allDocs.length; i += batchSize) {
+      const batch = allDocs.slice(i, i + batchSize);
+
+      const batchPromises = batch.map(async (doc) => {
+        if (noDuplicates && (await this.exists(doc._id))) return null;
+        if (this._cache.has(doc._id)) {
+          const cached = this._cache.get(doc._id)!;
+          this.onAccess?.(cached);
+          return cached;
+        }
+
+        const instance = merge(this.inst(), doc, this.inst().getClassMap());
+        await this.onLoad(instance);
+        return instance;
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+
+      for (const instance of batchResults) {
+        if (instance) {
+          this.set(instance);
+          total.push(instance);
+        }
+      }
+    }
+
+    this.markReady();
+    return total;
+  }
+
+  protected override async _existsSlow(id: string): Promise<boolean> {
+    return !!(await this.model().findById({ _id: id }).lean());
   }
 }

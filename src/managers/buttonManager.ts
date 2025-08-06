@@ -1,70 +1,20 @@
 import Interaction from "../models/core/interaction.js";
-import CachedManager from "../models/core/cachedManager.js";
 import path from "path";
 import url from "url";
-import getAllFiles from "../utils/getAllFiles.js";
+import InteractionManager from "../models/core/interactionManager.js";
 
 type Holds = Interaction<"button", boolean, boolean, boolean, boolean>;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-const masterFolderPath = path.join(__dirname, "..", "content", "buttons");
-
-export default class ButtonManager extends CachedManager<
-  Interaction<"button", boolean, boolean, boolean, boolean>
-> {
-  getKey(
-    instance: Interaction<"button", boolean, boolean, boolean, boolean, false>
-  ): string {
+export default class ButtonManager extends InteractionManager<Holds> {
+  getKey(instance: Holds): string {
     const key = instance.data.data.custom_id;
     if (!key) throw new Error("No custom_id found in button");
     return key;
   }
 
-  async load(
-    customId: string
-  ): Promise<
-    Interaction<"button", boolean, boolean, boolean, boolean> | undefined
-  > {
-    const folders = await getAllFiles(masterFolderPath, true);
-
-    const folderPath = folders.find((f) => f.includes(customId));
-    if (!folderPath) return;
-
-    const filePath = path.resolve(folderPath, `${customId}.js`);
-    if (!filePath) return;
-
-    const fileUrl = url.pathToFileURL(filePath);
-    const importedFile = (await import(fileUrl.toString())).default as Holds;
-
-    return importedFile;
-  }
-
-  async loadAll(
-    noDuplicates = false
-  ): Promise<Interaction<"button", boolean, boolean, boolean, boolean>[]> {
-    const total: Holds[] = [];
-
-    const folders = await getAllFiles(masterFolderPath, true);
-
-    for (const folder of folders) {
-      const file = path.resolve(folder, path.basename(folder) + ".js");
-      if (!file) continue;
-
-      const filePath = path.resolve(file);
-      const fileUrl = url.pathToFileURL(filePath);
-      const importedFile: Holds = (await import(fileUrl.toString())).default;
-
-      const id = this.getKey(importedFile);
-
-      if (id && (!noDuplicates || !this.exists(id))) {
-        this.set(importedFile);
-        total.push(importedFile);
-      }
-    }
-
-    this.markReady();
-
-    return total;
+  folder(): string {
+    return path.join(__dirname, "..", "content", "buttons");
   }
 }

@@ -3,11 +3,12 @@ import LifecycleCachedManager from "../models/core/lifecycleCachedManager.js";
 import Player, { playerModel } from "../models/player/player.js";
 import Letter from "../models/player/utils/inbox/letter.js";
 import PlayerRef from "../models/player/utils/types/playerRef.js";
-import hardMerge from "../utils/hardMerge.js";
+import merge from "../utils/merge.js";
 import aeonix from "../index.js";
 import log from "../utils/log.js";
 import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
 import BackpackItem from "../content/items/backpackItem/backpackItem.js";
+import { Model } from "mongoose";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -40,17 +41,19 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
     return instance._id;
   }
 
+  model(): Model<Player> {
+    return playerModel;
+  }
+
+  inst(): Player {
+    return new Player();
+  }
+
   override onAccess(instance: Player): void {
     instance.lastAccessed = Date.now();
   }
 
-  async load(id: string): Promise<Player | undefined> {
-    const doc = await playerModel.findById(id);
-    if (!doc) return undefined;
-
-    const player = new Player();
-    const instance = hardMerge(player, doc.toObject(), player.getClassMap());
-
+  async onLoad(instance: Player): Promise<void> {
     instance.inbox.letters = await Promise.all(
       instance.inbox.letters.map(async (letter) => {
         const RealClass = await this.aeonix?.letters.loadRaw(letter.type);
@@ -62,32 +65,14 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
 
         return letter instanceof RealClass
           ? letter
-          : hardMerge(new RealClass(), letter);
+          : merge(new RealClass(), letter);
       })
     );
-
-    this.set(instance);
-    return instance;
   }
 
-  async loadAll(noDuplicates: boolean = false): Promise<Player[]> {
-    const allDocs = await playerModel.find({});
-    if (allDocs.length === 0) return [];
-
-    const total: Player[] = [];
-    for (const doc of allDocs) {
-      if (noDuplicates && this.has(doc._id)) continue;
-
-      const player = new Player();
-      const instance = hardMerge(player, doc.toObject(), player.getClassMap());
-
-      total.push(instance);
-      this.set(instance);
-    }
-
-    this.markReady();
-
-    return total;
+  async getRef(id: string): Promise<PlayerRef | undefined> {
+    const exists = await this.exists(id);
+    return exists ? new PlayerRef(id) : undefined;
   }
 
   async create({
@@ -171,10 +156,5 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
     });
 
     return player;
-  }
-
-  async getRef(id: string): Promise<PlayerRef | undefined> {
-    const exists = await this.exists(id);
-    return exists ? new PlayerRef(id) : undefined;
   }
 }

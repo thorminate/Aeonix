@@ -35,18 +35,17 @@ function getClassMapSubMembers(
   return subMembers;
 }
 
-export default function softMerge<T extends object>(
+export default function merge<T extends object>(
   target: T,
   source: any,
   classMap: Record<string, new (...args: any[]) => any> = {}
 ): T {
+  if (Array.isArray(source) && !Array.isArray(target)) {
+    target = [] as T;
+  }
+
   for (const key of Object.keys(source)) {
     const sourceValue = source[key];
-
-    if (sourceValue == null) {
-      continue;
-    }
-
     const targetHasProperty = key in target;
     const classExistsInMap = key in classMap;
     const ClassFromMap = classMap[key];
@@ -56,7 +55,7 @@ export default function softMerge<T extends object>(
       (target as Record<string, unknown>)[key] = sourceValue.map(
         (item: unknown) =>
           typeof item === "object" && item
-            ? softMerge(
+            ? merge(
                 new ClassFromMap!(),
                 item,
                 getClassMapSubMembers(key, classMap)
@@ -69,20 +68,20 @@ export default function softMerge<T extends object>(
       targetHasProperty
     ) {
       if (classExistsInMap) {
-        (target as Record<string, any>)[key] = softMerge(
+        (target as Record<string, any>)[key] = merge(
           new ClassFromMap!(),
           sourceValue,
           getClassMapSubMembers(key, classMap)
         );
       } else {
-        (target as Record<string, any>)[key] = softMerge(
-          !(target as Record<string, any>)[key]
+        (target as Record<string, any>)[key] = merge(
+          (target as Record<string, any>)[key] !== undefined
             ? (target as Record<string, any>)[key]
             : Array.isArray(sourceValue)
             ? []
             : {},
           sourceValue,
-          getClassMapSubMembers(key, classMap)
+          classMap
         );
       }
     } else {

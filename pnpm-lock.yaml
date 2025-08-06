@@ -32,9 +32,6 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
-      zod:
-        specifier: ^4.0.14
-        version: 4.0.14
     devDependencies:
       '@eslint/js':
         specifier: ^9.32.0
@@ -855,9 +852,6 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.0.14:
-    resolution: {integrity: sha512-nGFJTnJN6cM2v9kXL+SOBq3AtjQby3Mv5ySGFof5UGRHrRioSJ5iG680cYNjE/yWk671nROcpPj4hAS8nyLhSw==}
-
 snapshots:
 
   '@discordjs/builders@1.11.2':
@@ -1663,5 +1657,3 @@ snapshots:
   ws@8.18.3: {}
 
   yocto-queue@0.1.0: {}
-
-  zod@4.0.14: {}

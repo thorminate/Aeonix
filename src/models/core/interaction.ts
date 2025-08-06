@@ -22,7 +22,7 @@ import {
   UserSelectMenuBuilder,
   UserSelectMenuInteraction,
 } from "discord.js";
-import hardMerge from "../../utils/hardMerge.js";
+import merge from "../../utils/merge.js";
 import Environment from "../environment/environment.js";
 import Aeonix from "../../aeonix.js";
 import PlayerRef from "../player/utils/types/playerRef.js";
@@ -199,7 +199,7 @@ class AutocompleteHandler<PassPlayer extends boolean> {
   callback!: AutocompleteCallback<PassPlayer>;
 
   constructor(o: AutocompleteHandler<PassPlayer>) {
-    return hardMerge(this, o);
+    return merge(this, o);
   }
 }
 
@@ -336,7 +336,7 @@ export default class Interaction<
       o.passEnvironment = false as PassEnvironment;
     if (o.acknowledge === undefined) o.acknowledge = true as Acknowledge;
 
-    return hardMerge(this, o, {
+    return merge(this, o, {
       data: interactionTypeToBuilderMap[o.interactionType],
     });
   }
