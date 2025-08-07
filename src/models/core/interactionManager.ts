@@ -2,7 +2,6 @@ import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
 import Interaction, { InteractionTypes } from "./interaction.js";
 import FileBasedManager from "./fileBasedManager.js";
-
 export default abstract class InteractionManager<
   T extends Interaction<InteractionTypes, boolean, boolean, boolean, boolean>
 > extends FileBasedManager<T> {
@@ -19,6 +18,8 @@ export default abstract class InteractionManager<
   }
 
   async loadAll(noDuplicates = false): Promise<T[]> {
+    await this.ensurePathsLoaded();
+
     const total: T[] = [];
     const files = this.pathCache.values();
 

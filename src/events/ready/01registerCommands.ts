@@ -90,12 +90,6 @@ export default new Event<"ready">({
     });
 
     const localCommands = await aeonix.commands.getAll();
-    log({
-      header: `Found ${localCommands.length} commands`,
-      processName: "CommandRegistrant",
-      type: "Info",
-      payload: localCommands,
-    });
     const applicationCommands = await getApplicationCommands(
       aeonix,
       "1267928656877977670"
@@ -152,13 +146,6 @@ export default new Event<"ready">({
       }
 
       localCommand.id = existingCommand?.id;
-
-      log({
-        header: `Setting command id, ${name}`,
-        processName: "CommandRegistrant",
-        type: "Info",
-        payload: localCommand,
-      });
 
       aeonix.commands.set(localCommand);
     }
