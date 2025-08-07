@@ -3,13 +3,8 @@ import log from "../../utils/log.js";
 
 export default new Event<"typingStart">({
   async callback({ aeonix, args: [typeContext] }) {
-    log({
-      header: "typingStart event",
-      processName: "TypingStartEvent",
-      payload: typeContext,
-    });
     const userId = typeContext.user.id;
-    aeonix.players.preload(userId);
+    await aeonix.players.preload(userId);
   },
 
   onError(e) {

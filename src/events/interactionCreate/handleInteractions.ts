@@ -165,12 +165,18 @@ export default new Event<"interactionCreate">({
           interaction.ephemeral === undefined
         ) {
           await context.editReply({
-            content: "You aren't a player. Register with the `/init` command.",
+            content: `You aren't a player. Register with the </init:${
+              (
+                await aeonix.commands.get("init")
+              )?.id
+            }> command.`,
           });
           return;
         } else {
           context.reply({
-            content: "You aren't a player. Register with the `/init` command.",
+            content: `You aren't a player. Register with the </init:${
+              (await aeonix.commands.get("init"))?.id
+            }> command.`,
           });
           return;
         }
@@ -183,12 +189,12 @@ export default new Event<"interactionCreate">({
             interaction.ephemeral === undefined
           ) {
             await context.editReply({
-              content: "You must be in your environment channel to run this.",
+              content: `You must be in your [environment channel](https://discord.com/channels/${aeonix.guildId}/${player.location.channelId}) to run this.`,
             });
             return;
           } else {
             await context.reply({
-              content: "You must be in your environment channel to run this.",
+              content: `You must be in your [environment channel](https://discord.com/channels/${aeonix.guildId}/${player.location.channelId}) to run this.`,
             });
             return;
           }

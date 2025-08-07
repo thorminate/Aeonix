@@ -12,7 +12,9 @@ export default new Event<"messageCreate">({
 
     if (!player) {
       context.reply({
-        content: "You don't have a persona. Run `/init` to create one.",
+        content: `You don't have a persona. Run </init:${
+          (await aeonix.commands.get("init"))?.id
+        }> to create one.`,
       });
       return;
     }

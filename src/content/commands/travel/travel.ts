@@ -1,14 +1,19 @@
 import {
-  ButtonBuilder,
   ButtonInteraction,
-  ButtonStyle,
   ComponentType,
+  ContainerBuilder,
   SlashCommandBuilder,
+  TextDisplayBuilder,
 } from "discord.js";
 import log from "../../../utils/log.js";
-import paginator from "../../../utils/buttonPaginator.js";
+import containerSnippetPaginator from "../../../utils/containerSnippetPaginator.js";
 import Interaction, { ITypes } from "../../../models/core/interaction.js";
 import PlayerMoveToResult from "../../../models/player/utils/types/playerMoveToResult.js";
+import generateTravelContents from "./utils/generateTravelContents.js";
+import travelHeader from "./utils/travelHeader.js";
+import stringifyAdjacent from "./utils/stringifyAdjacent.js";
+import Environment from "../../../models/environment/environment.js";
+import { search } from "../../../utils/levenshtein.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
@@ -22,43 +27,87 @@ export default new Interaction({
   environmentOnly: true,
   passEnvironment: true,
 
-  callback: async ({ context, player, environment }) => {
-    const buttons =
-      environment?.adjacentEnvironments.map((env: string) =>
-        new ButtonBuilder()
-          .setCustomId(`#travel-${env}`)
-          .setLabel(env)
-          .setStyle(ButtonStyle.Primary)
-      ) || [];
-
-    const message = await paginator(context, buttons, (pg) => {
-      return pg
-        ? `**Locations:**\n-# (select a location)`
-        : "There are no locations for you to traverse to.";
+  callback: async ({ context, player }) => {
+    const snippets = await player.use(async (p) => {
+      return await generateTravelContents(p);
     });
 
-    if (!message) {
+    const result = await containerSnippetPaginator(
+      context,
+      {
+        lengthPerPage: 5,
+        header: travelHeader(),
+        contents: snippets!,
+      },
+      (keyword, content) => {
+        const result = content(new ContainerBuilder());
+        if (!("adjacent" in result)) {
+          log({
+            header: "Could not get location from container",
+            processName: "SnippetPaginator",
+            type: "Error",
+          });
+          return false;
+        }
+
+        const stringified = stringifyAdjacent(result.adjacent as Environment);
+
+        return search(keyword, stringified);
+      }
+    );
+
+    if (!result || result.returnType === "error") {
       log({
-        header: "Paginator returned falsy value",
-        processName: "TravelCommandHandler",
+        header: "Paginator returned an error",
+        processName: "TravelCommand",
         type: "Error",
       });
       return;
     }
 
-    const collector = message.createMessageComponentCollector({
-      componentType: ComponentType.Button,
-      time: 5 * 60 * 1000,
-    });
+    const msg = result.message;
+    let collector = result.collector;
+
+    if (!msg) {
+      log({
+        header: "Could not get message from paginator",
+        processName: "TravelCommand",
+        type: "Error",
+      });
+      return;
+    }
+
+    if (!collector) {
+      collector = msg.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        time: 15 * 60 * 1000,
+      });
+    }
 
     collector.on("collect", async (buttonContext: ButtonInteraction) => {
       try {
         let result: undefined | PlayerMoveToResult;
-        player.use(async (p) => {
-          result = await p.moveTo(buttonContext.customId.split("-")[1] || "");
+        const id = buttonContext.customId.split("-").slice(1).join("-") || "";
+        await player.use(async (p) => {
+          result = await p.moveTo(id);
         });
 
-        if (!result) buttonContext.update({ content: "Something went wrong." });
+        if (!result) {
+          log({
+            header: "Travel command could not be handled correctly",
+            processName: "TravelCommandCollector",
+            type: "Error",
+            payload: result,
+          });
+          buttonContext.update({
+            components: [
+              new ContainerBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent("## Something went wrong.")
+              ),
+            ],
+          });
+          return;
+        }
 
         if (
           result === "invalid location" ||
@@ -67,21 +116,32 @@ export default new Interaction({
           result === "no old environment"
         ) {
           await buttonContext.update({
-            content: "Invalid location.",
+            components: [
+              new ContainerBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent("## Invalid location.")
+              ),
+            ],
           });
           return;
         }
 
         if (result === "already here") {
           await buttonContext.update({
-            content: "You are already here.",
+            components: [
+              new ContainerBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent("## You are already here.")
+              ),
+            ],
           });
           return;
         }
 
         await buttonContext.update({
-          content: `You have moved to ${buttonContext.customId.split("-")[1]}.`,
-          components: [],
+          components: [
+            new ContainerBuilder().addTextDisplayComponents(
+              new TextDisplayBuilder().setContent("## Traversal complete.")
+            ),
+          ],
         });
       } catch (e) {
         log({

@@ -1,6 +1,7 @@
 import {
   ButtonInteraction,
   ComponentType,
+  ContainerBuilder,
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
@@ -13,6 +14,9 @@ import inventoryHeader from "./utils/inventoryHeader.js";
 import generateInventoryContents from "./utils/generateInventoryContents.js";
 import findEntryFromIdStrict from "./utils/findEntryFromIdStrict.js";
 import generateEntryContainer from "./utils/generateEntryContainer.js";
+import stringifyEntry from "./utils/stringifyEntry.js";
+import Item from "../../../models/item/item.js";
+import { search } from "../../../utils/levenshtein.js";
 
 export default new Interaction({
   interactionType: ITypes.Command,
@@ -49,8 +53,21 @@ export default new Interaction({
           header: inventoryHeader(p.persona.name),
           contents: snippets!,
         },
-        () => {
-          return false;
+        (keyword, content) => {
+          const container = new ContainerBuilder();
+          const result = content(container);
+          if (!("entry" in result)) {
+            log({
+              header: "Could not get entry from container",
+              processName: "SnippetPaginator",
+              type: "Error",
+            });
+            return false;
+          }
+
+          const stringified = stringifyEntry(result.entry as Item);
+
+          return search(keyword, stringified);
         }
       );
     });

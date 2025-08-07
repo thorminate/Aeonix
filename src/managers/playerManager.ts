@@ -7,7 +7,6 @@ import merge from "../utils/merge.js";
 import aeonix from "../index.js";
 import log from "../utils/log.js";
 import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
-import BackpackItem from "../content/items/backpackItem/backpackItem.js";
 import { Model } from "mongoose";
 
 export type PlayerCreationResult =
@@ -137,14 +136,10 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
 
     await player.moveTo("start", true, true, true);
 
-    player.inbox.add(new TutorialQuestLetter());
-    player.inventory.add(new BackpackItem());
-    player.inventory.add(new BackpackItem());
-    player.inventory.add(new BackpackItem());
-    player.inventory.add(new BackpackItem());
-    player.inventory.add(new BackpackItem());
-    player.inventory.add(new BackpackItem());
-    player.inventory.add(new BackpackItem());
+    player.inbox.add(
+      (await aeonix.letters.get("tutorialQuestLetter")) ??
+        new TutorialQuestLetter()
+    );
 
     await player.commit();
 

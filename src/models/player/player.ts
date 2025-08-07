@@ -141,8 +141,8 @@ export default class Player {
     env.join(this);
 
     this.location.id = location;
-
     this.location.channelId = channel.id;
+    this.location.adjacents = env.adjacentEnvironments;
 
     await env.commit();
 

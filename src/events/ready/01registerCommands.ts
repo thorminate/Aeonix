@@ -92,7 +92,7 @@ export default new Event<"ready">({
     const localCommands = await aeonix.commands.getAll();
     const applicationCommands = await getApplicationCommands(
       aeonix,
-      "1267928656877977670"
+      aeonix.guildId
     );
 
     for (const localCommand of localCommands) {
