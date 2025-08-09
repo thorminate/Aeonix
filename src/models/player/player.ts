@@ -34,6 +34,9 @@ import Quests from "./utils/quests/quests.js";
 import Settings from "./utils/settings/settings.js";
 import { PlayerSubclassBase } from "./utils/types/playerSubclassBase.js";
 import PlayerRef from "./utils/types/playerRef.js";
+import idToType from "../../utils/idToType.js";
+import environmentModel from "../environment/utils/environmentModel.js";
+import { Model } from "mongoose";
 
 @modelOptions({
   options: {
@@ -77,11 +80,15 @@ export default class Player {
   }
 
   async moveTo(
-    location: string,
+    id: string,
     disregardAdjacents = false,
     disregardAlreadyHere = false,
     disregardOldEnvironment = false
   ): Promise<PlayerMoveToResult> {
+    const location = await idToType(
+      id,
+      environmentModel as unknown as Model<{ _id: string; type: string }>
+    );
     const env = await aeonix.environments.get(location);
 
     if (!env) return "invalid location";
@@ -235,7 +242,8 @@ export default class Player {
       .toJSON();
   }
 
-  async commit(): Promise<void> {
+  async commit(saveIntoCache = true): Promise<void> {
+    if (saveIntoCache) aeonix.players.set(this);
     await playerModel.findByIdAndUpdate(this._id, merge({}, this), {
       upsert: true,
       new: true,

@@ -11,7 +11,7 @@ import log from "../../utils/log.js";
 import ConcreteConstructor from "../core/concreteConstructor.js";
 
 export default abstract class Environment {
-  private _id: string = "";
+  _id: string;
   abstract type: string;
   abstract channelId: string;
   abstract name: string;
@@ -20,13 +20,9 @@ export default abstract class Environment {
   players: string[] = [];
   items: Item[] = [];
 
-  get id() {
-    if (!this._id) this._id = randomUUID();
-    return this._id;
-  }
-
-  async commit(): Promise<void> {
-    await environmentModel.findByIdAndUpdate(this.id, merge({}, this), {
+  async commit(saveIntoCache = true): Promise<void> {
+    if (saveIntoCache) aeonix.environments.set(this);
+    await environmentModel.findByIdAndUpdate(this._id, merge({}, this), {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,
@@ -41,7 +37,7 @@ export default abstract class Environment {
 
   adjacentTo(environment: Environment | string): boolean {
     return this.adjacentEnvironments.includes(
-      typeof environment === "string" ? environment : environment.id
+      typeof environment === "string" ? environment : environment.type
     );
   }
 
@@ -54,7 +50,7 @@ export default abstract class Environment {
   join(player: Player) {
     if (this.onJoin) this.onJoin({ eventType: "join", player });
 
-    this.players.push(player._id);
+    if (!this.players.includes(player._id)) this.players.push(player._id);
   }
 
   dropItem(player: Player, item: Item) {
@@ -121,12 +117,16 @@ export default abstract class Environment {
     };
   }
 
-  abstract getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
+  abstract __getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
 
-  getFullClassMap(): Record<string, new (...args: unknown[]) => unknown> {
+  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {
       ...this._getClassMap(),
-      ...this.getClassMap(),
+      ...this.__getClassMap(),
     };
+  }
+
+  constructor(id?: string) {
+    this._id = id ?? randomUUID();
   }
 }

@@ -6,7 +6,7 @@ export default class SomewhereEnvironment extends Environment {
   name = "Somewhere";
   description = "A place somewhere. You have no idea what it is. >:)";
   adjacentEnvironments = ["start"];
-  getClassMap() {
+  __getClassMap() {
     return {};
   }
 }

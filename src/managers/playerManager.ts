@@ -141,8 +141,6 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
         new TutorialQuestLetter()
     );
 
-    await player.commit();
-
     aeonix.players.set(player);
     aeonix.players.markCreated(player._id);
 

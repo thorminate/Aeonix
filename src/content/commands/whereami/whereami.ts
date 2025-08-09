@@ -28,7 +28,7 @@ export default new Interaction({
 
     if (isAdmin) {
       await context.editReply(
-        `You are currently in \`${playerEnv.name}\` (aka: <#${playerEnv.channelId}>, id: \`${playerEnv.id}\`)`
+        `You are currently in \`${playerEnv.name}\` (aka: <#${playerEnv.channelId}>, id: \`${playerEnv._id}\`)`
       );
       return;
     }

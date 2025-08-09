@@ -42,7 +42,7 @@ export default async function generateTravelContents({
           )
           .setButtonAccessory(
             new ButtonBuilder()
-              .setCustomId("#travel-" + adjacent.id)
+              .setCustomId("#travel-" + adjacent._id)
               .setLabel("Travel")
               .setStyle(ButtonStyle.Primary)
           )

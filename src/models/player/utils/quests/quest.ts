@@ -14,8 +14,6 @@ export default abstract class Quest {
     this.completed = true;
 
     if (this.onFulfill) this.onFulfill(player);
-
-    //await player.commit()
   }
 
   abstract onFulfill(player: Player): void;

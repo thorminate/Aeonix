@@ -222,8 +222,6 @@ export default class Aeonix extends Client {
           return;
         }
 
-        await makeAllCaches(this);
-
         await eventManager(this).then(() => {
           log({
             header: "Event handler initialized.",
@@ -246,6 +244,8 @@ export default class Aeonix extends Client {
             mongoose.connection.close();
           });
         });
+
+        await makeAllCaches(this);
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",

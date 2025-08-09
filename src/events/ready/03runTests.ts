@@ -5,6 +5,12 @@ import log from "../../utils/log.js";
 
 export default new Event<"ready">({
   callback: async ({ aeonix }) => {
+    log({
+      header: "Running tests",
+      processName: "TestRunner",
+      type: "Info",
+    });
+
     if (!aeonix.user) {
       log({
         header: "User is falsy",

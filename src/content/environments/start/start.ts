@@ -8,7 +8,7 @@ export default class StartEnvironment extends Environment {
     "The environment you start in at the beginning of your journey.";
   adjacentEnvironments = ["somewhere"];
 
-  getClassMap() {
+  __getClassMap() {
     return {};
   }
 }

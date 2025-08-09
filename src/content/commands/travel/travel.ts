@@ -115,6 +115,12 @@ export default new Interaction({
           result === "location channel not found" ||
           result === "no old environment"
         ) {
+          log({
+            header: "Travel command could not be handled correctly",
+            processName: "TravelCommandCollector",
+            type: "Error",
+            payload: [result, id],
+          });
           await buttonContext.update({
             components: [
               new ContainerBuilder().addTextDisplayComponents(

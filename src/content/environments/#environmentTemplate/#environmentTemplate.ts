@@ -6,7 +6,7 @@ export default class EnvironmentTemplate extends Environment {
   name = "Template";
   description = "A placeholder environment that you can use as a template.";
   adjacentEnvironments = [];
-  getClassMap() {
+  __getClassMap() {
     return {};
   }
 }

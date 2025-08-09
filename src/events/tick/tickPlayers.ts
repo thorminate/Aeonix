@@ -10,7 +10,7 @@ export async function tickPlayers(aeonix: Aeonix) {
 
     // if the difference is bigger than 15 minutes, unload the player from the cache
     if (diff > aeonix.tickInterval) {
-      await player.commit();
+      await player.commit(false);
       aeonix.players.release(player._id);
     } else {
       await player.commit();
