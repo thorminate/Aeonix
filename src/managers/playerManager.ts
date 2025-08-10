@@ -48,7 +48,7 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
     return new Player();
   }
 
-  override onAccess(instance: Player): void {
+  override async onAccess(instance: Player): Promise<void> {
     instance.lastAccessed = Date.now();
   }
 
@@ -134,7 +134,7 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
 
     await (member.roles as GuildMemberRoleManager).add(playerRole);
 
-    await player.moveTo("start", true, true, true);
+    await player.moveTo("start", true, true, true, true);
 
     player.inbox.add(
       (await aeonix.letters.get("tutorialQuestLetter")) ??

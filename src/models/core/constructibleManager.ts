@@ -28,6 +28,8 @@ export abstract class ConstructableManager<T> extends FileBasedManager<T> {
     if (!raw) return;
 
     const instance = new raw();
+
+    await this.onAccess?.(instance);
     this.set(instance);
     return instance;
   }

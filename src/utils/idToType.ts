@@ -7,5 +7,9 @@ export default function idToType(
   return model
     .findOne({ _id: id })
     .lean()
-    .then((doc) => doc!.type);
+    .then((doc) => {
+      const type = doc?.type;
+      if (!type) throw new Error("No type found for id: " + id);
+      return type;
+    });
 }

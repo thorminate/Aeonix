@@ -9,7 +9,6 @@ import { randomUUID } from "crypto";
 import Item from "../item/item.js";
 import log from "../../utils/log.js";
 import ConcreteConstructor from "../core/concreteConstructor.js";
-
 export default abstract class Environment {
   _id: string;
   abstract type: string;

@@ -3,7 +3,7 @@ import Event from "../../models/core/event.js";
 import log from "../../utils/log.js";
 
 export async function tickPlayers(aeonix: Aeonix) {
-  const allPlayers = await aeonix.players.loadAll();
+  const allPlayers = await aeonix.players.getAll();
 
   for (const player of allPlayers) {
     const diff = Date.now() - player.lastAccessed!;

@@ -1,13 +1,10 @@
 import { Schema } from "mongoose";
+import StoredEnvironment from "./storedEnvironment.js";
 
-export default new Schema(
+export default new Schema<StoredEnvironment>(
   {
     _id: String,
-    channelId: { type: String, required: true },
-    name: { type: String, required: true },
-    description: { type: String, required: true },
     players: { type: [String], required: true },
-    adjacentEnvironments: { type: [String], required: true },
     items: { type: [Object], required: true },
   },
   { strict: false }

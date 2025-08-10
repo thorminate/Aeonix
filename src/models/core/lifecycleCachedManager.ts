@@ -4,15 +4,15 @@ import { Collection } from "discord.js";
 import merge from "../../utils/merge.js";
 
 export default abstract class LifecycleCachedManager<
-  T extends {
+  Holds extends {
     _id: string;
     getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
   }
-> extends CachedManager<T> {
+> extends CachedManager<Holds> {
   _deletedIds: Set<string> = new Set<string>();
-  _weakRefs: Collection<string, WeakRef<T>> = new Collection<
+  _weakRefs: Collection<string, WeakRef<Holds>> = new Collection<
     string,
-    WeakRef<T>
+    WeakRef<Holds>
   >();
   _gcCollected: Set<string> = new Set<string>();
   _finalizationRegistry = new FinalizationRegistry((id: string) => {
@@ -21,9 +21,9 @@ export default abstract class LifecycleCachedManager<
     if (!weak?.deref()) this._weakRefs.delete(id);
   });
 
-  abstract model(): Model<T>;
-  abstract inst(): T;
-  abstract onLoad(instance: T): Promise<void>;
+  abstract model(): Model<Holds>;
+  abstract inst(): Holds;
+  abstract onLoad(instance: Holds): Promise<void>;
 
   markDeleted(id: string) {
     this._deletedIds.add(id);
@@ -37,7 +37,7 @@ export default abstract class LifecycleCachedManager<
     return this._deletedIds.has(id);
   }
 
-  override async get(id: string): Promise<T | undefined> {
+  override async get(id: string): Promise<Holds | undefined> {
     await this.waitUntilReady();
 
     let instance = this._cache.get(id);
@@ -63,7 +63,7 @@ export default abstract class LifecycleCachedManager<
 
     return instance;
   }
-  async load(id: string): Promise<T | undefined> {
+  async load(id: string): Promise<Holds | undefined> {
     const raw = await this.model().findById(id).lean();
     if (!raw) return undefined;
 
@@ -78,15 +78,12 @@ export default abstract class LifecycleCachedManager<
     await this.get(id);
   }
 
-  override async getAll(): Promise<T[]> {
-    return await this.loadAll();
-  }
-  async loadAll(noDuplicates = false): Promise<T[]> {
+  async loadAll(noDuplicates = false): Promise<Holds[]> {
     const allDocs = await this.model().find({}).lean();
     if (!allDocs || !allDocs.length || allDocs.length === 0) return [];
 
-    const total: T[] = [];
-    const batchSize = 50;
+    const total: Holds[] = [];
+    const batchSize = 100;
     for (let i = 0; i < allDocs.length; i += batchSize) {
       const batch = allDocs.slice(i, i + batchSize);
 

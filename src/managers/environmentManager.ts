@@ -1,17 +1,21 @@
 import path from "path";
 import url from "url";
 import Environment from "../models/environment/environment.js";
-import HybridLifecycleCachedManager from "../models/core/hybridLifecycleCachedManager.js";
+import HybridCachedManager from "../models/core/hybridCachedManager.js";
 import ConcreteConstructor from "../models/core/concreteConstructor.js";
 import { Model } from "mongoose";
 import environmentModel from "../models/environment/utils/environmentModel.js";
+import StoredEnvironment from "../models/environment/utils/storedEnvironment.js";
 
 type Holds = Environment;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-export default class EnvironmentManager extends HybridLifecycleCachedManager<Holds> {
-  model(): Model<Environment> {
+export default class EnvironmentManager extends HybridCachedManager<
+  Holds,
+  StoredEnvironment
+> {
+  model(): Model<StoredEnvironment> {
     return environmentModel;
   }
 
@@ -21,7 +25,8 @@ export default class EnvironmentManager extends HybridLifecycleCachedManager<Hol
 
   getKey(instance: Environment): string {
     const key = instance.type;
-    if (!key) throw new Error("No type found in environment");
+    if (!key)
+      throw new Error("No type found in environment", { cause: instance });
     return key;
   }
 

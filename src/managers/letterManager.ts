@@ -10,7 +10,7 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 export default class LetterManager extends ConstructableManager<Holds> {
   getKey(instance: Letter): string {
     const id = instance.type;
-    if (!id) throw new Error("No type found in letter");
+    if (!id) throw new Error("No type found in letter", { cause: instance });
     return id;
   }
 

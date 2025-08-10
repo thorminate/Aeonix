@@ -1,42 +1,67 @@
-import LifecycleCachedManager from "./lifecycleCachedManager.js";
 import getAllFiles from "../../utils/getAllFiles.js";
 import path from "path";
 import url from "url";
 import merge from "../../utils/merge.js";
 import ConcreteConstructor from "./concreteConstructor.js";
+import { Model } from "mongoose";
+import CachedManager from "./cachedManager.js";
 
-export default abstract class HybridLifecycleCachedManager<
-  T extends {
+export default abstract class HybridCachedManager<
+  Holds extends {
     type: string;
     _id: string;
     getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
+  },
+  DbData extends {
+    type: string;
+    _id: string;
   }
-> extends LifecycleCachedManager<T> {
+> extends CachedManager<Holds> {
   abstract folder(): string;
+  abstract model(): Model<DbData>;
 
-  async loadRawClass(id: string): Promise<ConcreteConstructor<T> | undefined> {
+  protected pathCache: Map<string, string> = new Map();
+  protected pathsLoaded = false;
+
+  protected async ensurePathsLoaded() {
+    if (this.pathsLoaded) return;
+
     const folders = await getAllFiles(this.folder(), true);
-    const folderPath = folders.find((f) => f.includes(id));
-    if (!folderPath) return;
 
-    const filePath = path.resolve(folderPath, `${id}.js`);
-    const fileUrl = url.pathToFileURL(filePath);
-    return (await import(fileUrl.toString())).default as ConcreteConstructor<T>;
+    for (const folder of folders) {
+      const folderName = path.basename(folder);
+      const filePath = path.resolve(folder, folderName + ".js");
+      this.pathCache.set(folderName, filePath);
+    }
+
+    this.pathsLoaded = true;
   }
 
-  async instFromId(id: string): Promise<T | undefined> {
+  protected async loadRawClass(
+    id: string
+  ): Promise<ConcreteConstructor<Holds> | undefined> {
+    await this.ensurePathsLoaded();
+    const filePath = this.pathCache.get(id);
+    if (!filePath) return;
+
+    const fileUrl = url.pathToFileURL(filePath);
+    return (await import(fileUrl.toString()))
+      .default as ConcreteConstructor<Holds>;
+  }
+
+  protected async loadEmptyInst(id: string): Promise<Holds | undefined> {
     const RawClass = await this.loadRawClass(id);
     if (!RawClass) return;
-    return new RawClass() as T;
+    return new RawClass() as Holds;
   }
 
-  override async load(id: string): Promise<T | undefined> {
-    const emptyInst = await this.instFromId(id);
+  async load(id: string): Promise<Holds | undefined> {
+    const emptyInst = await this.loadEmptyInst(id);
     if (!emptyInst) return undefined;
 
     let rawDoc = (await this.model()
-      .find({ type: id })
-      .lean()) as unknown as Partial<T>;
+      .findOne({ type: id })
+      .lean()) as unknown as DbData;
     if (!rawDoc) {
       const createdDoc = await this.model().create(emptyInst);
       rawDoc = createdDoc.toObject();
@@ -45,26 +70,22 @@ export default abstract class HybridLifecycleCachedManager<
     emptyInst._id = rawDoc._id!;
 
     const instance = merge(emptyInst, rawDoc, emptyInst.getClassMap());
-    await this.onLoad(instance);
+    await this.onAccess?.(instance);
     this.set(instance);
-
-    // Also store in weakRefs for revival
-    this._weakRefs.set(id, new WeakRef(instance));
-    this._finalizationRegistry.register(instance, id);
 
     return instance;
   }
 
-  override async loadAll(noDuplicates = false): Promise<T[]> {
-    const allFiles = await getAllFiles(this.folder(), true);
-    const allIds = allFiles.map((f) => path.basename(f));
+  async loadAll(noDuplicates = false): Promise<Holds[]> {
+    const allFiles = [...this.pathCache.values()];
+    const allIds = allFiles.map((f) => path.basename(f, ".js"));
 
     const dbDocs = (await this.model()
       .find({ type: { $in: allIds } })
-      .lean()) as Partial<T>[];
+      .lean()) as DbData[];
     const dbMap = new Map(dbDocs.map((d) => [d.type, d]));
 
-    const total: T[] = [];
+    const total: Holds[] = [];
 
     for (const id of allIds) {
       if (noDuplicates && (await this.exists(id))) continue;
@@ -75,7 +96,7 @@ export default abstract class HybridLifecycleCachedManager<
         continue;
       }
 
-      const emptyInst = await this.instFromId(id);
+      const emptyInst = await this.loadEmptyInst(id);
       if (!emptyInst) continue;
 
       let doc = dbMap.get(id);
@@ -84,7 +105,7 @@ export default abstract class HybridLifecycleCachedManager<
       }
 
       const instance = merge(emptyInst, doc, emptyInst.getClassMap());
-      await this.onLoad(instance);
+      await this.onAccess?.(instance);
 
       this.set(instance);
       total.push(instance);
@@ -94,7 +115,7 @@ export default abstract class HybridLifecycleCachedManager<
     return total;
   }
 
-  protected override async _existsSlow(id: string): Promise<boolean> {
+  protected async _existsSlow(id: string): Promise<boolean> {
     return !!(await this.model().exists({ _id: id }).lean());
   }
 }

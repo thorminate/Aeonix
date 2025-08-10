@@ -64,8 +64,11 @@ export default class Player {
   @prop({ default: {}, type: Object })
   statusEffects: StatusEffects;
 
-  @prop({ type: () => Number, required: true })
+  @prop({ type: Number, required: true })
   lastAccessed: number;
+
+  @prop({ default: 0, type: Number })
+  dataVersion: number;
 
   async fetchUser() {
     return aeonix.users.cache.get(this._id);
@@ -81,14 +84,17 @@ export default class Player {
 
   async moveTo(
     id: string,
+    isType = false,
     disregardAdjacents = false,
     disregardAlreadyHere = false,
     disregardOldEnvironment = false
   ): Promise<PlayerMoveToResult> {
-    const location = await idToType(
-      id,
-      environmentModel as unknown as Model<{ _id: string; type: string }>
-    );
+    const location = isType
+      ? id
+      : await idToType(
+          id,
+          environmentModel as unknown as Model<{ _id: string; type: string }>
+        );
     const env = await aeonix.environments.get(location);
 
     if (!env) return "invalid location";
@@ -334,6 +340,9 @@ export default class Player {
     this.statusEffects = new StatusEffects();
 
     this.lastAccessed = Date.now();
+
+    // This number should increment on major schema changes, will add a data migrator later on.
+    this.dataVersion = 1;
   }
 }
 

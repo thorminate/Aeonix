@@ -1,14 +1,13 @@
-import { Collection } from "discord.js";
 import BaseManager from "./baseManager.js";
 
 export default abstract class CachedManager<
   Holds,
   Key = string
 > extends BaseManager {
-  protected _cache: Collection<Key, Holds> = new Collection<Key, Holds>();
+  protected _cache: Map<Key, Holds> = new Map<Key, Holds>();
   protected _ready = false;
-  abstract getKey(instance: Holds): Key;
-  onAccess?(instance: Holds): void;
+  protected abstract getKey(instance: Holds): Key;
+  protected onAccess?(instance: Holds): Promise<void>;
 
   abstract load(id: Key): Promise<Holds | undefined>;
   async get(id: Key, runOnAccess = true) {
@@ -60,7 +59,7 @@ export default abstract class CachedManager<
       this.emit("ready");
     }
   }
-  async waitUntilReady() {
+  protected async waitUntilReady() {
     if (!this._ready) {
       return new Promise<void>((resolve) => {
         this.once("ready", () => {
