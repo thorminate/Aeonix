@@ -19,6 +19,7 @@ export default abstract class HybridCachedManager<
 > extends CachedManager<Holds> {
   abstract folder(): string;
   abstract model(): Model<DbData>;
+  abstract fixInst(inst: Holds): DbData;
 
   protected pathCache: Map<string, string> = new Map();
   protected pathsLoaded = false;
@@ -49,22 +50,21 @@ export default abstract class HybridCachedManager<
       .default as ConcreteConstructor<Holds>;
   }
 
-  protected async loadEmptyInst(id: string): Promise<Holds | undefined> {
+  protected async instFromId(id: string): Promise<Holds | undefined> {
     const RawClass = await this.loadRawClass(id);
     if (!RawClass) return;
     return new RawClass() as Holds;
   }
 
   async load(id: string): Promise<Holds | undefined> {
-    const emptyInst = await this.loadEmptyInst(id);
+    const emptyInst = await this.instFromId(id);
     if (!emptyInst) return undefined;
 
     let rawDoc = (await this.model()
       .findOne({ type: id })
       .lean()) as unknown as DbData;
     if (!rawDoc) {
-      const createdDoc = await this.model().create(emptyInst);
-      rawDoc = createdDoc.toObject();
+      rawDoc = (await this.model().create(this.fixInst(emptyInst))).toObject();
     }
 
     emptyInst._id = rawDoc._id!;
@@ -96,12 +96,12 @@ export default abstract class HybridCachedManager<
         continue;
       }
 
-      const emptyInst = await this.loadEmptyInst(id);
+      const emptyInst = await this.instFromId(id);
       if (!emptyInst) continue;
 
       let doc = dbMap.get(id);
       if (!doc) {
-        doc = (await this.model().create(emptyInst)).toObject();
+        doc = (await this.model().create(this.fixInst(emptyInst))).toObject();
       }
 
       const instance = merge(emptyInst, doc, emptyInst.getClassMap());

@@ -95,22 +95,44 @@ export default class Player {
           id,
           environmentModel as unknown as Model<{ _id: string; type: string }>
         );
-    const env = await aeonix.environments.get(location);
-
-    if (!env) return "invalid location";
-
     if (this.location.id === location && !disregardAlreadyHere)
       return "already here";
 
+    const env = await aeonix.environments.get(location);
+    if (!env) return "invalid location";
+
+    const channel = await env.fetchChannel();
+    if (!channel || !(channel instanceof GuildChannel))
+      return "location channel not found";
+
     const oldEnv = await this.fetchEnvironment().catch(() => undefined);
+
+    if (
+      !(await channel.permissionOverwrites
+        .create(
+          this._id,
+          {
+            ViewChannel: true,
+          },
+          {
+            reason: "Moving player",
+            type: OverwriteType.Member,
+          }
+        )
+        .catch(() => undefined))
+    ) {
+      log({
+        header: "Failed to create permission overwrite",
+        processName: "Player.moveTo",
+        type: "Warn",
+      });
+      return "failed to create permission overwrite";
+    }
 
     if (oldEnv) {
       if (!oldEnv.adjacentTo(env) && !disregardAdjacents) return "not adjacent";
 
-      oldEnv.leave(this);
-
       const oldChannel = await oldEnv.fetchChannel();
-
       if (oldChannel && oldChannel instanceof GuildChannel) {
         await oldChannel.permissionOverwrites.delete(this._id).catch((e) => {
           log({
@@ -122,34 +144,12 @@ export default class Player {
         });
       }
 
+      oldEnv.leave(this);
+
       oldEnv.commit();
     } else if (!disregardOldEnvironment) {
       return "no old environment";
     }
-
-    const channel = await env.fetchChannel();
-
-    if (!channel || !(channel instanceof GuildChannel))
-      return "location channel not found";
-
-    await channel.permissionOverwrites
-      .create(
-        this._id,
-        {
-          ViewChannel: true,
-        },
-        {
-          reason: "Onboarding",
-          type: OverwriteType.Member,
-        }
-      )
-      .catch(() => {
-        log({
-          header: "Failed to create permission overwrite",
-          processName: "Player.moveTo",
-          type: "Warn",
-        });
-      });
 
     env.join(this);
 

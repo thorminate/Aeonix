@@ -2,7 +2,6 @@ import path from "path";
 import url from "url";
 import Environment from "../models/environment/environment.js";
 import HybridCachedManager from "../models/core/hybridCachedManager.js";
-import ConcreteConstructor from "../models/core/concreteConstructor.js";
 import { Model } from "mongoose";
 import environmentModel from "../models/environment/utils/environmentModel.js";
 import StoredEnvironment from "../models/environment/utils/storedEnvironment.js";
@@ -34,7 +33,12 @@ export default class EnvironmentManager extends HybridCachedManager<
     return path.join(__dirname, "..", "content", "environments");
   }
 
-  inst(): Environment {
-    return new (Environment as ConcreteConstructor<Environment>)();
+  fixInst(inst: Environment): StoredEnvironment {
+    return {
+      _id: inst._id,
+      type: inst.type,
+      players: inst.players,
+      items: inst.items,
+    };
   }
 }

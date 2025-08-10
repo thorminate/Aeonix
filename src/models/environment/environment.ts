@@ -4,7 +4,6 @@ import Player from "../player/player.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
-import merge from "../../utils/merge.js";
 import { randomUUID } from "crypto";
 import Item from "../item/item.js";
 import log from "../../utils/log.js";
@@ -21,11 +20,15 @@ export default abstract class Environment {
 
   async commit(saveIntoCache = true): Promise<void> {
     if (saveIntoCache) aeonix.environments.set(this);
-    await environmentModel.findByIdAndUpdate(this._id, merge({}, this), {
-      upsert: true,
-      new: true,
-      setDefaultsOnInsert: true,
-    });
+    await environmentModel.findByIdAndUpdate(
+      this._id,
+      aeonix.environments.fixInst(this),
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+      }
+    );
   }
 
   async fetchChannel(): Promise<TextChannel | undefined> {

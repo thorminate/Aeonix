@@ -6,6 +6,7 @@ type PlayerMoveToResult =
   | "already here"
   | "no old environment"
   | "location channel not found"
+  | "failed to create permission overwrite"
   | Environment;
 
 export default PlayerMoveToResult;
