@@ -26,12 +26,12 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.48.4",
     "@typegoose/typegoose": "^12.18.0",
-    "@types/node": "^24.1.0",
+    "@types/node": "^24.2.1",
     "ansis": "^4.1.0",
     "discord.js": "^14.21.0",
-    "mongoose": "^8.17.0",
+    "mongoose": "^8.17.1",
     "package-json-type": "^1.0.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "repository": {
     "type": "git",
@@ -41,9 +41,9 @@
     "url": "https://github.com/thorminate/Aeonix/issues"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "eslint": "^9.32.0",
+    "@eslint/js": "^9.33.0",
+    "eslint": "^9.33.0",
     "globals": "^16.3.0",
-    "typescript-eslint": "^8.38.0"
+    "typescript-eslint": "^8.39.0"
   }
 }
