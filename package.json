@@ -24,12 +24,12 @@
     "lint": "eslint . --ext .ts --fix --config ./eslint.config.js && tsc --noEmit"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.48.4",
+    "@dotenvx/dotenvx": "^1.49.0",
     "@typegoose/typegoose": "^12.18.0",
-    "@types/node": "^24.2.1",
+    "@types/node": "^24.3.0",
     "ansis": "^4.1.0",
     "discord.js": "^14.21.0",
-    "mongoose": "^8.17.1",
+    "mongoose": "^8.17.2",
     "package-json-type": "^1.0.3",
     "typescript": "^5.9.2"
   },
@@ -44,6 +44,6 @@
     "@eslint/js": "^9.33.0",
     "eslint": "^9.33.0",
     "globals": "^16.3.0",
-    "typescript-eslint": "^8.39.0"
+    "typescript-eslint": "^8.40.0"
   }
 }
