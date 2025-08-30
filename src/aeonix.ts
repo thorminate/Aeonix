@@ -27,7 +27,7 @@ import PlayerManager from "./managers/playerManager.js";
 import QuestManager from "./managers/questManager.js";
 import { IPackageJson } from "package-json-type";
 import { tickPlayers } from "./events/tick/tickPlayers.js";
-import AeonixCLI from "./models/core/aeonixCLI.js";
+import AeonixCLI from "./models/core/cli.js";
 
 export type AeonixEvents = ClientEvents & {
   tick: [

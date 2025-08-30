@@ -8,7 +8,7 @@ import ConcreteConstructor from "./concreteConstructor.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default class AeonixCLI {
+export default class CLI {
   aeonix: Aeonix;
   cache = new Map<string, CLICommand>();
   folder = path.join(__dirname, "..", "..", "content", "cliCommands");
