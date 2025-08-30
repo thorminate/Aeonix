@@ -10,7 +10,6 @@ import log from "./utils/log.js";
 import mongoose from "mongoose";
 import { readFileSync } from "fs";
 import eventManager from "./handlers/eventHandler.js";
-import cliManager from "./handlers/cliHandler.js";
 import ButtonManager from "./managers/buttonManager.js";
 import CommandManager from "./managers/commandManager.js";
 import ChannelSelectMenuManager from "./managers/channelSelectMenuManager.js";
@@ -28,6 +27,7 @@ import PlayerManager from "./managers/playerManager.js";
 import QuestManager from "./managers/questManager.js";
 import { IPackageJson } from "package-json-type";
 import { tickPlayers } from "./events/tick/tickPlayers.js";
+import AeonixCLI from "./models/core/aeonixCLI.js";
 
 export type AeonixEvents = ClientEvents & {
   tick: [
@@ -73,6 +73,7 @@ export default class Aeonix extends Client {
   stringSelectMenus = new StringSelectMenuManager(this);
   userSelectMenus = new UserSelectMenuManager(this);
   status = new StatusManager(this);
+  cli = new AeonixCLI(this);
 
   get currentTime() {
     const now = this._currentTime;
@@ -205,8 +206,6 @@ export default class Aeonix extends Client {
 
     this.rl = rl;
 
-    cliManager(this);
-
     const mdbToken = process.env.MONGODB_URI;
     const dscToken = process.env.DISCORD_TOKEN;
 
@@ -221,6 +220,8 @@ export default class Aeonix extends Client {
           });
           return;
         }
+
+        await this.cli.init();
 
         await eventManager(this).then(() => {
           log({

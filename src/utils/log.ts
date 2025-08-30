@@ -7,13 +7,22 @@ import { gray, cyan, red, redBright, yellow } from "ansis";
 import { actualPrimitives } from "mongoose";
 import Aeonix from "../aeonix.js";
 
+export type LogType =
+  | "Fatal"
+  | "Error"
+  | "Warn"
+  | "Info"
+  | "Verbose"
+  | "Debug"
+  | "Silly";
+
 interface LogOptions {
   header: string;
   processName?: string;
   folder?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: any;
-  type?: "Fatal" | "Error" | "Warn" | "Info" | "Verbose" | "Debug" | "Silly";
+  type?: LogType;
   doNotPrompt?: boolean;
 }
 
