@@ -170,7 +170,6 @@ export default class Aeonix extends Client {
         ],
       },
       intents: [
-        // This is every possible intent :)
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildModeration,
         GatewayIntentBits.GuildExpressions,
