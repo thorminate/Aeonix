@@ -6,17 +6,30 @@ import {
   TextDisplayBuilder,
 } from "discord.js";
 import { ContainerSnippet } from "../../../../utils/containerSnippetPaginator.js";
-import lettersOnlyContainArchived from "./lettersOnlyContainArchived.js";
 import selectRandomFromArray from "../../../../utils/selectRandomFromArray.js";
 import Player from "../../../../models/player/player.js";
+import lettersOnlyContainsFilterables from "./lettersOnlyContainsFilterables.js";
+import lettersOnlyContainsArchived from "./lettersOnlyContainsArchived.js";
+import lettersOnlyContainsNotifications from "./lettersOnlyContainsNotifications.js";
 
 export default function generateInboxContents({
   inbox: { letters },
-  settings: { indexShowArchived: showArchived },
+  settings: {
+    inboxShowArchived: showArchived,
+    inboxShowNotifications: showNotifications,
+  },
 }: Player): ContainerSnippet[] {
   const snippets: ContainerSnippet[] = [];
 
-  if (lettersOnlyContainArchived(letters) && showArchived === false) {
+  if (
+    (lettersOnlyContainsFilterables(letters) &&
+      showArchived === false &&
+      showNotifications === false) ||
+    (lettersOnlyContainsArchived(letters) && showArchived === false) ||
+    (lettersOnlyContainsNotifications(letters) &&
+      showNotifications === false) ||
+    letters.length === 0
+  ) {
     snippets.push((page: ContainerBuilder) =>
       page.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
@@ -35,15 +48,22 @@ export default function generateInboxContents({
 
   for (const letter of letters) {
     if (letter.isArchived === true && showArchived === false) continue;
+    if (letter.isNotification === true && showNotifications === false) continue;
+
+    const assembledLetterTag = (() => {
+      if (letter.isNotification === true && letter.isArchived === true)
+        return "  (Archived Notification)";
+      else if (letter.isNotification === true) return "  (Notification)";
+      else if (letter.isArchived === true) return "  (Archived)";
+      else return "";
+    })();
 
     snippets.push((page: ContainerBuilder) => {
       page.addSectionComponents(
         new SectionBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### ${letter.sender}:${
-                letter.isArchived === true ? " (Archived)" : ""
-              }\n-# ${letter.subject}`
+              `### ${letter.sender}:${assembledLetterTag}\n-# ${letter.subject}`
             )
           )
           .setButtonAccessory(

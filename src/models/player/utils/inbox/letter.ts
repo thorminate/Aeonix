@@ -11,6 +11,7 @@ export default abstract class Letter {
   abstract interactionType: string;
   abstract oneTimeInteraction: boolean;
   abstract canDismiss?: boolean;
+  abstract isNotification: boolean;
   isRead: boolean = false;
   isArchived: boolean = false;
   isInteracted: boolean = false;

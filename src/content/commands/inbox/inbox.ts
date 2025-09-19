@@ -28,6 +28,8 @@ export default new Interaction({
   environmentOnly: true,
 
   callback: async ({ context, player }) => {
+    // TODO: Finish notification framework, inbox side of things is completed, we now need a DM sender and some player methods to handle it.
+
     let snippets = await player.use(async (p) => {
       return generateInboxContents(p);
     });
@@ -47,7 +49,11 @@ export default new Interaction({
         {
           lengthPerPage: 5,
           contents: snippets as ContainerSnippet[],
-          header: addHeader(p.persona.name, p.settings.indexShowArchived),
+          header: addHeader(
+            p.persona.name,
+            p.settings.inboxShowArchived,
+            p.settings.inboxShowNotifications
+          ),
         },
         (keyword, content) => {
           const container = new ContainerBuilder();
@@ -138,20 +144,41 @@ export default new Interaction({
             break;
           }
           case "#toggleArchived": {
-            snippets = ((await player.use(async (p) => {
-              p.settings.indexShowArchived = !p.settings.indexShowArchived;
+            await player.use(async (p) => {
+              p.settings.inboxShowArchived = !p.settings.inboxShowArchived;
 
-              return generateInboxContents(p);
-            })) ?? []) as ContainerSnippet[];
+              snippets = generateInboxContents(p);
 
-            player.use(async (p) => {
               await containerSnippetPaginatorWithUpdate(buttonContext, {
                 lengthPerPage: 5,
                 contents: snippets as ContainerSnippet[],
-                header: addHeader(p.persona.name, p.settings.indexShowArchived),
+                header: addHeader(
+                  p.persona.name,
+                  p.settings.inboxShowArchived,
+                  p.settings.inboxShowNotifications
+                ),
               });
             });
+            break;
+          }
 
+          case "#toggleNotifications": {
+            await player.use(async (p) => {
+              p.settings.inboxShowNotifications =
+                !p.settings.inboxShowNotifications;
+
+              snippets = generateInboxContents(p);
+
+              await containerSnippetPaginatorWithUpdate(buttonContext, {
+                lengthPerPage: 5,
+                contents: snippets as ContainerSnippet[],
+                header: addHeader(
+                  p.persona.name,
+                  p.settings.inboxShowArchived,
+                  p.settings.inboxShowNotifications
+                ),
+              });
+            });
             break;
           }
 
@@ -162,7 +189,11 @@ export default new Interaction({
               await containerSnippetPaginatorWithUpdate(buttonContext, {
                 lengthPerPage: 5,
                 contents: snippets,
-                header: addHeader(p.persona.name, p.settings.indexShowArchived),
+                header: addHeader(
+                  p.persona.name,
+                  p.settings.inboxShowArchived,
+                  p.settings.inboxShowNotifications
+                ),
               });
             });
             break;

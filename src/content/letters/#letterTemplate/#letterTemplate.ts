@@ -9,4 +9,5 @@ export default class LetterTemplate extends Letter {
   interactionType: string = "yes";
   canDismiss: boolean = true;
   oneTimeInteraction: boolean = true;
+  isNotification: boolean = false;
 }

@@ -1,7 +1,8 @@
 import { PlayerSubclassBase } from "../types/playerSubclassBase.js";
 
 export default class Settings extends PlayerSubclassBase {
-  indexShowArchived: boolean = false;
+  inboxShowArchived: boolean = false;
+  inboxShowNotifications: boolean = false;
 
   override getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {};

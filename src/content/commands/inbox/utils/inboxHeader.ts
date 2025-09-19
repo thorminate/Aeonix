@@ -6,7 +6,11 @@ import {
 } from "discord.js";
 import generatePageActionRow from "./generatePageActionRow.js";
 
-export default function inboxHeader(name: string, showArchived: boolean) {
+export default function inboxHeader(
+  name: string,
+  showArchived: boolean,
+  showNotifications: boolean
+) {
   return (page: ContainerBuilder) => {
     page.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
@@ -14,7 +18,9 @@ export default function inboxHeader(name: string, showArchived: boolean) {
       )
     );
 
-    page.addActionRowComponents(generatePageActionRow(showArchived));
+    page.addActionRowComponents(
+      generatePageActionRow(showArchived, showNotifications)
+    );
 
     page.addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large)
