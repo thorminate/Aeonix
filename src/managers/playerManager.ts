@@ -2,7 +2,7 @@ import { GuildMemberRoleManager, User } from "discord.js";
 import LifecycleCachedManager from "../models/core/lifecycleCachedManager.js";
 import Player, { playerModel } from "../models/player/player.js";
 import Letter from "../models/player/utils/inbox/letter.js";
-import PlayerRef from "../models/player/utils/types/playerRef.js";
+import PlayerRef from "../models/player/utils/utils/playerRef.js";
 import merge from "../utils/merge.js";
 import aeonix from "../index.js";
 import log from "../utils/log.js";
@@ -53,6 +53,11 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
   }
 
   async onLoad(instance: Player): Promise<void> {
+    instance.user = await instance.fetchUser();
+    instance.environment = await instance.fetchEnvironment();
+    instance.environmentChannel = await instance.fetchEnvironmentChannel();
+    instance.dmChannel = await instance.user?.createDM();
+
     instance.inbox.letters = await Promise.all(
       instance.inbox.letters.map(async (letter) => {
         const RealClass = await this.aeonix?.letters.loadRaw(letter.type);

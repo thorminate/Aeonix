@@ -3,8 +3,10 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
+  DMChannel,
   GuildChannel,
   GuildMemberRoleManager,
+  MessageFlags,
   OverwriteType,
   SectionBuilder,
   SeparatorBuilder,
@@ -18,7 +20,7 @@ import Inventory from "./utils/inventory/inventory.js";
 import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
 import aeonix from "../../index.js";
 import log from "../../utils/log.js";
-import PlayerMoveToResult from "./utils/types/playerMoveToResult.js";
+import PlayerMoveToResult from "./utils/utils/playerMoveToResult.js";
 import Inbox from "./utils/inbox/inbox.js";
 import Location from "./utils/location/location.js";
 import Persona from "./utils/persona/persona.js";
@@ -32,11 +34,14 @@ import {
 } from "@typegoose/typegoose";
 import Quests from "./utils/quests/quests.js";
 import Settings from "./utils/settings/settings.js";
-import { PlayerSubclassBase } from "./utils/types/playerSubclassBase.js";
-import PlayerRef from "./utils/types/playerRef.js";
+import { PlayerSubclassBase } from "./utils/utils/playerSubclassBase.js";
+import PlayerRef from "./utils/utils/playerRef.js";
 import idToType from "../../utils/idToType.js";
 import environmentModel from "../environment/utils/environmentModel.js";
 import { Model } from "mongoose";
+import Environment from "../environment/environment.js";
+import formatNotification from "./utils/utils/formatNotification.js";
+import Notification from "./utils/utils/notificationType.js";
 
 @modelOptions({
   options: {
@@ -69,6 +74,11 @@ export default class Player {
 
   @prop({ default: 0, type: Number })
   dataVersion: number;
+
+  user?: User;
+  environment?: Environment;
+  environmentChannel?: TextChannel;
+  dmChannel?: DMChannel;
 
   async fetchUser() {
     return aeonix.users.cache.get(this._id);
@@ -162,6 +172,17 @@ export default class Player {
     return env;
   }
 
+  async notify(notification: Notification) {
+    if (!this.dmChannel || !this.user) return;
+
+    await this.dmChannel.send({
+      components: [formatNotification(notification)],
+      flags: MessageFlags.IsComponentsV2,
+    });
+
+    this.inbox.add(notification);
+  }
+
   async isAdmin(): Promise<boolean> {
     const guild = aeonix.guilds.cache.get(aeonix.guildId);
 
@@ -185,11 +206,9 @@ export default class Player {
       return false;
     }
 
-    const thisUser = await this.fetchUser();
+    if (!this.user) return false;
 
-    if (!thisUser) return false;
-
-    return masterRole.members?.has(thisUser.id) ?? false;
+    return masterRole.members?.has(this.user.id) ?? false;
   }
 
   async getStatsEmbed(): Promise<APIContainerComponent> {
@@ -203,10 +222,6 @@ export default class Player {
       "Howdy",
       "Hiya",
     ];
-
-    const user = this.fetchUser();
-
-    if (!user) return new ContainerBuilder().toJSON();
 
     return new ContainerBuilder()
       .addTextDisplayComponents(

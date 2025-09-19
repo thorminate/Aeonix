@@ -1,4 +1,4 @@
-import { PlayerSubclassBase } from "../types/playerSubclassBase.js";
+import { PlayerSubclassBase } from "../utils/playerSubclassBase.js";
 
 export default class Persona extends PlayerSubclassBase {
   name: string;

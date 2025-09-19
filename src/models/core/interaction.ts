@@ -25,7 +25,7 @@ import {
 import merge from "../../utils/merge.js";
 import Environment from "../environment/environment.js";
 import Aeonix from "../../aeonix.js";
-import PlayerRef from "../player/utils/types/playerRef.js";
+import PlayerRef from "../player/utils/utils/playerRef.js";
 
 export type ButtonContext = Omit<
   ButtonInteraction<CacheType>,

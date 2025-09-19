@@ -7,7 +7,7 @@ import {
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import Interaction from "../../models/core/interaction.js";
-import PlayerRef from "../../models/player/utils/types/playerRef.js";
+import PlayerRef from "../../models/player/utils/utils/playerRef.js";
 import Player from "../../models/player/player.js";
 
 export default new Event<"interactionCreate">({

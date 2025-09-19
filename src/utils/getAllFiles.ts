@@ -21,7 +21,7 @@ export default async (
 
     if (path.extname(filePath) === ".map") continue; // skip files with .map extension
     if (path.extname(filePath) === ".ts") continue; // skip files with .ts extension
-    if (path.basename(filePath).startsWith("#")) continue; // exclude files that start with #
+    if (path.basename(filePath).startsWith("_")) continue; // exclude files that start with _
 
     if (foldersOnly) {
       // if foldersOnly is true, only push folders to fileNames

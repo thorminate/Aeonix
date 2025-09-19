@@ -3,6 +3,7 @@ import NotificationCategory from "./utils/notificationCategory.js";
 
 export default abstract class NotificationTemplate extends Letter {
   abstract category: NotificationCategory;
+  type: string = "notificationTemplate";
   interactable: boolean = false;
   interactionType: string = "placeholder";
   canDismiss: boolean = true;
