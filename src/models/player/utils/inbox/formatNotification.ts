@@ -16,11 +16,11 @@ export default function formatNotification(n: Notification): ContainerBuilder {
     new TextDisplayBuilder().setContent(`**${n.subject}**`)
   );
 
-  if (n.timestamp || n.sender) {
+  if (n.createdAt || n.sender) {
     const meta = [];
 
     if (n.sender) meta.push(n.sender);
-    if (n.timestamp) meta.push(`<t:${Math.floor(n.timestamp / 1000)}:R>`);
+    if (n.createdAt) meta.push(`<t:${Math.floor(n.createdAt / 1000)}:R>`);
 
     c.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(meta.join(" • "))

@@ -29,3 +29,7 @@ export default class Inbox extends PlayerSubclassBase {
     };
   }
 }
+
+export type CompressedInbox = Inbox & {
+  letters: Buffer[];
+};

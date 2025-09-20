@@ -6,9 +6,10 @@ import aeonix from "../index.js";
 import log from "../utils/log.js";
 import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
 import { Model } from "mongoose";
-import elementsFixer from "../utils/elementFixer.js";
 import PlayerStorage from "../models/player/utils/playerStorage.js";
 import playerModel from "../models/player/utils/playerModel.js";
+import Letter from "../models/player/utils/inbox/letter.js";
+import Inbox from "../models/player/utils/inbox/inbox.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -58,9 +59,21 @@ export default class PlayerManager extends LifecycleCachedManager<
 
   // TODO: add other storage saving methods
 
-  async onSave(instance: Player): Promise<PlayerStorage> {
+  async onSave(inst: Player): Promise<PlayerStorage> {
+    const rawLetters = (await Promise.all(
+      inst.inbox.letters.map(async (letter) => {
+        return letter.toRaw();
+      })
+    )) as Letter[];
+
     // Compress class and convert to pojo
-    const compressed = new PlayerStorage(instance);
+    const compressed = new PlayerStorage({
+      ...inst,
+      inbox: {
+        ...inst.inbox,
+        letters: rawLetters,
+      } as Inbox,
+    } as Player);
 
     return compressed;
   }
@@ -76,10 +89,10 @@ export default class PlayerManager extends LifecycleCachedManager<
     inst.dmChannel = await inst.user?.createDM();
 
     // Set up letters
-    inst.inbox.letters = await elementsFixer(
-      inst.inbox.letters,
-      (id: string) => this.aeonix!.letters.loadRaw(id),
-      (inst) => inst.id
+    inst.inbox.letters = await Promise.all(
+      inst.inbox.letters.map(async (raw) => {
+        return await this.aeonix!.letters.fromRaw(raw);
+      })
     );
 
     return inst;
