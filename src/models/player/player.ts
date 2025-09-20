@@ -26,12 +26,6 @@ import Location from "./utils/location/location.js";
 import Persona from "./utils/persona/persona.js";
 import StatusEffects from "./utils/statusEffects/statusEffects.js";
 import merge from "../../utils/merge.js";
-import {
-  getModelForClass,
-  modelOptions,
-  prop,
-  Severity,
-} from "@typegoose/typegoose";
 import Quests from "./utils/quests/quests.js";
 import Settings from "./utils/settings/settings.js";
 import { PlayerSubclassBase } from "./utils/playerSubclassBase.js";
@@ -42,38 +36,26 @@ import { Model } from "mongoose";
 import Environment from "../environment/environment.js";
 import formatNotification from "./utils/inbox/formatNotification.js";
 import Notification from "../../content/letters/notification/notification.js";
+import PlayerStorage from "./utils/playerStorage.js";
+import { PlayerCreationOptions } from "../../managers/playerManager.js";
+import semibinaryToBuffer from "./utils/semibinaryToBuffer.js";
+import zlib from "zlib";
+import playerModel from "./utils/playerModel.js";
+import isPlayerStorage from "./utils/isPlayerStorage.js";
 
-@modelOptions({
-  options: {
-    allowMixed: Severity.ALLOW,
-  },
-})
 export default class Player {
-  @prop({ type: () => String, required: true })
-  _id: string;
+  _id!: string;
+  lastAccessed!: number;
+  dataVersion!: number;
 
-  @prop({ default: {}, type: Object })
-  inbox: Inbox;
-  @prop({ default: {}, type: Object })
-  inventory: Inventory;
-  @prop({ default: {}, type: Object })
-  location: Location;
-  @prop({ default: {}, type: Object })
-  persona: Persona;
-  @prop({ default: {}, type: Object })
-  quests: Quests;
-  @prop({ default: {}, type: Object })
-  settings: Settings;
-  @prop({ default: {}, type: Object })
-  stats: Stats;
-  @prop({ default: {}, type: Object })
-  statusEffects: StatusEffects;
-
-  @prop({ type: Number, required: true })
-  lastAccessed: number;
-
-  @prop({ default: 0, type: Number })
-  dataVersion: number;
+  inbox!: Inbox;
+  inventory!: Inventory;
+  location!: Location;
+  persona!: Persona;
+  quests!: Quests;
+  settings!: Settings;
+  stats!: Stats;
+  statusEffects!: StatusEffects;
 
   user?: User;
   environment?: Environment;
@@ -265,7 +247,10 @@ export default class Player {
 
   async commit(saveIntoCache = true): Promise<void> {
     if (saveIntoCache) aeonix.players.set(this);
-    await playerModel.findByIdAndUpdate(this._id, merge({}, this), {
+
+    const data = await aeonix.players.onSave(this);
+
+    await playerModel.findByIdAndUpdate(this._id, merge({}, data), {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,
@@ -343,12 +328,49 @@ export default class Player {
     return new PlayerRef(this._id, this);
   }
 
-  constructor(user?: User, displayName?: string, personaAvatar?: string) {
-    this._id = user?.id ?? "";
+  constructor(data?: PlayerStorage | PlayerCreationOptions) {
+    if (data && isPlayerStorage(data)) {
+      const deflatedData: Player = {} as Player;
+      deflatedData._id = data._id;
+      deflatedData.lastAccessed = data.lastAccessed;
+      deflatedData.dataVersion = data.dataVersion;
+      deflatedData.inbox = JSON.parse(
+        zlib.inflateSync(semibinaryToBuffer(data.inboxCompressed)).toString()
+      );
+      deflatedData.inventory = JSON.parse(
+        zlib
+          .inflateSync(semibinaryToBuffer(data.inventoryCompressed))
+          .toString()
+      );
+      deflatedData.location = JSON.parse(
+        zlib.inflateSync(semibinaryToBuffer(data.locationCompressed)).toString()
+      );
+      deflatedData.persona = JSON.parse(
+        zlib.inflateSync(semibinaryToBuffer(data.personaCompressed)).toString()
+      );
+      deflatedData.quests = JSON.parse(
+        zlib.inflateSync(semibinaryToBuffer(data.questsCompressed)).toString()
+      );
+      deflatedData.settings = JSON.parse(
+        zlib.inflateSync(semibinaryToBuffer(data.settingsCompressed)).toString()
+      );
+      deflatedData.stats = JSON.parse(
+        zlib.inflateSync(semibinaryToBuffer(data.statsCompressed)).toString()
+      );
+      deflatedData.statusEffects = JSON.parse(
+        zlib
+          .inflateSync(semibinaryToBuffer(data.statusEffectsCompressed))
+          .toString()
+      );
+
+      return merge(this, deflatedData, this.getClassMap());
+    }
+
+    this._id = data?.user.id ?? "";
     this.inbox = new Inbox();
     this.inventory = new Inventory();
     this.location = new Location();
-    this.persona = new Persona(displayName || "", personaAvatar || "");
+    this.persona = new Persona(data?.name || "", data?.avatar || "");
     this.quests = new Quests();
     this.settings = new Settings();
     this.stats = new Stats();
@@ -360,5 +382,3 @@ export default class Player {
     this.dataVersion = 1;
   }
 }
-
-export const playerModel = getModelForClass(Player);

@@ -1,13 +1,14 @@
 import { GuildMemberRoleManager, User } from "discord.js";
 import LifecycleCachedManager from "../models/core/lifecycleCachedManager.js";
-import Player, { playerModel } from "../models/player/player.js";
-import Letter from "../models/player/utils/inbox/letter.js";
+import Player from "../models/player/player.js";
 import PlayerRef from "../models/player/utils/playerRef.js";
-import merge from "../utils/merge.js";
 import aeonix from "../index.js";
 import log from "../utils/log.js";
 import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
 import { Model } from "mongoose";
+import elementsFixer from "../utils/elementFixer.js";
+import PlayerStorage from "../models/player/utils/playerStorage.js";
+import playerModel from "../models/player/utils/playerModel.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -35,12 +36,15 @@ async function isImageUrl(url: string) {
   }
 }
 
-export default class PlayerManager extends LifecycleCachedManager<Player> {
+export default class PlayerManager extends LifecycleCachedManager<
+  Player,
+  PlayerStorage
+> {
   getKey(instance: Player): string {
     return instance._id;
   }
 
-  model(): Model<Player> {
+  model(): Model<PlayerStorage> {
     return playerModel;
   }
 
@@ -52,26 +56,33 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
     instance.lastAccessed = Date.now();
   }
 
-  async onLoad(instance: Player): Promise<void> {
-    instance.user = await instance.fetchUser();
-    instance.environment = await instance.fetchEnvironment();
-    instance.environmentChannel = await instance.fetchEnvironmentChannel();
-    instance.dmChannel = await instance.user?.createDM();
+  // TODO: add other storage saving methods
 
-    instance.inbox.letters = await Promise.all(
-      instance.inbox.letters.map(async (letter) => {
-        const RealClass = await this.aeonix?.letters.loadRaw(letter.type);
+  async onSave(instance: Player): Promise<PlayerStorage> {
+    // Compress class and convert to pojo
+    const compressed = new PlayerStorage(instance);
 
-        if (!RealClass || RealClass === Letter) {
-          // If no concrete class found, return the letter as is
-          return letter;
-        }
+    return compressed;
+  }
 
-        return letter instanceof RealClass
-          ? letter
-          : merge(new RealClass(), letter);
-      })
+  async onLoad(data: PlayerStorage): Promise<Player> {
+    // Uncompress pojo
+    const inst = new Player(data);
+
+    // Fetch all the data for quick use
+    inst.user = await inst.fetchUser();
+    inst.environment = await inst.fetchEnvironment();
+    inst.environmentChannel = await inst.fetchEnvironmentChannel();
+    inst.dmChannel = await inst.user?.createDM();
+
+    // Set up letters
+    inst.inbox.letters = await elementsFixer(
+      inst.inbox.letters,
+      (id: string) => this.aeonix!.letters.loadRaw(id),
+      (inst) => inst.id
     );
+
+    return inst;
   }
 
   async getRef(id: string): Promise<PlayerRef | undefined> {
@@ -89,7 +100,7 @@ export default class PlayerManager extends LifecycleCachedManager<Player> {
     if (!avatar) avatar = user.displayAvatarURL();
     if (!(await isImageUrl(avatar))) return "notAnImageUrl";
 
-    const player = new Player(user, name, avatar);
+    const player = new Player({ user, name, avatar });
 
     const playerRole = aeonix.playerRoleId;
 

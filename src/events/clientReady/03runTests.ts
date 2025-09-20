@@ -21,7 +21,11 @@ export default new Event<"ready">({
       return;
     }
 
-    const player = new Player(aeonix.user, aeonix.user.username);
+    const player = new Player({
+      user: aeonix.user,
+      name: aeonix.user.username,
+      avatar: aeonix.user.displayAvatarURL(),
+    });
 
     const item = new BackpackItem();
 

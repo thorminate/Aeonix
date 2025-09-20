@@ -29,8 +29,6 @@ export default new Interaction({
   environmentOnly: true,
 
   callback: async ({ context, player }) => {
-    // TODO: Finish notification framework, inbox side of things is completed, we now need a DM sender and some player methods to handle it.
-
     let snippets = await player.use(async (p) => {
       p.notify(new TestNotification());
       return generateInboxContents(p);

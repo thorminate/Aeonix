@@ -1,12 +1,14 @@
 import { Model } from "mongoose";
 import CachedManager from "./cachedManager.js";
 import { Collection } from "discord.js";
-import merge from "../../utils/merge.js";
 
 export default abstract class LifecycleCachedManager<
   Holds extends {
     _id: string;
     getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
+  },
+  DB extends {
+    _id: string;
   }
 > extends CachedManager<Holds> {
   _deletedIds: Set<string> = new Set<string>();
@@ -21,9 +23,10 @@ export default abstract class LifecycleCachedManager<
     if (!weak?.deref()) this._weakRefs.delete(id);
   });
 
-  abstract model(): Model<Holds>;
+  abstract model(): Model<DB>;
   abstract inst(): Holds;
-  abstract onLoad(instance: Holds): Promise<void>;
+  abstract onLoad(instance: DB): Promise<Holds>;
+  abstract onSave(instance: Holds): Promise<DB>;
 
   markDeleted(id: string) {
     this._deletedIds.add(id);
@@ -64,13 +67,11 @@ export default abstract class LifecycleCachedManager<
     return instance;
   }
   async load(id: string): Promise<Holds | undefined> {
-    const raw = await this.model().findById(id).lean();
+    const raw = (await this.model().findById(id).lean()) as DB | undefined;
     if (!raw) return undefined;
 
-    const emptyInst = this.inst();
-    const instance = merge(emptyInst, raw, emptyInst.getClassMap());
+    const instance = await this.onLoad(raw);
 
-    await this.onLoad(instance);
     this.set(instance);
     return instance;
   }
@@ -95,8 +96,7 @@ export default abstract class LifecycleCachedManager<
           return cached;
         }
 
-        const instance = merge(this.inst(), doc, this.inst().getClassMap());
-        await this.onLoad(instance);
+        const instance = await this.onLoad(doc as DB);
         return instance;
       });
 
