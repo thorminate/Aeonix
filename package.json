@@ -24,13 +24,13 @@
     "lint": "eslint . --ext .ts --fix --config ./eslint.config.js && tsc --noEmit"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.49.0",
+    "@dotenvx/dotenvx": "^1.50.1",
     "@typegoose/typegoose": "^12.19.0",
-    "@types/node": "^24.3.0",
+    "@types/node": "^24.5.2",
     "ansis": "^4.1.0",
     "discord.js": "^14.22.1",
     "mongodb": "^6.20.0",
-    "mongoose": "^8.18.0",
+    "mongoose": "^8.18.1",
     "package-json-type": "^1.0.3",
     "typescript": "^5.9.2",
     "zlib": "^1.0.5"
@@ -43,9 +43,9 @@
     "url": "https://github.com/thorminate/Aeonix/issues"
   },
   "devDependencies": {
-    "@eslint/js": "^9.34.0",
-    "eslint": "^9.34.0",
-    "globals": "^16.3.0",
-    "typescript-eslint": "^8.41.0"
+    "@eslint/js": "^9.36.0",
+    "eslint": "^9.36.0",
+    "globals": "^16.4.0",
+    "typescript-eslint": "^8.44.0"
   }
 }
