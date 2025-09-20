@@ -38,11 +38,15 @@ export type AeonixEvents = ClientEvents & {
   ];
 };
 
+export interface AeonixConfig {
+  tickRate: number;
+  maxNotifications: number;
+}
 export default class Aeonix extends Client {
   rl: readline.Interface;
   db = mongoose;
 
-  tickInterval: number = 10 * 1000;
+  config: AeonixConfig;
 
   private _currentTime = 1;
   private _currentDay = 1;
@@ -141,7 +145,7 @@ export default class Aeonix extends Client {
     }
   }
 
-  constructor(rl: readline.Interface) {
+  constructor(rl: readline.Interface, config: AeonixConfig) {
     log({
       header: "Starting boot-up sequence",
       processName: "AeonixConstructor",
@@ -203,6 +207,7 @@ export default class Aeonix extends Client {
       ],
     });
 
+    this.config = config;
     this.rl = rl;
 
     const mdbToken = process.env.MONGODB_URI;
@@ -260,7 +265,7 @@ export default class Aeonix extends Client {
     setInterval(() => {
       this.status.refresh();
       this.tick();
-    }, this.tickInterval);
+    }, this.config.tickRate);
   }
 
   override on<Event extends keyof AeonixEvents>(

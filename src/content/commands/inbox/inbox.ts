@@ -16,6 +16,7 @@ import generateMailContainer from "./utils/generateMailContainer.js";
 import stringifyLetter from "./utils/stringifyLetter.js";
 import Letter from "../../../models/player/utils/inbox/letter.js";
 import { search } from "../../../utils/levenshtein.js";
+import TestNotification from "../../letters/testNotification/testNotification.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
@@ -31,6 +32,7 @@ export default new Interaction({
     // TODO: Finish notification framework, inbox side of things is completed, we now need a DM sender and some player methods to handle it.
 
     let snippets = await player.use(async (p) => {
+      p.notify(new TestNotification());
       return generateInboxContents(p);
     });
 

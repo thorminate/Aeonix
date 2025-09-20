@@ -1,6 +1,7 @@
 import { log } from "console";
-import aeonix from "../../../../index.js";
-import Player from "../../player.js";
+import aeonix from "../../../index.js";
+import Player from "../player.js";
+
 export default class PlayerRef {
   private weak?: WeakRef<Player>;
 

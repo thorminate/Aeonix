@@ -17,9 +17,7 @@ import {
 import { CommandContext } from "../models/core/interaction.js";
 import log from "./log.js";
 
-interface SnippetPaginatorReturn<
-  ReturnType extends "ok" | "error" | "non-paginated"
-> {
+interface SnippetPaginatorReturn<ReturnType extends "ok" | "error"> {
   message: Message;
   collector: ReturnType extends "ok"
     ? InteractionCollector<ButtonInteraction>
@@ -90,7 +88,7 @@ function buildPaginationRow(
       .setCustomId(`#first-page`)
       .setEmoji("⏪")
       .setStyle(ButtonStyle.Primary)
-      .setDisabled(currentPage <= 0),
+      .setDisabled(currentPage <= 1),
 
     new ButtonBuilder()
       .setCustomId(`#previous-page`)
@@ -113,7 +111,7 @@ function buildPaginationRow(
       .setCustomId(`#last-page`)
       .setEmoji("⏩")
       .setStyle(ButtonStyle.Primary)
-      .setDisabled(currentPage >= pages.length - 1)
+      .setDisabled(currentPage >= pages.length - 2)
   );
 }
 
@@ -283,7 +281,7 @@ export default async function containerSnippetPaginator(
     index: number,
     array: ContainerSnippet[]
   ) => boolean
-): Promise<SnippetPaginatorReturn<"error" | "ok" | "non-paginated">> {
+): Promise<SnippetPaginatorReturn<"error" | "ok">> {
   const currentPage = { n: 0 };
   const pages = buildPages(opts);
   if (pages.length === 0 || pages[0]?.components.length === 0) {
@@ -298,21 +296,12 @@ export default async function containerSnippetPaginator(
     } as SnippetPaginatorReturn<"error">;
   }
 
-  if (pages.length === 1) {
-    return {
-      message: await context.editReply({
-        components: [pages[0]!],
-        flags: MessageFlags.IsComponentsV2,
-      }),
-      collector: undefined,
-      pages: undefined,
-      currentPage: undefined,
-      returnType: "non-paginated",
-    } as SnippetPaginatorReturn<"non-paginated">;
-  }
+  const isOnePaged = pages.length <= 1;
 
   const msg = await context.editReply({
-    components: [pages[0]!, buildPaginationRow(0, pages)],
+    components: isOnePaged
+      ? [pages[0]!]
+      : [pages[0]!, buildPaginationRow(0, pages)],
     flags: MessageFlags.IsComponentsV2,
   });
 

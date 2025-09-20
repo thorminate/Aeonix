@@ -12,6 +12,7 @@ export default abstract class Letter {
   abstract oneTimeInteraction: boolean;
   abstract canDismiss?: boolean;
   abstract isNotification: boolean;
+  timestamp: number = Date.now();
   isRead: boolean = false;
   isArchived: boolean = false;
   isInteracted: boolean = false;

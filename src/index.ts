@@ -3,9 +3,10 @@
 import log from "./utils/log.js";
 import readline from "readline/promises";
 import { appendFileSync, existsSync, writeFileSync } from "fs";
-import { config } from "@dotenvx/dotenvx";
+import { config as dotenv } from "@dotenvx/dotenvx";
 import { magenta, green } from "ansis";
 import Aeonix from "./aeonix.js";
+import config from "./config.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -52,7 +53,7 @@ if (!existsSync("./.env")) {
 }
 
 // Load environment variables
-const dotenvx = config({
+const dotenvx = dotenv({
   quiet: true,
 });
 
@@ -64,6 +65,6 @@ log({
   type: "Info",
 });
 
-const aeonix = new Aeonix(rl);
+const aeonix = new Aeonix(rl, config);
 
 export default aeonix;

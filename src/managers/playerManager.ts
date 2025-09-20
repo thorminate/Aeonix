@@ -2,7 +2,7 @@ import { GuildMemberRoleManager, User } from "discord.js";
 import LifecycleCachedManager from "../models/core/lifecycleCachedManager.js";
 import Player, { playerModel } from "../models/player/player.js";
 import Letter from "../models/player/utils/inbox/letter.js";
-import PlayerRef from "../models/player/utils/utils/playerRef.js";
+import PlayerRef from "../models/player/utils/playerRef.js";
 import merge from "../utils/merge.js";
 import aeonix from "../index.js";
 import log from "../utils/log.js";

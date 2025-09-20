@@ -17,7 +17,7 @@ import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
 import Environment from "../../models/environment/environment.js";
 import Aeonix from "../../aeonix.js";
-import PlayerRef from "../../models/player/utils/utils/playerRef.js";
+import PlayerRef from "../../models/player/utils/playerRef.js";
 
 type AnyInteraction<CT extends CacheType> = ButtonInteraction<CT> &
   ChannelSelectMenuInteraction<CT> &

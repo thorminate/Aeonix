@@ -1,4 +1,4 @@
-import { PlayerSubclassBase } from "../utils/playerSubclassBase.js";
+import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export default class Location extends PlayerSubclassBase {
   id: string;

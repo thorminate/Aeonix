@@ -20,7 +20,7 @@ import Inventory from "./utils/inventory/inventory.js";
 import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
 import aeonix from "../../index.js";
 import log from "../../utils/log.js";
-import PlayerMoveToResult from "./utils/utils/playerMoveToResult.js";
+import PlayerMoveToResult from "./utils/playerMoveToResult.js";
 import Inbox from "./utils/inbox/inbox.js";
 import Location from "./utils/location/location.js";
 import Persona from "./utils/persona/persona.js";
@@ -34,14 +34,14 @@ import {
 } from "@typegoose/typegoose";
 import Quests from "./utils/quests/quests.js";
 import Settings from "./utils/settings/settings.js";
-import { PlayerSubclassBase } from "./utils/utils/playerSubclassBase.js";
-import PlayerRef from "./utils/utils/playerRef.js";
+import { PlayerSubclassBase } from "./utils/playerSubclassBase.js";
+import PlayerRef from "./utils/playerRef.js";
 import idToType from "../../utils/idToType.js";
 import environmentModel from "../environment/utils/environmentModel.js";
 import { Model } from "mongoose";
 import Environment from "../environment/environment.js";
-import formatNotification from "./utils/utils/formatNotification.js";
-import Notification from "./utils/utils/notificationType.js";
+import formatNotification from "./utils/inbox/formatNotification.js";
+import Notification from "../../content/letters/notification/notification.js";
 
 @modelOptions({
   options: {

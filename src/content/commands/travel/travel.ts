@@ -8,7 +8,7 @@ import {
 import log from "../../../utils/log.js";
 import containerSnippetPaginator from "../../../utils/containerSnippetPaginator.js";
 import Interaction, { ITypes } from "../../../models/core/interaction.js";
-import PlayerMoveToResult from "../../../models/player/utils/utils/playerMoveToResult.js";
+import PlayerMoveToResult from "../../../models/player/utils/playerMoveToResult.js";
 import generateTravelContents from "./utils/generateTravelContents.js";
 import travelHeader from "./utils/travelHeader.js";
 import stringifyAdjacent from "./utils/stringifyAdjacent.js";
