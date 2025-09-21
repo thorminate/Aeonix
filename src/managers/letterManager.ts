@@ -16,9 +16,16 @@ export default class LetterManager extends ConstructableManager<Holds> {
   }
 
   async fromRaw(raw: RawLetter): Promise<Letter> {
-    const cls = await this.loadRaw(raw.type);
-    if (!cls) throw new Error("No class found for letter", { cause: raw.type });
-    return merge(new cls(), raw);
+    const cls = await this.loadRaw(raw.t);
+    if (!cls) throw new Error("No class found for letter", { cause: raw.t });
+    return merge(new cls(), {
+      id: raw.i,
+      type: raw.t,
+      createdAt: raw.c,
+      isRead: raw.r,
+      isArchived: raw.a,
+      isInteracted: raw.n,
+    } as Letter);
   }
 
   folder(): string {

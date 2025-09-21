@@ -8,7 +8,7 @@ import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorial
 import { Model } from "mongoose";
 import PlayerStorage from "../models/player/utils/playerStorage.js";
 import playerModel from "../models/player/utils/playerModel.js";
-import Letter from "../models/player/utils/inbox/letter.js";
+import Letter, { RawLetter } from "../models/player/utils/inbox/letter.js";
 import Inbox from "../models/player/utils/inbox/inbox.js";
 
 export type PlayerCreationResult =
@@ -60,18 +60,18 @@ export default class PlayerManager extends LifecycleCachedManager<
   // TODO: add other storage saving methods
 
   async onSave(inst: Player): Promise<PlayerStorage> {
-    const rawLetters = (await Promise.all(
+    const rawLetters = await Promise.all(
       inst.inbox.letters.map(async (letter) => {
         return letter.toRaw();
       })
-    )) as Letter[];
+    );
 
     // Compress class and convert to pojo
     const compressed = new PlayerStorage({
       ...inst,
       inbox: {
         ...inst.inbox,
-        letters: rawLetters,
+        letters: rawLetters as unknown as Letter[],
       } as Inbox,
     } as Player);
 
@@ -91,7 +91,7 @@ export default class PlayerManager extends LifecycleCachedManager<
     // Set up letters
     inst.inbox.letters = await Promise.all(
       inst.inbox.letters.map(async (raw) => {
-        return await this.aeonix!.letters.fromRaw(raw);
+        return await this.aeonix!.letters.fromRaw(raw as unknown as RawLetter);
       })
     );
 
