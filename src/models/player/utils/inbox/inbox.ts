@@ -2,7 +2,11 @@ import aeonix from "../../../../index.js";
 import ParentAwareSubArray from "../../../../utils/parentAwareSubArray.js";
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
-import Letter from "./letter.js";
+import Letter, { RawLetter } from "./letter.js";
+
+export interface RawInbox {
+  0: RawLetter[];
+}
 
 export default class Inbox extends PlayerSubclassBase {
   letters: Letter[] = [];

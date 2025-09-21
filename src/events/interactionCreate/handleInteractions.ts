@@ -86,15 +86,6 @@ export default new Event<"interactionCreate">({
 
     if (!interaction) return;
 
-    if (
-      interaction.acknowledge === true ||
-      interaction.ephemeral === undefined
-    ) {
-      await context.deferReply({
-        flags: interaction.ephemeral ? MessageFlags.Ephemeral : undefined,
-      });
-    }
-
     if (!context.member) {
       log({
         header: "Interaction member is falsy",
@@ -111,20 +102,10 @@ export default new Event<"interactionCreate">({
           PermissionFlagsBits.Administrator
         )
       ) {
-        if (
-          interaction.acknowledge === true ||
-          interaction.ephemeral === undefined
-        ) {
-          await context.editReply({
-            content: "Only administrators can use this.",
-          });
-          return;
-        } else {
-          context.reply({
-            content: "Only administrators can use this.",
-          });
-          return;
-        }
+        context.reply({
+          content: "Only administrators can use this.",
+        });
+        return;
       }
     }
 
@@ -133,20 +114,10 @@ export default new Event<"interactionCreate">({
         if (
           !(context.member.permissions as PermissionsBitField).has(permission)
         ) {
-          if (
-            interaction.acknowledge === true ||
-            interaction.ephemeral === undefined
-          ) {
-            await context.editReply({
-              content: "You don't have permissions to use this.",
-            });
-            return;
-          } else {
-            context.reply({
-              content: "You don't have permissions to use this.",
-            });
-            return;
-          }
+          context.reply({
+            content: "You don't have permissions to use this.",
+          });
+          return;
         }
       }
     }
@@ -209,6 +180,15 @@ export default new Event<"interactionCreate">({
       player = undefined;
     }
 
+    if (
+      interaction.acknowledge === true ||
+      interaction.ephemeral === undefined
+    ) {
+      await context.deferReply({
+        flags: interaction.ephemeral ? MessageFlags.Ephemeral : undefined,
+      });
+    }
+
     await interaction
       .callback({
         context,
@@ -235,11 +215,30 @@ export default new Event<"interactionCreate">({
         }
       });
   },
-  onError: async (e) =>
+  onError: async (e, { args: [context] }) => {
+    if (context.isRepliable() && !context.replied)
+      if (!context.deferred)
+        await context
+          .reply({
+            content:
+              "An internal error has occurred, please submit a bug report explaining what you did to trigger this. " +
+              e,
+            flags: MessageFlags.Ephemeral,
+          })
+          .catch(() => undefined);
+      else
+        await context
+          .editReply({
+            content:
+              "An internal error has occurred, please submit a bug report explaining what you did to trigger this. " +
+              e,
+          })
+          .catch(() => undefined);
     log({
       header: "An interaction could not be handled correctly",
       processName: "InteractionHandler",
       payload: e,
       type: "Error",
-    }),
+    });
+  },
 });

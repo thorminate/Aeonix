@@ -3,6 +3,12 @@
 import { randomUUID } from "crypto";
 import Player from "../../player.js";
 
+export interface RawQuest {
+  0: string; // id
+  1: string; // type
+  2: boolean; // completed
+}
+
 export default abstract class Quest {
   id: string = randomUUID();
   abstract type: string;
@@ -17,4 +23,12 @@ export default abstract class Quest {
   }
 
   abstract onFulfill(player: Player): void;
+
+  toRaw(): RawQuest {
+    return {
+      0: this.id,
+      1: this.type,
+      2: this.completed,
+    };
+  }
 }

@@ -2,13 +2,13 @@ import { randomUUID } from "crypto";
 import Player from "../../player.js";
 
 export interface RawLetter {
-  i: string;
-  t: string;
+  0: string; // id
+  1: string; // type
 
-  c: number;
-  r: boolean;
-  a: boolean;
-  n: boolean;
+  2: number; // createdAt
+  3: boolean; // isRead
+  4: boolean; // isArchived
+  5: boolean; // isInteracted
 }
 
 export default abstract class Letter {
@@ -59,12 +59,12 @@ export default abstract class Letter {
 
   toRaw(): RawLetter {
     return {
-      i: this.id,
-      t: this.type,
-      c: this.createdAt,
-      r: this.isRead,
-      a: this.isArchived,
-      n: this.isInteracted,
+      0: this.id,
+      1: this.type,
+      2: this.createdAt,
+      3: this.isRead,
+      4: this.isArchived,
+      5: this.isInteracted,
     };
   }
 }

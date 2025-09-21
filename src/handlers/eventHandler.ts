@@ -38,11 +38,11 @@ export default async (aeonix: Aeonix) => {
             default: Event<keyof AeonixEvents>;
           } = await import(fileUrl.toString());
 
-          await eventModule.default
-            .callback(new EventParams(aeonix, ...args))
-            .catch((e: unknown) => {
-              eventModule.default.onError(e);
-            });
+          const params = new EventParams(aeonix, ...args);
+
+          await eventModule.default.callback(params).catch((e: unknown) => {
+            eventModule.default.onError(e, params);
+          });
         }
       });
     }

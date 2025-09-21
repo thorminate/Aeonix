@@ -36,12 +36,10 @@ import { Model } from "mongoose";
 import Environment from "../environment/environment.js";
 import formatNotification from "./utils/inbox/formatNotification.js";
 import Notification from "../../content/letters/notification/notification.js";
-import PlayerStorage from "./utils/playerStorage.js";
 import { PlayerCreationOptions } from "../../managers/playerManager.js";
-import semibinaryToBuffer from "./utils/semibinaryToBuffer.js";
-import zlib from "zlib";
 import playerModel from "./utils/playerModel.js";
-import isPlayerStorage from "./utils/isPlayerStorage.js";
+import isRawPlayer from "./utils/isRawPlayer.js";
+import RawPlayer from "./utils/rawPlayer.js";
 
 export default class Player {
   _id!: string;
@@ -328,57 +326,86 @@ export default class Player {
     return new PlayerRef(this._id, this);
   }
 
-  constructor(data?: PlayerStorage | PlayerCreationOptions) {
-    if (data && isPlayerStorage(data)) {
-      const deflatedData: Player = {} as Player;
-      deflatedData._id = data._id;
-      deflatedData.lastAccessed = data.lastAccessed;
-      deflatedData.dataVersion = data.dataVersion;
-      deflatedData.inbox = JSON.parse(
-        zlib.inflateSync(semibinaryToBuffer(data.inboxCompressed)).toString()
-      );
-      deflatedData.inventory = JSON.parse(
-        zlib
-          .inflateSync(semibinaryToBuffer(data.inventoryCompressed))
-          .toString()
-      );
-      deflatedData.location = JSON.parse(
-        zlib.inflateSync(semibinaryToBuffer(data.locationCompressed)).toString()
-      );
-      deflatedData.persona = JSON.parse(
-        zlib.inflateSync(semibinaryToBuffer(data.personaCompressed)).toString()
-      );
-      deflatedData.quests = JSON.parse(
-        zlib.inflateSync(semibinaryToBuffer(data.questsCompressed)).toString()
-      );
-      deflatedData.settings = JSON.parse(
-        zlib.inflateSync(semibinaryToBuffer(data.settingsCompressed)).toString()
-      );
-      deflatedData.stats = JSON.parse(
-        zlib.inflateSync(semibinaryToBuffer(data.statsCompressed)).toString()
-      );
-      deflatedData.statusEffects = JSON.parse(
-        zlib
-          .inflateSync(semibinaryToBuffer(data.statusEffectsCompressed))
-          .toString()
-      );
-
-      return merge(this, deflatedData, this.getClassMap());
+  private constructor(data?: PlayerCreationOptions) {
+    if (data) {
+      this._id = data.user?.id ?? "";
+      this.persona = new Persona(data.name || "", data.avatar || "");
+    } else {
+      this._id = "";
+      this.persona = new Persona("", "");
     }
-
-    this._id = data?.user.id ?? "";
     this.inbox = new Inbox();
     this.inventory = new Inventory();
     this.location = new Location();
-    this.persona = new Persona(data?.name || "", data?.avatar || "");
     this.quests = new Quests();
     this.settings = new Settings();
     this.stats = new Stats();
     this.statusEffects = new StatusEffects();
 
     this.lastAccessed = Date.now();
-
-    // This number should increment on major schema changes, will add a data migrator later on.
     this.dataVersion = 1;
+  }
+
+  static async create(
+    data?: RawPlayer | PlayerCreationOptions
+  ): Promise<Player> {
+    if (data && isRawPlayer(data)) {
+      const player = new Player();
+
+      player._id = data._id;
+      player.lastAccessed = data.la;
+      player.dataVersion = data.dv;
+      player.inbox = {
+        letters: await Promise.all(
+          data.b[0].map(async (l) => await aeonix.letters.fromRaw(l))
+        ),
+      } as Inbox;
+      player.inventory = {
+        entries: await Promise.all(
+          data.v[0].map(async (i) => await aeonix.items.fromRaw(i))
+        ),
+        capacity: data.v[1],
+      } as Inventory;
+      player.location = {
+        id: data.l[0],
+        channelId: data.l[1],
+        adjacents: data.l[2],
+      } as Location;
+      player.persona = {
+        name: data.p[0],
+        avatar: data.p[1],
+      } as Persona;
+      player.quests = {
+        quests: await Promise.all(
+          data.q[0].map(async (q) => await aeonix.quests.fromRaw(q))
+        ),
+      } as Quests;
+      player.settings = {
+        inboxShowArchived: data.s[0],
+        inboxShowNotifications: data.s[1],
+      } as Settings;
+      player.stats = {
+        level: data.t[0],
+        xp: data.t[1],
+        maxHealth: data.t[2],
+        health: data.t[3],
+        strength: data.t[4],
+        will: data.t[5],
+        cognition: data.t[6],
+        hasNausea: data.t[7],
+        hasCompletedTutorial: data.t[8],
+      } as Stats;
+      player.statusEffects = {
+        effects: await Promise.all(
+          data.a[0].map(async (e) => await aeonix.statusEffects.fromRaw(e))
+        ),
+      } as StatusEffects;
+
+      const freshPlayer = new Player();
+
+      return merge(freshPlayer, player, freshPlayer.getClassMap());
+    } else {
+      return new Player(data as PlayerCreationOptions);
+    }
   }
 }

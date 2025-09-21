@@ -8,8 +8,8 @@ import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorial
 import { Model } from "mongoose";
 import PlayerStorage from "../models/player/utils/playerStorage.js";
 import playerModel from "../models/player/utils/playerModel.js";
-import Letter, { RawLetter } from "../models/player/utils/inbox/letter.js";
-import Inbox from "../models/player/utils/inbox/inbox.js";
+import BackpackItem from "../content/items/backpackItem/backpackItem.js";
+import RawPlayer from "../models/player/utils/rawPlayer.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -49,51 +49,42 @@ export default class PlayerManager extends LifecycleCachedManager<
     return playerModel;
   }
 
-  inst(): Player {
-    return new Player();
+  async inst(): Promise<Player> {
+    return await Player.create();
   }
 
   override async onAccess(instance: Player): Promise<void> {
     instance.lastAccessed = Date.now();
   }
 
-  // TODO: add other storage saving methods
-
   async onSave(inst: Player): Promise<PlayerStorage> {
-    const rawLetters = await Promise.all(
-      inst.inbox.letters.map(async (letter) => {
-        return letter.toRaw();
-      })
-    );
+    const rawPlayer = new RawPlayer(inst);
 
     // Compress class and convert to pojo
-    const compressed = new PlayerStorage({
-      ...inst,
-      inbox: {
-        ...inst.inbox,
-        letters: rawLetters as unknown as Letter[],
-      } as Inbox,
-    } as Player);
+    const compressed = new PlayerStorage(rawPlayer);
+
+    log({
+      header: "Saving player",
+      processName: "PlayerManager.onSave",
+      type: "Debug",
+      payload: compressed,
+    });
 
     return compressed;
   }
 
   async onLoad(data: PlayerStorage): Promise<Player> {
     // Uncompress pojo
-    const inst = new Player(data);
+    const raw = new RawPlayer(data);
+
+    // Create instance
+    const inst = await Player.create(raw);
 
     // Fetch all the data for quick use
     inst.user = await inst.fetchUser();
     inst.environment = await inst.fetchEnvironment();
     inst.environmentChannel = await inst.fetchEnvironmentChannel();
     inst.dmChannel = await inst.user?.createDM();
-
-    // Set up letters
-    inst.inbox.letters = await Promise.all(
-      inst.inbox.letters.map(async (raw) => {
-        return await this.aeonix!.letters.fromRaw(raw as unknown as RawLetter);
-      })
-    );
 
     return inst;
   }
@@ -113,7 +104,7 @@ export default class PlayerManager extends LifecycleCachedManager<
     if (!avatar) avatar = user.displayAvatarURL();
     if (!(await isImageUrl(avatar))) return "notAnImageUrl";
 
-    const player = new Player({ user, name, avatar });
+    const player = await Player.create({ user, name, avatar });
 
     const playerRole = aeonix.playerRoleId;
 
@@ -165,10 +156,9 @@ export default class PlayerManager extends LifecycleCachedManager<
 
     await player.moveTo("start", true, true, true, true);
 
-    player.inbox.add(
-      (await aeonix.letters.get("tutorialQuestLetter")) ??
-        new TutorialQuestLetter()
-    );
+    player.inbox.add(new TutorialQuestLetter());
+
+    player.inventory.add(new BackpackItem());
 
     aeonix.players.set(player);
     aeonix.players.markCreated(player._id);

@@ -1,6 +1,18 @@
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import calculateXpRequirement from "./calculateXpRequirement.js";
 
+export interface RawStats {
+  0: number; // level
+  1: number; // xp
+  2: number; // maxHealth
+  3: number; // health
+  4: number; // strength
+  5: number; // will
+  6: number; // cognition
+  7: boolean; // hasNausea
+  8: boolean; // hasCompletedTutorial
+}
+
 export default class Stats extends PlayerSubclassBase {
   level: number = 1;
   xp: number = 0;

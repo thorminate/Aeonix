@@ -1,6 +1,10 @@
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
-import StatusEffect from "./statusEffect.js";
+import StatusEffect, { RawStatusEffect } from "./statusEffect.js";
+
+export interface RawStatusEffects {
+  0: RawStatusEffect[];
+}
 
 export default class StatusEffects extends PlayerSubclassBase {
   effects: StatusEffect[] = [];
@@ -9,9 +13,5 @@ export default class StatusEffects extends PlayerSubclassBase {
     return {
       effects: StatusEffect as ConcreteConstructor<StatusEffect>,
     };
-  }
-
-  constructor() {
-    super();
   }
 }

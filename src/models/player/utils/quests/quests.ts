@@ -1,6 +1,10 @@
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
-import Quest from "./quest.js";
+import Quest, { RawQuest } from "./quest.js";
+
+export interface RawQuests {
+  0: RawQuest[]; // quests
+}
 
 export default class Quests extends PlayerSubclassBase {
   quests: Quest[] = [];

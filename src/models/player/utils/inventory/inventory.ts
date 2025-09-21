@@ -1,6 +1,11 @@
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
-import Item from "../../../item/item.js";
+import Item, { RawItem } from "../../../item/item.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
+
+export interface RawInventory {
+  0: RawItem[]; // entries
+  1: number; // capacity
+}
 
 export default class Inventory extends PlayerSubclassBase {
   capacity: number = 10;

@@ -21,7 +21,7 @@ export default new Event<"ready">({
       return;
     }
 
-    const player = new Player({
+    const player = await Player.create({
       user: aeonix.user,
       name: aeonix.user.username,
       avatar: aeonix.user.displayAvatarURL(),

@@ -24,7 +24,7 @@ export default abstract class LifecycleCachedManager<
   });
 
   abstract model(): Model<DB>;
-  abstract inst(): Holds;
+  abstract inst(): Promise<Holds>;
   abstract onLoad(instance: DB): Promise<Holds>;
   abstract onSave(instance: Holds): Promise<DB>;
 

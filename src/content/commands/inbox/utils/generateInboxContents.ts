@@ -8,9 +8,6 @@ import {
 import { ContainerSnippet } from "../../../../utils/containerSnippetPaginator.js";
 import selectRandomFromArray from "../../../../utils/selectRandomFromArray.js";
 import Player from "../../../../models/player/player.js";
-import lettersOnlyContainsFilterables from "./lettersOnlyContainsFilterables.js";
-import lettersOnlyContainsArchived from "./lettersOnlyContainsArchived.js";
-import lettersOnlyContainsNotifications from "./lettersOnlyContainsNotifications.js";
 
 export default function generateInboxContents({
   inbox: { letters },
@@ -21,15 +18,14 @@ export default function generateInboxContents({
 }: Player): ContainerSnippet[] {
   const snippets: ContainerSnippet[] = [];
 
-  if (
-    (lettersOnlyContainsFilterables(letters) &&
-      showArchived === false &&
-      showNotifications === false) ||
-    (lettersOnlyContainsArchived(letters) && showArchived === false) ||
-    (lettersOnlyContainsNotifications(letters) &&
-      showNotifications === false) ||
-    letters.length === 0
-  ) {
+  const visibleLetters = letters.filter((letter) => {
+    if (letter.isArchived === true && showArchived === false) return false;
+    if (letter.isNotification === true && showNotifications === false)
+      return false;
+    return true;
+  });
+
+  if (visibleLetters.length === 0) {
     snippets.push((page: ContainerBuilder) =>
       page.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
