@@ -63,13 +63,6 @@ export default class PlayerManager extends LifecycleCachedManager<
     // Compress class and convert to pojo
     const compressed = new PlayerStorage(rawPlayer);
 
-    log({
-      header: "Saving player",
-      processName: "PlayerManager.onSave",
-      type: "Debug",
-      payload: compressed,
-    });
-
     return compressed;
   }
 

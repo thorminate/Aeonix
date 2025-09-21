@@ -104,6 +104,7 @@ export default new Event<"interactionCreate">({
       ) {
         context.reply({
           content: "Only administrators can use this.",
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -116,6 +117,7 @@ export default new Event<"interactionCreate">({
         ) {
           context.reply({
             content: "You don't have permissions to use this.",
+            flags: MessageFlags.Ephemeral,
           });
           return;
         }
@@ -131,44 +133,22 @@ export default new Event<"interactionCreate">({
       player = await aeonix.players.get(context.user.id);
 
       if (!player) {
-        if (
-          interaction.acknowledge === true ||
-          interaction.ephemeral === undefined
-        ) {
-          await context.editReply({
-            content: `You aren't a player. Register with the </init:${
-              (
-                await aeonix.commands.get("init")
-              )?.id
-            }> command.`,
-          });
-          return;
-        } else {
-          context.reply({
-            content: `You aren't a player. Register with the </init:${
-              (await aeonix.commands.get("init"))?.id
-            }> command.`,
-          });
-          return;
-        }
+        context.reply({
+          content: `You aren't a player. Register with the </init:${
+            (await aeonix.commands.get("init"))?.id
+          }> command.`,
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
       }
 
       if (interaction.environmentOnly) {
         if (player.location.channelId !== context.channelId) {
-          if (
-            interaction.acknowledge === true ||
-            interaction.ephemeral === undefined
-          ) {
-            await context.editReply({
-              content: `You must be in your [environment channel](https://discord.com/channels/${aeonix.guildId}/${player.location.channelId}) to run this.`,
-            });
-            return;
-          } else {
-            await context.reply({
-              content: `You must be in your [environment channel](https://discord.com/channels/${aeonix.guildId}/${player.location.channelId}) to run this.`,
-            });
-            return;
-          }
+          await context.reply({
+            content: `You must be in your [environment channel](https://discord.com/channels/${aeonix.guildId}/${player.location.channelId}) to run this.`,
+            flags: MessageFlags.Ephemeral,
+          });
+          return;
         }
       }
 

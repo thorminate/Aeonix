@@ -15,17 +15,17 @@ import zlib from "zlib";
 
 export default class RawPlayer {
   _id!: string;
-  la!: number;
-  dv!: number;
+  0!: number; // lastAccessed
+  1!: number; // dataVersion
 
-  b!: RawInbox;
-  v!: RawInventory;
-  l!: RawLocation;
-  p!: RawPersona;
-  q!: RawQuests;
-  s!: RawSettings;
-  t!: RawStats;
-  a!: RawStatusEffects;
+  2!: RawInbox; // inbox
+  3!: RawInventory; // inventory
+  4!: RawLocation; // location
+  5!: RawPersona; // persona
+  6!: RawQuests; // quests
+  7!: RawSettings; // settings
+  8!: RawStats; // stats
+  9!: RawStatusEffects; // statusEffects
 
   constructor(player: Player | PlayerStorage) {
     if (player && isPlayerStorage(player)) {
@@ -36,32 +36,32 @@ export default class RawPlayer {
     }
 
     this._id = player._id;
-    this.la = player.lastAccessed;
-    this.dv = player.dataVersion;
-    this.b = {
+    this[0] = player.lastAccessed;
+    this[1] = player.dataVersion;
+    this[2] = {
       0: player.inbox.letters.map((letter) => letter.toRaw()),
     };
-    this.v = {
+    this[3] = {
       0: player.inventory.entries.map((entry) => entry.toRaw()),
       1: player.inventory.capacity,
     };
-    this.l = {
+    this[4] = {
       0: player.location.id,
       1: player.location.channelId,
       2: player.location.adjacents,
     };
-    this.p = {
+    this[5] = {
       0: player.persona.name,
       1: player.persona.avatar,
     };
-    this.q = {
+    this[6] = {
       0: player.quests.quests.map((quest) => quest.toRaw()),
     };
-    this.s = {
+    this[7] = {
       0: player.settings.inboxShowArchived,
       1: player.settings.inboxShowNotifications,
     };
-    this.t = {
+    this[8] = {
       0: player.stats.level,
       1: player.stats.xp,
       2: player.stats.maxHealth,
@@ -72,7 +72,7 @@ export default class RawPlayer {
       7: player.stats.hasNausea,
       8: player.stats.hasCompletedTutorial,
     };
-    this.a = {
+    this[9] = {
       0: player.statusEffects.effects.map((effect) => effect.toRaw()),
     };
   }

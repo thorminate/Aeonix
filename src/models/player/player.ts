@@ -353,51 +353,51 @@ export default class Player {
       const player = new Player();
 
       player._id = data._id;
-      player.lastAccessed = data.la;
-      player.dataVersion = data.dv;
+      player.lastAccessed = data[0];
+      player.dataVersion = data[1];
       player.inbox = {
         letters: await Promise.all(
-          data.b[0].map(async (l) => await aeonix.letters.fromRaw(l))
+          data[2][0].map(async (l) => await aeonix.letters.fromRaw(l))
         ),
       } as Inbox;
       player.inventory = {
         entries: await Promise.all(
-          data.v[0].map(async (i) => await aeonix.items.fromRaw(i))
+          data[3][0].map(async (i) => await aeonix.items.fromRaw(i))
         ),
-        capacity: data.v[1],
+        capacity: data[3][1],
       } as Inventory;
       player.location = {
-        id: data.l[0],
-        channelId: data.l[1],
-        adjacents: data.l[2],
+        id: data[4][0],
+        channelId: data[4][1],
+        adjacents: data[4][2],
       } as Location;
       player.persona = {
-        name: data.p[0],
-        avatar: data.p[1],
+        name: data[5][0],
+        avatar: data[5][1],
       } as Persona;
       player.quests = {
         quests: await Promise.all(
-          data.q[0].map(async (q) => await aeonix.quests.fromRaw(q))
+          data[6][0].map(async (q) => await aeonix.quests.fromRaw(q))
         ),
       } as Quests;
       player.settings = {
-        inboxShowArchived: data.s[0],
-        inboxShowNotifications: data.s[1],
+        inboxShowArchived: data[7][0],
+        inboxShowNotifications: data[7][1],
       } as Settings;
       player.stats = {
-        level: data.t[0],
-        xp: data.t[1],
-        maxHealth: data.t[2],
-        health: data.t[3],
-        strength: data.t[4],
-        will: data.t[5],
-        cognition: data.t[6],
-        hasNausea: data.t[7],
-        hasCompletedTutorial: data.t[8],
+        level: data[8][0],
+        xp: data[8][1],
+        maxHealth: data[8][2],
+        health: data[8][3],
+        strength: data[8][4],
+        will: data[8][5],
+        cognition: data[8][6],
+        hasNausea: data[8][7],
+        hasCompletedTutorial: data[8][8],
       } as Stats;
       player.statusEffects = {
         effects: await Promise.all(
-          data.a[0].map(async (e) => await aeonix.statusEffects.fromRaw(e))
+          data[9][0].map(async (e) => await aeonix.statusEffects.fromRaw(e))
         ),
       } as StatusEffects;
 
