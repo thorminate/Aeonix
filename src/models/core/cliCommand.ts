@@ -31,7 +31,7 @@ export default abstract class CLICommand<
   abstract name: string;
   abstract description: string;
   abstract options: Options;
-  abstract acceptsPrimaryArg: boolean;
+  primaryArg?: string;
   abstract execute(args: CLICommandArgs<Options>): Promise<void>;
 }
 /**

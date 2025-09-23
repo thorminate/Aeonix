@@ -81,11 +81,11 @@ export default class CLI {
       }
 
       if (
-        commandToExecute.acceptsPrimaryArg === false &&
+        commandToExecute.primaryArg === undefined &&
         primaryInput.length > 0
       ) {
         log({
-          header: `Command ${command} does not accept a primary argument!`,
+          header: `Command ${command} does not accept a primary argument! Use --flags to pass options.`,
           processName: "AeonixCLI",
           type: "Warn",
         });

@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "license": "MIT",
   "type": "module",
-  "packageManager": "pnpm@10.17.0",
+  "packageManager": "pnpm@10.17.1",
   "engineStrict": true,
   "homepage": "https://github.com/thorminate/Aeonix#readme",
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
@@ -21,7 +21,9 @@
     "dev": "node ./scripts/reset.js && tsc && node --trace-warnings ./dist/index.js",
     "start": "node --trace-warnings ./dist/aeonix.js",
     "build": "node ./scripts/reset.js && tsc",
-    "lint": "eslint . --ext .ts --fix --config ./eslint.config.js && tsc --noEmit"
+    "lint": "eslint . --ext .ts --fix --config ./eslint.config.js && tsc --noEmit",
+    "encrypt": "dotenvx encrypt",
+    "decrypt": "dotenvx decrypt"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.50.1",
@@ -33,6 +35,7 @@
     "mongodb": "^6.20.0",
     "mongoose": "^8.18.1",
     "package-json-type": "^1.0.3",
+    "package-run": "^3.0.1",
     "typescript": "^5.9.2",
     "zlib": "^1.0.5"
   },

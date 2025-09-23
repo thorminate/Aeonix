@@ -53,11 +53,11 @@ export default class Aeonix extends Client {
   private _currentMonth = 1;
   private _currentYear = 1;
 
-  playerRoleId: string = process.env.PLAYER_ROLE || "";
-  guildId: string = process.env.GUILD_ID || "";
-  onboardingChannelId: string = process.env.ONBOARDING_CHANNEL || "";
-  rulesChannelId: string = process.env.RULES_CHANNEL || "";
-  masterRoleId: string = process.env.MASTER_ROLE || "";
+  playerRoleId: string = "";
+  guildId: string = "";
+  onboardingChannelId: string = "";
+  rulesChannelId: string = "";
+  masterRoleId: string = "";
   packageJson: IPackageJson = JSON.parse(
     readFileSync("./package.json").toString()
   );
@@ -145,6 +145,14 @@ export default class Aeonix extends Client {
     }
   }
 
+  reloadEnvironmentVars() {
+    this.playerRoleId = process.env.PLAYER_ROLE || "";
+    this.guildId = process.env.GUILD_ID || "";
+    this.onboardingChannelId = process.env.ONBOARDING_CHANNEL || "";
+    this.rulesChannelId = process.env.RULES_CHANNEL || "";
+    this.masterRoleId = process.env.MASTER_ROLE || "";
+  }
+
   constructor(rl: readline.Interface, config: AeonixConfig) {
     log({
       header: "Starting boot-up sequence",
@@ -209,6 +217,8 @@ export default class Aeonix extends Client {
 
     this.config = config;
     this.rl = rl;
+
+    this.reloadEnvironmentVars();
 
     const mdbToken = process.env.MONGODB_URI;
     const dscToken = process.env.DISCORD_TOKEN;
