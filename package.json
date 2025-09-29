@@ -33,7 +33,7 @@
     "cbor2": "^2.0.1",
     "discord.js": "^14.22.1",
     "mongodb": "^6.20.0",
-    "mongoose": "^8.18.1",
+    "mongoose": "^8.18.2",
     "package-json-type": "^1.0.3",
     "package-run": "^3.0.1",
     "typescript": "^5.9.2",
