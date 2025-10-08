@@ -1,3 +1,4 @@
+import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export interface RawPersona {
@@ -13,8 +14,8 @@ export default class Persona extends PlayerSubclassBase {
     return {};
   }
 
-  constructor(name: string = "", avatar: string = "") {
-    super();
+  constructor(player: Player, name: string = "", avatar: string = "") {
+    super(player);
 
     this.name = name;
     this.avatar = avatar;

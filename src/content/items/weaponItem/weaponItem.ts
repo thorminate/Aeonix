@@ -9,29 +9,16 @@ export interface IWeaponData {
   wear: number;
 }
 
-export default class WeaponItem extends Item {
+export default class WeaponItem extends Item<IWeaponData> {
   type: string = "weaponItem";
   name: string = "Weapon";
   description: string = "A weapon.";
   weight: number = 10;
   value: number = 0;
-  data: IWeaponData = this.createData();
   interactionType: string = "Swing";
   interactable: boolean = true;
   oneTimeInteraction: boolean = false;
   canDrop: boolean = true;
-
-  createData(
-    damage: number = 10,
-    range: number = 5,
-    wear: number = 0
-  ): IWeaponData {
-    return {
-      damage,
-      range,
-      wear,
-    };
-  }
 
   override onDrop(): ItemEventResult {
     this.data.wear++;

@@ -31,23 +31,18 @@ function renderSegment(nodes: CommandTree[], prefix: string): string[] {
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i]!;
 
-    // Include nodes with children in the segment for alignment
     segment.push(node);
 
     if (node.children && node.children.length > 0) {
-      // flush the segment including the node with children
       flushSegment();
 
-      // render children as a new segment
       const childPrefix = prefix + (i === nodes.length - 1 ? "   " : "│  ");
       lines.push(...renderSegment(node.children, childPrefix));
 
-      // start a new segment after children
       segment = [];
     }
   }
 
-  // flush any remaining nodes in the last segment
   flushSegment();
 
   return lines;

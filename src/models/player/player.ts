@@ -329,18 +329,18 @@ export default class Player {
   private constructor(data?: PlayerCreationOptions) {
     if (data) {
       this._id = data.user?.id ?? "";
-      this.persona = new Persona(data.name || "", data.avatar || "");
+      this.persona = new Persona(this, data.name || "", data.avatar || "");
     } else {
       this._id = "";
-      this.persona = new Persona("", "");
+      this.persona = new Persona(this, "", "");
     }
-    this.inbox = new Inbox();
-    this.inventory = new Inventory();
-    this.location = new Location();
-    this.quests = new Quests();
-    this.settings = new Settings();
-    this.stats = new Stats();
-    this.statusEffects = new StatusEffects();
+    this.inbox = new Inbox(this);
+    this.inventory = new Inventory(this);
+    this.location = new Location(this);
+    this.quests = new Quests(this);
+    this.settings = new Settings(this);
+    this.stats = new Stats(this);
+    this.statusEffects = new StatusEffects(this);
 
     this.lastAccessed = Date.now();
     this.dataVersion = 1;

@@ -8,24 +8,16 @@ export interface IBackpackData {
   entries: Item[];
 }
 
-export default class BackpackItem extends Item {
+export default class BackpackItem extends Item<IBackpackData> {
   type: string = "backpackItem";
   name: string = "Backpack";
   description: string = "A backpack.";
   weight: number = 10;
   value: number = 0;
-  data: IBackpackData = this.createData();
   interactionType: string = "Open";
   interactable: boolean = true;
   oneTimeInteraction: boolean = true;
   canDrop: boolean = true;
-
-  createData(capacity: number = 20, entries: Item[] = []): IBackpackData {
-    return {
-      capacity,
-      entries,
-    };
-  }
 
   override onDrop(): ItemEventResult {
     return new ItemEventResult("Your backpack took damage!", true);

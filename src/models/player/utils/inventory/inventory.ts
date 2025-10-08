@@ -1,5 +1,6 @@
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
 import Item, { RawItem } from "../../../item/item.js";
+import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export interface RawInventory {
@@ -12,7 +13,10 @@ export default class Inventory extends PlayerSubclassBase {
   entries: Item[] = [];
 
   add(...entries: Item[]): void {
-    this.entries.push(...entries);
+    for (const entry of entries) {
+      this.entries.push(entry);
+      this.parent.quests.callEvent({ type: "inventoryAdd", args: [entry] });
+    }
   }
 
   remove(entry: Item | string): void {
@@ -51,8 +55,8 @@ export default class Inventory extends PlayerSubclassBase {
     };
   }
 
-  constructor(capacity: number = 20) {
-    super();
+  constructor(player: Player, capacity: number = 20) {
+    super(player);
 
     this.capacity = capacity;
   }

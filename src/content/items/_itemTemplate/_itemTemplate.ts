@@ -6,29 +6,23 @@ interface ITemplateData {
   num: number;
 }
 
-export default class ItemTemplate extends Item {
+export default class ItemTemplate extends Item<ITemplateData> {
   name: string = "template";
   type: string = "#itemTemplate"; // should always be the exact same as the filename
   description: string = "A placeholder item.";
   weight: number = 10;
   value: number = 0;
-  data: ITemplateData = this.createData();
   interactionType: string = "yes";
   interactable: boolean = true;
   oneTimeInteraction: boolean = false;
   canDrop: boolean = false;
 
-  createData(num: number = 1): ITemplateData {
-    return {
-      num,
-    };
-  }
-
   override onDrop() {
     return new ItemEventResult("Something happened!", true);
   }
 
-  override async interact() {
+  override async onInteract() {
+    this.data.num++;
     return new ItemUsageResult("Wow!", true);
   }
 }

@@ -174,7 +174,7 @@ export default new Interaction({
                 return;
               }
 
-              entry.interact?.(p);
+              entry.onInteract?.(p);
 
               entry.isInteracted = true;
 

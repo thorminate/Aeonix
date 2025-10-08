@@ -15,28 +15,28 @@ export interface RawItem {
   7: boolean; // isInteracted
 }
 
-export default abstract class Item {
+export default abstract class Item<Data extends object = object> {
   id: string = randomUUID();
   abstract name: string;
   abstract type: string;
   abstract description: string;
   abstract weight: number;
   abstract value: number;
-  abstract data: object;
   abstract interactionType: string;
   abstract interactable: boolean;
   abstract oneTimeInteraction: boolean;
   abstract canDrop: boolean;
+
   createdAt: number = Date.now();
   isInteracted: boolean = false;
   quantity: number = 1;
+  data: Data;
 
-  abstract createData(): object;
-  interact?(player: Player): Promise<ItemUsageResult>;
+  onInteract?(player: Player): Promise<ItemUsageResult>;
+  onDrop?(context: ItemEventContext): ItemEventResult;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onDrop(context: ItemEventContext): ItemEventResult {
-    return new ItemEventResult("", true);
+  constructor(data?: Data) {
+    this.data = data || ({} as Data);
   }
 
   toRaw(): RawItem {

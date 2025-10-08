@@ -7,25 +7,17 @@ interface ISwordData {
   wear: number;
 }
 
-export default class SwordItem extends Item {
+export default class SwordItem extends Item<ISwordData> {
   name: string = "Sword";
   type: string = "swordItem";
   description: string = "A sword.";
   weight: number = 15;
   value: number = 0;
-  data: ISwordData = this.createData();
   interactionType: string = "Swing";
   interactable: boolean = true;
   oneTimeInteraction: boolean = false;
   canDrop: boolean = true;
 
-  createData(): ISwordData {
-    return {
-      range: 5,
-      damage: 10,
-      wear: 0,
-    };
-  }
   async use(): Promise<ItemUsageResult> {
     if (this.data.wear >= 10) {
       this.interactable = false;

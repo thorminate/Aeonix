@@ -1,3 +1,4 @@
+import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export interface RawLocation {
@@ -16,11 +17,12 @@ export default class Location extends PlayerSubclassBase {
   }
 
   constructor(
+    player: Player,
     id: string = "",
     channelId: string = "",
     adjacents: string[] = []
   ) {
-    super();
+    super(player);
 
     this.id = id;
     this.channelId = channelId;
