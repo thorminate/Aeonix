@@ -2,11 +2,16 @@ import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export interface RawPersona {
-  0: string; // name
-  1: string; // avatar
+  name: string; // name
+  avatar: string; // avatar
 }
 
-export default class Persona extends PlayerSubclassBase {
+export default class Persona extends PlayerSubclassBase<RawPersona> {
+  version: number = 1;
+  fields = {
+    name: { id: 0, type: String }, // name
+    avatar: { id: 1, type: String }, // avatar
+  };
   name: string;
   avatar: string;
 

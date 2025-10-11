@@ -1,14 +1,19 @@
 import aeonix from "../../../../index.js";
 import ParentAwareSubArray from "../../../../utils/parentAwareSubArray.js";
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
+import { arrayOf, FieldSchema } from "../../../core/versionedSerializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import Letter, { RawLetter } from "./letter.js";
 
 export interface RawInbox {
-  0: RawLetter[];
+  letters: RawLetter[];
 }
 
-export default class Inbox extends PlayerSubclassBase {
+export default class Inbox extends PlayerSubclassBase<RawInbox> {
+  version = 1;
+  fields = {
+    letters: { id: 0, type: arrayOf(Object) },
+  } satisfies FieldSchema<RawInbox>;
   letters: Letter[] = [];
 
   add(letter: Letter): void {

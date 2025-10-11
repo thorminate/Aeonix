@@ -9,7 +9,10 @@ import { Model } from "mongoose";
 import PlayerStorage from "../models/player/utils/playerStorage.js";
 import playerModel from "../models/player/utils/playerModel.js";
 import BackpackItem from "../content/items/backpackItem/backpackItem.js";
-import RawPlayer from "../models/player/utils/rawPlayer.js";
+import { decode } from "cbor2";
+import semibinaryToBuffer from "../models/player/utils/semibinaryToBuffer.js";
+import { SerializedData } from "../models/core/versionedSerializable.js";
+import { inflateSync } from "zlib";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -58,7 +61,7 @@ export default class PlayerManager extends LifecycleCachedManager<
   }
 
   async onSave(inst: Player): Promise<PlayerStorage> {
-    const rawPlayer = new RawPlayer(inst);
+    const rawPlayer = inst.serialize();
 
     // Compress class and convert to pojo
     const compressed = new PlayerStorage(rawPlayer);
@@ -67,11 +70,20 @@ export default class PlayerManager extends LifecycleCachedManager<
   }
 
   async onLoad(data: PlayerStorage): Promise<Player> {
-    // Uncompress pojo
-    const raw = new RawPlayer(data);
+    const uncompressed = (() => {
+      const uncompressed = decode(inflateSync(semibinaryToBuffer(data.d)));
+      const obj: SerializedData = {
+        d: uncompressed,
+        v: data.v,
+      } as SerializedData;
 
-    // Create instance
-    const inst = await Player.create(raw);
+      if (data._id) obj._id = data._id;
+
+      return obj;
+    })();
+
+    // Uncompress pojo
+    const inst = Player.deserialize(uncompressed);
 
     // Fetch all the data for quick use
     inst.user = await inst.fetchUser();

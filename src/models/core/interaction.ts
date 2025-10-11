@@ -177,7 +177,7 @@ export interface SeeInteractionErrorPropertyForMoreDetails_2 {
   error: never;
 }
 
-export interface SeeInteractionErrorPropertyForMoreDetails_3<> {
+export interface SeeInteractionErrorPropertyForMoreDetails_3 {
   /**
    * ❌ ERROR: `passPlayer` must be `true` if `passEnvironment` is `true` or `environmentOnly` is `true`.
    * Fix your arguments to the interaction constructor.

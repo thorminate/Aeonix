@@ -1,14 +1,21 @@
 import ConcreteConstructor from "../../../core/concreteConstructor.js";
+import { arrayOf, FieldSchema } from "../../../core/versionedSerializable.js";
 import Item, { RawItem } from "../../../item/item.js";
 import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export interface RawInventory {
-  0: RawItem[]; // entries
-  1: number; // capacity
+  entries: RawItem[]; // entries
+  capacity: number; // capacity
 }
 
-export default class Inventory extends PlayerSubclassBase {
+export default class Inventory extends PlayerSubclassBase<RawInventory> {
+  version = 1;
+  fields = {
+    entries: { id: 0, type: arrayOf(Object) },
+    capacity: { id: 1, type: Number },
+  } satisfies FieldSchema<RawInventory>;
+
   capacity: number = 10;
   entries: Item[] = [];
 

@@ -1,19 +1,33 @@
+import { FieldSchema } from "../../../core/versionedSerializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import calculateXpRequirement from "./calculateXpRequirement.js";
 
 export interface RawStats {
-  0: number; // level
-  1: number; // xp
-  2: number; // maxHealth
-  3: number; // health
-  4: number; // strength
-  5: number; // will
-  6: number; // cognition
-  7: boolean; // hasNausea
-  8: boolean; // hasCompletedTutorial
+  level: number; // level
+  xp: number; // xp
+  maxHealth: number; // maxHealth
+  health: number; // health
+  strength: number; // strength
+  will: number; // will
+  cognition: number; // cognition
+  hasNausea: boolean; // hasNausea
+  hasCompletedTutorial: boolean; // hasCompletedTutorial
 }
 
-export default class Stats extends PlayerSubclassBase {
+export default class Stats extends PlayerSubclassBase<RawStats> {
+  version = 1;
+  fields = {
+    level: { id: 0, type: Number }, // level
+    xp: { id: 1, type: Number }, // xp
+    maxHealth: { id: 2, type: Number }, // maxHealth
+    health: { id: 3, type: Number }, // health
+    strength: { id: 4, type: Number }, // strength
+    will: { id: 5, type: Number }, // will
+    cognition: { id: 6, type: Number }, // cognition
+    hasNausea: { id: 7, type: Boolean }, // hasNausea
+    hasCompletedTutorial: { id: 8, type: Boolean }, // hasCompletedTutorial
+  } satisfies FieldSchema<RawStats>;
+
   level: number = 1;
   xp: number = 0;
   maxHealth: number = 100;

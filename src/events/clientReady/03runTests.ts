@@ -27,6 +27,13 @@ export default new Event<"ready">({
       avatar: aeonix.user.displayAvatarURL(),
     });
 
+    log({
+      header: "Serializing player",
+      processName: "TestRunner",
+      type: "Info",
+      payload: player.serialize(),
+    });
+
     const item = new BackpackItem();
 
     let test = true;

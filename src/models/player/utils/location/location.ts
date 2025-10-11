@@ -1,13 +1,21 @@
+import { arrayOf, FieldSchema } from "../../../core/versionedSerializable.js";
 import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export interface RawLocation {
-  0: string; // id
-  1: string; // channelId
-  2: string[]; // adjacents
+  id: string; // id
+  channelId: string; // channelId
+  adjacents: string[]; // adjacents
 }
 
-export default class Location extends PlayerSubclassBase {
+export default class Location extends PlayerSubclassBase<RawLocation> {
+  version = 1;
+  fields = {
+    id: { id: 0, type: String }, // id
+    channelId: { id: 1, type: String }, // channelId
+    adjacents: { id: 2, type: arrayOf(String) }, // adjacents
+  } satisfies FieldSchema<RawLocation>;
+
   id: string;
   channelId: string;
   adjacents: string[];

@@ -1,3 +1,5 @@
-type ConcreteConstructor<T> = new (...args: unknown[]) => T;
+type ConcreteConstructor<T, Args extends unknown[] = unknown[]> = new (
+  ...args: Args
+) => T;
 
 export default ConcreteConstructor;

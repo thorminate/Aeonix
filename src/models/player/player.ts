@@ -15,19 +15,21 @@ import {
   TextDisplayBuilder,
   User,
 } from "discord.js";
-import Stats from "./utils/stats/stats.js";
-import Inventory from "./utils/inventory/inventory.js";
+import Stats, { RawStats } from "./utils/stats/stats.js";
+import Inventory, { RawInventory } from "./utils/inventory/inventory.js";
 import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
 import aeonix from "../../index.js";
 import log from "../../utils/log.js";
 import PlayerMoveToResult from "./utils/playerMoveToResult.js";
-import Inbox from "./utils/inbox/inbox.js";
-import Location from "./utils/location/location.js";
-import Persona from "./utils/persona/persona.js";
-import StatusEffects from "./utils/statusEffects/statusEffects.js";
+import Inbox, { RawInbox } from "./utils/inbox/inbox.js";
+import Location, { RawLocation } from "./utils/location/location.js";
+import Persona, { RawPersona } from "./utils/persona/persona.js";
+import StatusEffects, {
+  RawStatusEffects,
+} from "./utils/statusEffects/statusEffects.js";
 import merge from "../../utils/merge.js";
-import Quests from "./utils/quests/quests.js";
-import Settings from "./utils/settings/settings.js";
+import Quests, { RawQuests } from "./utils/quests/quests.js";
+import Settings, { RawSettings } from "./utils/settings/settings.js";
 import { PlayerSubclassBase } from "./utils/playerSubclassBase.js";
 import PlayerRef from "./utils/playerRef.js";
 import idToType from "../../utils/idToType.js";
@@ -38,10 +40,44 @@ import formatNotification from "./utils/inbox/formatNotification.js";
 import Notification from "../../content/letters/notification/notification.js";
 import { PlayerCreationOptions } from "../../managers/playerManager.js";
 import playerModel from "./utils/playerModel.js";
-import isRawPlayer from "./utils/isRawPlayer.js";
-import RawPlayer from "./utils/rawPlayer.js";
+import isSerializedData from "./utils/isSerializedData.js";
+import VersionedSerializable, {
+  FieldSchema,
+  SerializedData,
+} from "../core/versionedSerializable.js";
 
-export default class Player {
+export interface RawPlayer {
+  _id: string;
+  lastAccessed: number;
+  dataVersion: number;
+  inbox: RawInbox;
+  inventory: RawInventory;
+  location: RawLocation;
+  persona: RawPersona;
+  quests: RawQuests;
+  settings: RawSettings;
+  stats: RawStats;
+  statusEffects: RawStatusEffects;
+}
+
+export default class Player extends VersionedSerializable<RawPlayer> {
+  version = 1;
+  fields = {
+    _id: { id: 1, type: String },
+    lastAccessed: { id: 2, type: Number },
+    dataVersion: { id: 3, type: Number },
+    inbox: { id: 4, type: Object },
+    inventory: { id: 5, type: Object },
+    location: { id: 6, type: Object },
+    persona: { id: 7, type: Object },
+    quests: { id: 8, type: Object },
+    settings: { id: 9, type: Object },
+    stats: { id: 10, type: Object },
+    statusEffects: { id: 11, type: Object },
+  } satisfies FieldSchema<RawPlayer>;
+
+  override excluded: string[] = ["parent"];
+
   _id!: string;
   lastAccessed!: number;
   dataVersion!: number;
@@ -300,7 +336,7 @@ export default class Player {
     for (const key of Object.keys(this)) {
       const value = (this as unknown as Record<string, unknown>)[
         key
-      ] as PlayerSubclassBase;
+      ] as PlayerSubclassBase<object>;
       // Check if it has getClassMap method
       if (
         value &&
@@ -317,7 +353,7 @@ export default class Player {
       }
     }
 
-    return { ...map, ...result } as Record<
+    return { ...map, ...result } as unknown as Record<
       string,
       new (...args: unknown[]) => unknown
     >;
@@ -326,7 +362,8 @@ export default class Player {
     return new PlayerRef(this._id, this);
   }
 
-  private constructor(data?: PlayerCreationOptions) {
+  constructor(data?: PlayerCreationOptions) {
+    super();
     if (data) {
       this._id = data.user?.id ?? "";
       this.persona = new Persona(this, data.name || "", data.avatar || "");
@@ -347,63 +384,16 @@ export default class Player {
   }
 
   static async create(
-    data?: RawPlayer | PlayerCreationOptions
+    this: {
+      new (data?: PlayerCreationOptions): Player;
+      deserialize(data: SerializedData): Player;
+    },
+    data?: SerializedData | PlayerCreationOptions
   ): Promise<Player> {
-    if (data && isRawPlayer(data)) {
-      const player = new Player();
-
-      player._id = data._id;
-      player.lastAccessed = data[0];
-      player.dataVersion = data[1];
-      player.inbox = {
-        letters: await Promise.all(
-          data[2][0].map(async (l) => await aeonix.letters.fromRaw(l))
-        ),
-      } as Inbox;
-      player.inventory = {
-        entries: await Promise.all(
-          data[3][0].map(async (i) => await aeonix.items.fromRaw(i))
-        ),
-        capacity: data[3][1],
-      } as Inventory;
-      player.location = {
-        id: data[4][0],
-        channelId: data[4][1],
-        adjacents: data[4][2],
-      } as Location;
-      player.persona = {
-        name: data[5][0],
-        avatar: data[5][1],
-      } as Persona;
-      player.quests = {
-        quests: await Promise.all(
-          data[6][0].map(async (q) => await aeonix.quests.fromRaw(q))
-        ),
-      } as Quests;
-      player.settings = {
-        inboxShowArchived: data[7][0],
-        inboxShowNotifications: data[7][1],
-      } as Settings;
-      player.stats = {
-        level: data[8][0],
-        xp: data[8][1],
-        maxHealth: data[8][2],
-        health: data[8][3],
-        strength: data[8][4],
-        will: data[8][5],
-        cognition: data[8][6],
-        hasNausea: data[8][7],
-        hasCompletedTutorial: data[8][8],
-      } as Stats;
-      player.statusEffects = {
-        effects: await Promise.all(
-          data[9][0].map(async (e) => await aeonix.statusEffects.fromRaw(e))
-        ),
-      } as StatusEffects;
-
-      const freshPlayer = new Player();
-
-      return merge(freshPlayer, player, freshPlayer.getClassMap());
+    if (data && isSerializedData(data)) {
+      const deserialized = this.deserialize(data);
+      const freshPlayer = new this();
+      return merge(deserialized, freshPlayer, freshPlayer.getClassMap());
     } else {
       return new Player(data as PlayerCreationOptions);
     }
