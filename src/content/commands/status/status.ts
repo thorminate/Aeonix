@@ -1,14 +1,16 @@
 // shows your status
 import { HTTPError, MessageFlags, SlashCommandBuilder } from "discord.js";
 import log from "../../../utils/log.js";
-import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../../models/core/interaction.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
     .setName("stats")
     .setDescription("Shows your personal menu"),
 
-  interactionType: ITypes.Command,
+  interactionType: InteractionTypes.Command,
   passPlayer: true,
   acknowledge: true,
   ephemeral: true,

@@ -1,6 +1,6 @@
 import BackpackItem from "../../content/items/backpackItem/backpackItem.js";
+import TutorialQuestLetter from "../../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
 import Event from "../../models/core/event.js";
-import Player from "../../models/player/player.js";
 import log from "../../utils/log.js";
 
 export default new Event<"ready">({
@@ -21,18 +21,33 @@ export default new Event<"ready">({
       return;
     }
 
-    const player = await Player.create({
+    let player = await aeonix.players.create({
       user: aeonix.user,
       name: aeonix.user.username,
       avatar: aeonix.user.displayAvatarURL(),
     });
 
-    log({
-      header: "Serializing player",
-      processName: "TestRunner",
-      type: "Info",
-      payload: player.serialize(),
-    });
+    if (player === "playerAlreadyExists") {
+      player = (await aeonix.players.load(aeonix.user.id))!;
+    } else if (player === "notAnImageUrl") {
+      log({
+        header: "Test Error, avatar is not an image url",
+        processName: "TestRunner",
+        payload: player,
+        type: "Error",
+      });
+      return;
+    } else if (player === "internalError") {
+      log({
+        header: "Test Error, internal error",
+        processName: "TestRunner",
+        payload: player,
+        type: "Error",
+      });
+      return;
+    }
+
+    player.inbox.add(new TutorialQuestLetter());
 
     const item = new BackpackItem();
 

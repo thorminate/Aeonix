@@ -12,14 +12,16 @@ import log from "../../../utils/log.js";
 import deletePlayer from "../../buttons/deletePlayer/deletePlayer.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
 import onboarding0 from "../../buttons/onboarding0/onboarding0.js";
-import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../../models/core/interaction.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
     .setName("init")
     .setDescription("Initializes your persona"),
 
-  interactionType: ITypes.Command,
+  interactionType: InteractionTypes.Command,
   ephemeral: true,
 
   callback: async ({ context, aeonix }) => {

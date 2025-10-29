@@ -1,11 +1,14 @@
-import VersionedSerializable from "../../core/versionedSerializable.js";
+import Serializable from "../../core/serializable.js";
 import Player from "../player.js";
 
 export abstract class PlayerSubclassBase<
   T extends object
-> extends VersionedSerializable<T> {
+> extends Serializable<T> {
   parent: Player;
-  abstract getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
+  override onDeserialize(data: T, parent?: object): void {
+    this.parent = parent as Player;
+  }
+  override excluded = ["parent"];
 
   constructor(parent: Player) {
     super();

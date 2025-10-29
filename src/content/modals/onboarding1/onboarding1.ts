@@ -5,7 +5,9 @@ import {
   TextInputStyle,
 } from "discord.js";
 import log from "../../../utils/log.js";
-import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../../models/core/interaction.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
 import deletePlayer from "../../buttons/deletePlayer/deletePlayer.js";
 
@@ -33,7 +35,7 @@ export default new Interaction({
           .setRequired(false)
       )
     ),
-  interactionType: ITypes.Modal,
+  interactionType: InteractionTypes.Modal,
   ephemeral: true,
 
   callback: async ({ context, aeonix }) => {

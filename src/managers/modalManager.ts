@@ -1,16 +1,20 @@
 import path from "path";
 import url from "url";
-import Interaction from "../models/core/interaction.js";
+import Interaction, { InteractionTypes } from "../models/core/interaction.js";
 import InteractionManager from "../models/core/interactionManager.js";
 
-type Holds = Interaction<"modal", boolean, boolean, boolean, boolean>;
+type Holds = Interaction<
+  InteractionTypes.Modal,
+  boolean,
+  boolean,
+  boolean,
+  boolean
+>;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export default class ModalManager extends InteractionManager<Holds> {
-  getKey(
-    instance: Interaction<"modal", boolean, boolean, boolean, boolean, false>
-  ): string {
+  getKey(instance: Holds): string {
     const key = instance.data.data.custom_id;
     if (!key) throw new Error("No custom_id found in modal");
     return key;

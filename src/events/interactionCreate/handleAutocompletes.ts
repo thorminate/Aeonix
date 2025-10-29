@@ -6,7 +6,9 @@ import {
 } from "discord.js";
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
-import Interaction from "../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../models/core/interaction.js";
 import PlayerRef from "../../models/player/utils/playerRef.js";
 import Player from "../../models/player/player.js";
 
@@ -40,10 +42,22 @@ export default new Event<"interactionCreate">({
     }
 
     const interaction:
-      | Interaction<"command", boolean, boolean, boolean, boolean>
+      | Interaction<
+          InteractionTypes.Command,
+          boolean,
+          boolean,
+          boolean,
+          boolean
+        >
       | undefined = localInteractions.find(
       (
-        interaction: Interaction<"command", boolean, boolean, boolean, boolean>
+        interaction: Interaction<
+          InteractionTypes.Command,
+          boolean,
+          boolean,
+          boolean,
+          boolean
+        >
       ) => {
         return interaction.data.name === context.commandName;
       }

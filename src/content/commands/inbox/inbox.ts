@@ -3,7 +3,9 @@ import {
   ContainerBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../../models/core/interaction.js";
 import log from "../../../utils/log.js";
 import containerSnippetPaginator, {
   ContainerSnippet,
@@ -22,7 +24,7 @@ export default new Interaction({
     .setName("inbox")
     .setDescription("Shows your inbox"),
 
-  interactionType: ITypes.Command,
+  interactionType: InteractionTypes.Command,
   ephemeral: true,
   passPlayer: true,
   environmentOnly: true,

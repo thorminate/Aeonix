@@ -1,7 +1,14 @@
 import log from "../../utils/log.js";
 import Event from "../../models/core/event.js";
-import { ApplicationCommand } from "discord.js";
-import Interaction from "../../models/core/interaction.js";
+import {
+  ApplicationCommand,
+  ApplicationCommandChoicesOption,
+  ApplicationCommandOption,
+  ApplicationCommandOptionBase,
+} from "discord.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../models/core/interaction.js";
 import Aeonix from "../../aeonix.js";
 
 async function getApplicationCommands(aeonix: Aeonix, guildId: string) {
@@ -27,33 +34,43 @@ function areChoicesDifferent(existingChoices: any[], localChoices: any[]) {
   }
   return false;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function areOptionsDifferent(existingOptions: any[], localOptions: any[]) {
-  // Define the areOptionsDifferent function.
+function areOptionsDifferent(
+  existingOptions: (ApplicationCommandOption & {
+    nameLocalized?: string;
+    descriptionLocalized?: string;
+  })[],
+  localOptions: ApplicationCommandOption[]
+) {
   for (const localOption of localOptions) {
-    // Loop through the localOptions array.
     const existingOption = existingOptions?.find(
-      // Find the option in the existingOptions array.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (option: any) => option.name === localOption.name // If the option name matches the localOption name, return true.
+      (option: any) => option.name === localOption.name
     );
 
     if (!existingOption) {
-      // If the existingOption is not found, return true.
       return true;
     }
 
     if (
-      localOption.description !== existingOption.description || // If the localOption description is different from the existingOption description, return true.
-      localOption.type !== existingOption.type || // If the localOption type is different from the existingOption type, return true.
-      (localOption.required || false) !== existingOption.required || // If the localOption required is different from the existingOption required, return true.
-      (localOption.choices?.length || 0) !==
-        (existingOption.choices?.length || 0) || // If the localOption choices length is different from the existingOption choices length, return true.
+      localOption.description !== existingOption.description ||
+      localOption.type !== existingOption.type ||
+      ((localOption as ApplicationCommandOptionBase).required || false) !==
+        (existingOption as ApplicationCommandOptionBase).required ||
+      ((localOption as ApplicationCommandChoicesOption).choices?.length ||
+        0) !==
+        ((existingOption as ApplicationCommandChoicesOption).choices?.length ||
+          0) ||
       areChoicesDifferent(
-        // If the areChoicesDifferent function returns true, return true.
-        localOption.choices || [],
-        existingOption.choices || []
+        (
+          localOption as ApplicationCommandChoicesOption & {
+            choices?: unknown[];
+          }
+        ).choices || [],
+        (
+          existingOption as ApplicationCommandChoicesOption & {
+            choices?: unknown[];
+          }
+        ).choices || []
       )
     ) {
       return true;
@@ -64,7 +81,13 @@ function areOptionsDifferent(existingOptions: any[], localOptions: any[]) {
 
 function areCommandsDifferent(
   existingCommand: ApplicationCommand,
-  localCommand: Interaction<"command", boolean, boolean, boolean, boolean>
+  localCommand: Interaction<
+    InteractionTypes.Command,
+    boolean,
+    boolean,
+    boolean,
+    boolean
+  >
 ) {
   if (
     existingCommand.description !== localCommand.data.description ||
@@ -72,7 +95,7 @@ function areCommandsDifferent(
       (localCommand.data.options?.length || 0) ||
     areOptionsDifferent(
       existingCommand.options,
-      localCommand.data.options || []
+      localCommand.data.options.map((option) => option.toJSON()) || []
     )
   ) {
     return true;

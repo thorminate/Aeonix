@@ -1,3 +1,4 @@
+import { Fields } from "../../../core/serializable.js";
 import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
@@ -6,18 +7,21 @@ export interface RawPersona {
   avatar: string; // avatar
 }
 
+const v1: Fields<RawPersona> = {
+  version: 1,
+  shape: {
+    name: { id: 0, type: String },
+    avatar: { id: 1, type: String },
+  },
+};
+
 export default class Persona extends PlayerSubclassBase<RawPersona> {
   version: number = 1;
-  fields = {
-    name: { id: 0, type: String }, // name
-    avatar: { id: 1, type: String }, // avatar
-  };
+  fields = [v1];
+  migrators = [];
+
   name: string;
   avatar: string;
-
-  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
-    return {};
-  }
 
   constructor(player: Player, name: string = "", avatar: string = "") {
     super(player);

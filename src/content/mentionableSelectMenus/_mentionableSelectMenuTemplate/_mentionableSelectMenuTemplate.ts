@@ -1,5 +1,7 @@
 import { MentionableSelectMenuBuilder } from "discord.js";
-import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../../models/core/interaction.js";
 import log from "../../../utils/log.js";
 
 export default new Interaction({
@@ -7,7 +9,7 @@ export default new Interaction({
     .setCustomId("template")
     .setPlaceholder("Template"),
 
-  interactionType: ITypes.MentionableSelectMenu,
+  interactionType: InteractionTypes.MentionableSelectMenu,
   ephemeral: true,
 
   callback: async ({ context }) => {

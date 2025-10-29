@@ -1,7 +1,7 @@
 import aeonix from "../../../../index.js";
 import ParentAwareSubArray from "../../../../utils/parentAwareSubArray.js";
-import ConcreteConstructor from "../../../core/concreteConstructor.js";
-import { arrayOf, FieldSchema } from "../../../core/versionedSerializable.js";
+import { ClassConstructor } from "../../../../utils/typeDescriptor.js";
+import { dynamicArrayOf, Fields } from "../../../core/serializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import Letter, { RawLetter } from "./letter.js";
 
@@ -9,11 +9,33 @@ export interface RawInbox {
   letters: RawLetter[];
 }
 
+const v1: Fields<RawInbox> = {
+  version: 1,
+  shape: {
+    letters: {
+      id: 1,
+      type: dynamicArrayOf(async (o: unknown) => {
+        if (
+          !o ||
+          !(typeof o === "object") ||
+          !("d" in o) ||
+          !(typeof o.d === "object") ||
+          !("2" in o.d!) ||
+          !(typeof o.d[2] === "string")
+        )
+          return Letter as unknown as ClassConstructor;
+        const cls = await aeonix.letters.loadRaw(o.d[2]);
+        return cls ? cls : (Letter as unknown as ClassConstructor);
+      }),
+    },
+  },
+};
+
 export default class Inbox extends PlayerSubclassBase<RawInbox> {
   version = 1;
-  fields = {
-    letters: { id: 0, type: arrayOf(Object) },
-  } satisfies FieldSchema<RawInbox>;
+  fields = [v1];
+  migrators = [];
+
   letters: Letter[] = [];
 
   add(letter: Letter): void {
@@ -30,12 +52,6 @@ export default class Inbox extends PlayerSubclassBase<RawInbox> {
         notifications.length - aeonix.config.maxNotifications
       );
     }
-  }
-
-  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
-    return {
-      letters: Letter as ConcreteConstructor<Letter>,
-    };
   }
 }
 

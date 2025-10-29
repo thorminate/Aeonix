@@ -11,7 +11,7 @@ import playerModel from "../models/player/utils/playerModel.js";
 import BackpackItem from "../content/items/backpackItem/backpackItem.js";
 import { decode } from "cbor2";
 import semibinaryToBuffer from "../models/player/utils/semibinaryToBuffer.js";
-import { SerializedData } from "../models/core/versionedSerializable.js";
+import { SerializedData } from "../models/core/serializable.js";
 import { inflateSync } from "zlib";
 
 export type PlayerCreationResult =
@@ -60,8 +60,17 @@ export default class PlayerManager extends LifecycleCachedManager<
     instance.lastAccessed = Date.now();
   }
 
-  async onSave(inst: Player): Promise<PlayerStorage> {
-    const rawPlayer = inst.serialize();
+  async onSave(inst: Player): Promise<PlayerStorage | undefined> {
+    const rawPlayer = await inst.serialize();
+
+    if (!rawPlayer) {
+      log({
+        header: `Player ${inst._id} could not be serialized, skipping save`,
+        type: "Error",
+        processName: "PlayerManager.onSave",
+      });
+      return;
+    }
 
     // Compress class and convert to pojo
     const compressed = new PlayerStorage(rawPlayer);
@@ -83,13 +92,13 @@ export default class PlayerManager extends LifecycleCachedManager<
     })();
 
     // Uncompress pojo
-    const inst = Player.deserialize(uncompressed);
+    const inst = await Player.deserialize(uncompressed);
 
     // Fetch all the data for quick use
     inst.user = await inst.fetchUser();
     inst.environment = await inst.fetchEnvironment();
     inst.environmentChannel = await inst.fetchEnvironmentChannel();
-    inst.dmChannel = await inst.user?.createDM();
+    inst.dmChannel = await inst.user?.createDM().catch(() => undefined);
 
     return inst;
   }
@@ -170,6 +179,13 @@ export default class PlayerManager extends LifecycleCachedManager<
 
     await startChannel.send({
       content: `<@${user.id}> has joined the game! Please check your inbox for further instructions (\`/inbox\`).`,
+    });
+
+    log({
+      header: "Player created",
+      processName: "PlayerManager.create",
+      type: "Info",
+      payload: player,
     });
 
     return player;

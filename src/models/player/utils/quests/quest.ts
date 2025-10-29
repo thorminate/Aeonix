@@ -1,15 +1,32 @@
 import { randomUUID } from "crypto";
 import Player from "../../player.js";
 import { AnyQuestEvent } from "./questEvents.js";
+import Serializable, { Fields } from "../../../core/serializable.js";
 
 export interface RawQuest {
-  0: string; // id
-  1: string; // type
-  2: boolean; // completed
-  3: object | undefined; // data
+  id: string; // id
+  type: string; // type
+  completed: boolean; // completed
+  data?: object | undefined; // data
 }
 
-export default abstract class Quest<Data extends object = object> {
+const v1: Fields<RawQuest> = {
+  version: 1,
+  shape: {
+    id: { id: 0, type: String },
+    type: { id: 1, type: String },
+    completed: { id: 2, type: Boolean },
+    data: { id: 3, type: Object },
+  },
+};
+
+export default abstract class Quest<
+  Data extends object = object
+> extends Serializable<RawQuest> {
+  version: number = 1;
+  fields = [v1];
+  migrators = [];
+
   id: string = randomUUID();
   abstract type: string;
   abstract name: string;
@@ -18,6 +35,7 @@ export default abstract class Quest<Data extends object = object> {
   data?: Data;
 
   constructor(data?: Data) {
+    super();
     this.data = data;
   }
 
@@ -30,13 +48,4 @@ export default abstract class Quest<Data extends object = object> {
   abstract onEvent(event: AnyQuestEvent, player: Player): void;
 
   abstract onFulfill(player: Player): void;
-
-  toRaw(): RawQuest {
-    return {
-      0: this.id,
-      1: this.type,
-      2: this.completed,
-      3: this.data,
-    };
-  }
 }

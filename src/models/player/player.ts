@@ -1,3 +1,4 @@
+import Stats, { RawStats } from "./utils/stats/stats.js";
 import {
   APIContainerComponent,
   ButtonBuilder,
@@ -15,7 +16,6 @@ import {
   TextDisplayBuilder,
   User,
 } from "discord.js";
-import Stats, { RawStats } from "./utils/stats/stats.js";
 import Inventory, { RawInventory } from "./utils/inventory/inventory.js";
 import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
 import aeonix from "../../index.js";
@@ -30,7 +30,6 @@ import StatusEffects, {
 import merge from "../../utils/merge.js";
 import Quests, { RawQuests } from "./utils/quests/quests.js";
 import Settings, { RawSettings } from "./utils/settings/settings.js";
-import { PlayerSubclassBase } from "./utils/playerSubclassBase.js";
 import PlayerRef from "./utils/playerRef.js";
 import idToType from "../../utils/idToType.js";
 import environmentModel from "../environment/utils/environmentModel.js";
@@ -41,15 +40,15 @@ import Notification from "../../content/letters/notification/notification.js";
 import { PlayerCreationOptions } from "../../managers/playerManager.js";
 import playerModel from "./utils/playerModel.js";
 import isSerializedData from "./utils/isSerializedData.js";
-import VersionedSerializable, {
-  FieldSchema,
+import Serializable, {
+  MigrationEntry,
   SerializedData,
-} from "../core/versionedSerializable.js";
+} from "../core/serializable.js";
+import ConcreteConstructor from "../core/concreteConstructor.js";
 
 export interface RawPlayer {
   _id: string;
   lastAccessed: number;
-  dataVersion: number;
   inbox: RawInbox;
   inventory: RawInventory;
   location: RawLocation;
@@ -58,30 +57,50 @@ export interface RawPlayer {
   settings: RawSettings;
   stats: RawStats;
   statusEffects: RawStatusEffects;
+  wows: number;
 }
 
-export default class Player extends VersionedSerializable<RawPlayer> {
-  version = 1;
-  fields = {
+const v1 = {
+  version: 1,
+  shape: {
     _id: { id: 1, type: String },
     lastAccessed: { id: 2, type: Number },
-    dataVersion: { id: 3, type: Number },
-    inbox: { id: 4, type: Object },
-    inventory: { id: 5, type: Object },
-    location: { id: 6, type: Object },
-    persona: { id: 7, type: Object },
-    quests: { id: 8, type: Object },
-    settings: { id: 9, type: Object },
-    stats: { id: 10, type: Object },
-    statusEffects: { id: 11, type: Object },
-  } satisfies FieldSchema<RawPlayer>;
+    inbox: { id: 3, type: Inbox as ConcreteConstructor<Inbox> },
+    inventory: {
+      id: 4,
+      type: Inventory as ConcreteConstructor<Inventory>,
+    },
+    location: {
+      id: 5,
+      type: Location as ConcreteConstructor<Location>,
+    },
+    persona: {
+      id: 6,
+      type: Persona as ConcreteConstructor<Persona>,
+    },
+    quests: { id: 7, type: Quests as ConcreteConstructor<Quests> },
+    settings: {
+      id: 8,
+      type: Settings as ConcreteConstructor<Settings>,
+    },
+    stats: { id: 9, type: Stats as ConcreteConstructor<Stats> },
+    statusEffects: {
+      id: 10,
+      type: StatusEffects as ConcreteConstructor<StatusEffects>,
+    },
+  },
+} as const;
 
-  override excluded: string[] = ["parent"];
+export default class Player extends Serializable<RawPlayer> {
+  version = 1;
+  fields = [v1];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  migrators: MigrationEntry<any, any>[] = [];
 
   _id!: string;
   lastAccessed!: number;
-  dataVersion!: number;
 
+  wows = 0;
   inbox!: Inbox;
   inventory!: Inventory;
   location!: Location;
@@ -319,45 +338,6 @@ export default class Player extends VersionedSerializable<RawPlayer> {
     aeonix.players.markDeleted(this._id);
   }
 
-  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
-    const result = {
-      persona: Persona,
-      location: Location,
-      quests: Quests,
-      inventory: Inventory,
-      inbox: Inbox,
-      stats: Stats,
-      statusEffects: StatusEffects,
-    };
-
-    const map: Record<string, new (...args: unknown[]) => unknown> = {};
-
-    // Loop through all own properties
-    for (const key of Object.keys(this)) {
-      const value = (this as unknown as Record<string, unknown>)[
-        key
-      ] as PlayerSubclassBase<object>;
-      // Check if it has getClassMap method
-      if (
-        value &&
-        typeof value === "object" &&
-        typeof value.getClassMap === "function"
-      ) {
-        const subMap = value.getClassMap();
-
-        for (const [subKey, classRef] of Object.entries(subMap)) {
-          map[`${key}.${subKey}`] = classRef as new (
-            ...args: unknown[]
-          ) => unknown;
-        }
-      }
-    }
-
-    return { ...map, ...result } as unknown as Record<
-      string,
-      new (...args: unknown[]) => unknown
-    >;
-  }
   toRef() {
     return new PlayerRef(this._id, this);
   }
@@ -380,20 +360,13 @@ export default class Player extends VersionedSerializable<RawPlayer> {
     this.statusEffects = new StatusEffects(this);
 
     this.lastAccessed = Date.now();
-    this.dataVersion = 1;
   }
 
   static async create(
-    this: {
-      new (data?: PlayerCreationOptions): Player;
-      deserialize(data: SerializedData): Player;
-    },
     data?: SerializedData | PlayerCreationOptions
   ): Promise<Player> {
     if (data && isSerializedData(data)) {
-      const deserialized = this.deserialize(data);
-      const freshPlayer = new this();
-      return merge(deserialized, freshPlayer, freshPlayer.getClassMap());
+      return this.deserialize(data);
     } else {
       return new Player(data as PlayerCreationOptions);
     }

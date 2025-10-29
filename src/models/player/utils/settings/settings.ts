@@ -1,4 +1,4 @@
-import { FieldSchema } from "../../../core/versionedSerializable.js";
+import { Fields } from "../../../core/serializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export interface RawSettings {
@@ -6,16 +6,19 @@ export interface RawSettings {
   inboxShowNotifications: boolean; // inboxShowNotifications
 }
 
-export default class Settings extends PlayerSubclassBase<RawSettings> {
-  version = 1;
-  fields = {
+const v1: Fields<RawSettings> = {
+  version: 1,
+  shape: {
     inboxShowArchived: { id: 0, type: Boolean }, // inboxShowArchived
     inboxShowNotifications: { id: 1, type: Boolean }, // inboxShowNotifications
-  } satisfies FieldSchema<RawSettings>;
+  },
+};
+
+export default class Settings extends PlayerSubclassBase<RawSettings> {
+  version = 1;
+  fields = [v1];
+  migrators = [];
+
   inboxShowArchived: boolean = false;
   inboxShowNotifications: boolean = false;
-
-  override getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
-    return {};
-  }
 }

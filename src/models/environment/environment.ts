@@ -115,7 +115,7 @@ export default abstract class Environment {
 
   _getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
     return {
-      items: Item as ConcreteConstructor<Item>,
+      items: Item as unknown as ConcreteConstructor<Item>,
     };
   }
 

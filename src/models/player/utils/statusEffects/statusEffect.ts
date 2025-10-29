@@ -1,25 +1,39 @@
 import { randomUUID } from "node:crypto";
 import Player from "../../player.js";
+import Serializable, { Fields } from "../../../core/serializable.js";
 
 export interface RawStatusEffect {
-  0: string; // id
-  1: string; // type
-  2: number; // exposure
+  id: string;
+  type: string;
+  exposure: number;
+  data?: object;
 }
 
-export default abstract class StatusEffect {
-  private _id: string = "";
+const v1: Fields<StatusEffect> = {
+  version: 1,
+  shape: {
+    id: { id: 0, type: String },
+    type: { id: 1, type: String },
+    exposure: { id: 2, type: Number },
+    data: { id: 3, type: Object },
+  },
+} as const;
+
+export default abstract class StatusEffect<
+  Data = object
+> extends Serializable<RawStatusEffect> {
+  version = 1;
+  fields = [v1];
+  migrators = [];
+
+  id: string = randomUUID();
   abstract type: string;
   abstract name: string;
   abstract description: string;
   abstract duration: number; // Duration in turns
   abstract isPermanent: boolean;
   exposure: number = 0;
-
-  get id() {
-    if (!this._id) this._id = randomUUID();
-    return this._id;
-  }
+  data?: Data;
 
   start(player: Player) {
     this.exposure = 0;
@@ -41,11 +55,8 @@ export default abstract class StatusEffect {
   abstract onEffectTick(player: Player): Player;
   abstract onEffectEnd(player: Player): Player;
 
-  toRaw(): RawStatusEffect {
-    return {
-      0: this.id,
-      1: this.type,
-      2: this.exposure,
-    };
+  constructor(data?: Data) {
+    super();
+    this.data = data;
   }
 }

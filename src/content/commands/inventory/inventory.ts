@@ -6,7 +6,9 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import log from "../../../utils/log.js";
-import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../../models/core/interaction.js";
 import containerSnippetPaginator, {
   containerSnippetPaginatorWithUpdate,
 } from "../../../utils/containerSnippetPaginator.js";
@@ -19,7 +21,7 @@ import Item from "../../../models/item/item.js";
 import { search } from "../../../utils/levenshtein.js";
 
 export default new Interaction({
-  interactionType: ITypes.Command,
+  interactionType: InteractionTypes.Command,
 
   data: new SlashCommandBuilder()
     .setName("inventory")

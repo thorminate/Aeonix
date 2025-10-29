@@ -4,7 +4,9 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../../models/core/interaction.js";
 import log from "../../../utils/log.js";
 
 export default new Interaction({
@@ -21,7 +23,7 @@ export default new Interaction({
       )
     ),
 
-  interactionType: ITypes.Modal,
+  interactionType: InteractionTypes.Modal,
   ephemeral: true,
 
   callback: async ({ context }) => {

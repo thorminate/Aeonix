@@ -1,5 +1,4 @@
-import ConcreteConstructor from "../../../core/concreteConstructor.js";
-import { arrayOf, FieldSchema } from "../../../core/versionedSerializable.js";
+import { arrayOf } from "../../../core/serializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import StatusEffect, { RawStatusEffect } from "./statusEffect.js";
 
@@ -7,16 +6,17 @@ export interface RawStatusEffects {
   effects: RawStatusEffect[];
 }
 
+const v1 = {
+  version: 1,
+  shape: {
+    effects: { id: 0, type: arrayOf(Object) },
+  },
+} as const;
+
 export default class StatusEffects extends PlayerSubclassBase<RawStatusEffects> {
   version: number = 1;
-  fields = {
-    effects: { id: 0, type: arrayOf(Number) },
-  } satisfies FieldSchema<RawStatusEffects>;
-  effects: StatusEffect[] = [];
+  fields = [v1];
+  migrators = [];
 
-  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
-    return {
-      effects: StatusEffect as ConcreteConstructor<StatusEffect>,
-    };
-  }
+  effects: StatusEffect[] = [];
 }

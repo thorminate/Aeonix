@@ -5,7 +5,6 @@ import { Collection } from "discord.js";
 export default abstract class LifecycleCachedManager<
   Holds extends {
     _id: string;
-    getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
   },
   DB extends {
     _id: string;
@@ -26,7 +25,7 @@ export default abstract class LifecycleCachedManager<
   abstract model(): Model<DB>;
   abstract inst(): Promise<Holds>;
   abstract onLoad(instance: DB): Promise<Holds>;
-  abstract onSave(instance: Holds): Promise<DB>;
+  abstract onSave(instance: Holds): Promise<DB | undefined>;
 
   markDeleted(id: string) {
     this._deletedIds.add(id);

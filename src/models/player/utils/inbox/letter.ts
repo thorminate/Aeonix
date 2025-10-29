@@ -1,24 +1,35 @@
 import { randomUUID } from "crypto";
 import Player from "../../player.js";
+import Serializable, { Fields } from "../../../core/serializable.js";
 
 export interface RawLetter {
-  0: string; // id
-  1: string; // type
+  id: string; // id
+  type: string; // type
 
-  2: number; // createdAt
-  3: boolean; // isRead
-  4: boolean; // isArchived
-  5: boolean; // isInteracted
+  createdAt: number; // createdAt
+  isRead: boolean; // isRead
+  isArchived: boolean; // isArchived
+  isInteracted: boolean; // isInteracted
 }
 
-export default abstract class Letter {
-  constructor(
-    public id: string = randomUUID(),
-    public createdAt: number = Date.now(),
-    public isRead: boolean = false,
-    public isArchived: boolean = false,
-    public isInteracted: boolean = false
-  ) {}
+const v1: Fields<RawLetter> = {
+  version: 1,
+  shape: {
+    id: { id: 1, type: String },
+    type: { id: 2, type: String },
+    createdAt: { id: 3, type: Number },
+    isRead: { id: 4, type: Boolean },
+    isArchived: { id: 5, type: Boolean },
+    isInteracted: { id: 6, type: Boolean },
+  },
+};
+
+export default abstract class Letter<
+  Data extends Record<string, unknown> = Record<string, unknown>
+> extends Serializable<RawLetter> {
+  version: number = 1;
+  fields = [v1];
+  migrators = [];
 
   abstract type: string;
   abstract sender: string;
@@ -29,6 +40,13 @@ export default abstract class Letter {
   abstract oneTimeInteraction: boolean;
   abstract canDismiss?: boolean;
   abstract isNotification: boolean;
+
+  id: string = randomUUID();
+  createdAt: number = Date.now();
+  isRead: boolean = false;
+  isArchived: boolean = false;
+  isInteracted: boolean = false;
+  data: Data;
 
   markRead(): void {
     this.isRead = true;
@@ -57,14 +75,8 @@ export default abstract class Letter {
   onRead?(player: Player): void;
   onInteract?(player: Player): void;
 
-  toRaw(): RawLetter {
-    return {
-      0: this.id,
-      1: this.type,
-      2: this.createdAt,
-      3: this.isRead,
-      4: this.isArchived,
-      5: this.isInteracted,
-    };
+  constructor(data?: Data) {
+    super();
+    this.data = data || ({} as Data);
   }
 }

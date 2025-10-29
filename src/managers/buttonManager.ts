@@ -1,9 +1,15 @@
-import Interaction from "../models/core/interaction.js";
+import Interaction, { InteractionTypes } from "../models/core/interaction.js";
 import path from "path";
 import url from "url";
 import InteractionManager from "../models/core/interactionManager.js";
 
-type Holds = Interaction<"button", boolean, boolean, boolean, boolean>;
+type Holds = Interaction<
+  InteractionTypes.Button,
+  boolean,
+  boolean,
+  boolean,
+  boolean
+>;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 

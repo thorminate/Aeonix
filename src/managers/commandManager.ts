@@ -1,16 +1,20 @@
-import Interaction from "../models/core/interaction.js";
+import Interaction, { InteractionTypes } from "../models/core/interaction.js";
 import path from "path";
 import url from "url";
 import InteractionManager from "../models/core/interactionManager.js";
 
-type Holds = Interaction<"command", boolean, boolean, boolean, boolean>;
+type Holds = Interaction<
+  InteractionTypes.Command,
+  boolean,
+  boolean,
+  boolean,
+  boolean
+>;
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export default class CommandManager extends InteractionManager<Holds> {
-  getKey(
-    instance: Interaction<"command", boolean, boolean, boolean, boolean, false>
-  ): string {
+  getKey(instance: Holds): string {
     const key = instance.data.name;
     if (!key) throw new Error("No name found in command");
     return key;

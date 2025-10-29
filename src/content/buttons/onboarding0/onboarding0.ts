@@ -5,7 +5,7 @@ import onboarding1 from "../../modals/onboarding1/onboarding1.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
 import Interaction, {
   ButtonBuilderV2,
-  ITypes,
+  InteractionTypes,
 } from "../../../models/core/interaction.js";
 
 export default new Interaction({
@@ -15,7 +15,7 @@ export default new Interaction({
     .setEmoji("👋")
     .setStyle(ButtonStyle.Primary),
 
-  interactionType: ITypes.Button,
+  interactionType: InteractionTypes.Button,
   ephemeral: true,
   acknowledge: false,
   passPlayer: false,

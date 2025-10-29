@@ -1,4 +1,4 @@
-import { FieldSchema } from "../../../core/versionedSerializable.js";
+import { Fields } from "../../../core/serializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import calculateXpRequirement from "./calculateXpRequirement.js";
 
@@ -14,9 +14,9 @@ export interface RawStats {
   hasCompletedTutorial: boolean; // hasCompletedTutorial
 }
 
-export default class Stats extends PlayerSubclassBase<RawStats> {
-  version = 1;
-  fields = {
+const v1: Fields<RawStats> = {
+  version: 1,
+  shape: {
     level: { id: 0, type: Number }, // level
     xp: { id: 1, type: Number }, // xp
     maxHealth: { id: 2, type: Number }, // maxHealth
@@ -26,7 +26,13 @@ export default class Stats extends PlayerSubclassBase<RawStats> {
     cognition: { id: 6, type: Number }, // cognition
     hasNausea: { id: 7, type: Boolean }, // hasNausea
     hasCompletedTutorial: { id: 8, type: Boolean }, // hasCompletedTutorial
-  } satisfies FieldSchema<RawStats>;
+  },
+};
+
+export default class Stats extends PlayerSubclassBase<RawStats> {
+  version = 1;
+  fields = [v1];
+  migrators = [];
 
   level: number = 1;
   xp: number = 0;
@@ -58,9 +64,5 @@ export default class Stats extends PlayerSubclassBase<RawStats> {
     const randomFromRange = Math.floor(Math.random() * (max - min + 1)) + min;
 
     this.giveXp(randomFromRange);
-  }
-
-  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
-    return {};
   }
 }

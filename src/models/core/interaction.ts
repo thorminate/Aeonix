@@ -67,7 +67,7 @@ export type UserSelectMenuContext = Omit<
   "reply" | "deferReply" | "showModal" | "update" | "deferUpdate"
 >;
 
-export enum ITypes {
+export enum InteractionTypes {
   Button = "button",
   ChannelSelectMenu = "channelSelectMenu",
   Command = "command",
@@ -77,16 +77,6 @@ export enum ITypes {
   StringSelectMenu = "stringSelectMenu",
   UserSelectMenu = "userSelectMenu",
 }
-
-export type InteractionTypes =
-  | "button"
-  | "channelSelectMenu"
-  | "command"
-  | "mentionableSelectMenu"
-  | "modal"
-  | "roleSelectMenu"
-  | "stringSelectMenu"
-  | "userSelectMenu";
 
 export type ButtonStyleV2 =
   | ButtonStyle.Primary

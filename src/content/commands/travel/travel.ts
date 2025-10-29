@@ -7,7 +7,9 @@ import {
 } from "discord.js";
 import log from "../../../utils/log.js";
 import containerSnippetPaginator from "../../../utils/containerSnippetPaginator.js";
-import Interaction, { ITypes } from "../../../models/core/interaction.js";
+import Interaction, {
+  InteractionTypes,
+} from "../../../models/core/interaction.js";
 import PlayerMoveToResult from "../../../models/player/utils/playerMoveToResult.js";
 import generateTravelContents from "./utils/generateTravelContents.js";
 import travelHeader from "./utils/travelHeader.js";
@@ -20,7 +22,7 @@ export default new Interaction({
     .setName("travel")
     .setDescription("Traverses to a new location"),
 
-  interactionType: ITypes.Command,
+  interactionType: InteractionTypes.Command,
   passPlayer: true,
   acknowledge: true,
   ephemeral: true,
