@@ -1,7 +1,10 @@
 import { randomUUID } from "crypto";
 import Player from "../../player.js";
 import { AnyQuestEvent } from "./questEvents.js";
-import Serializable, { Fields } from "../../../core/serializable.js";
+import Serializable, {
+  baseFields,
+  defineField,
+} from "../../../core/serializable.js";
 
 export interface RawQuest {
   id: string; // id
@@ -10,20 +13,18 @@ export interface RawQuest {
   data?: object | undefined; // data
 }
 
-const v1: Fields<RawQuest> = {
-  version: 1,
-  shape: {
-    id: { id: 0, type: String },
-    type: { id: 1, type: String },
-    completed: { id: 2, type: Boolean },
-    data: { id: 3, type: Object },
+const v1 = defineField(baseFields, {
+  add: {
+    id: { id: 1, type: String },
+    type: { id: 2, type: String },
+    completed: { id: 5, type: Boolean },
+    data: { id: 6, type: Object },
   },
-};
+});
 
 export default abstract class Quest<
   Data extends object = object
 > extends Serializable<RawQuest> {
-  version: number = 1;
   fields = [v1];
   migrators = [];
 

@@ -1,4 +1,8 @@
-import { arrayOf, Fields } from "../../../core/serializable.js";
+import {
+  arrayOf,
+  baseFields,
+  defineField,
+} from "../../../core/serializable.js";
 import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
@@ -8,17 +12,15 @@ export interface RawLocation {
   adjacents: string[]; // adjacents
 }
 
-const v1: Fields<RawLocation> = {
-  version: 1,
-  shape: {
-    id: { id: 0, type: String }, // id
-    channelId: { id: 1, type: String }, // channelId
-    adjacents: { id: 2, type: arrayOf(String) }, // adjacents
+const v1 = defineField(baseFields, {
+  add: {
+    id: { id: 1, type: String },
+    channelId: { id: 2, type: String },
+    adjacents: { id: 3, type: arrayOf(String) },
   },
-};
+});
 
 export default class Location extends PlayerSubclassBase<RawLocation> {
-  version = 1;
   fields = [v1];
   migrators = [];
 

@@ -3,7 +3,7 @@ import ItemUsageResult from "./utils/itemUsageResult.js";
 import ItemEventContext from "./utils/itemEventContext.js";
 import ItemEventResult from "./utils/itemEventResult.js";
 import Player from "../player/player.js";
-import Serializable, { Fields } from "../core/serializable.js";
+import Serializable, { baseFields, defineField } from "../core/serializable.js";
 
 export interface RawItem {
   id: string; // id
@@ -16,9 +16,8 @@ export interface RawItem {
   isInteracted: boolean; // isInteracted
 }
 
-const v1: Fields<RawItem> = {
-  version: 1,
-  shape: {
+const v1 = defineField(baseFields, {
+  add: {
     id: { id: 1, type: String },
     type: { id: 2, type: String },
     createdAt: { id: 3, type: Number },
@@ -28,12 +27,11 @@ const v1: Fields<RawItem> = {
     data: { id: 7, type: Object },
     isInteracted: { id: 8, type: Boolean },
   },
-};
+});
 
 export default abstract class Item<
   Data extends object = object
 > extends Serializable<RawItem> {
-  version: number = 1;
   fields = [v1];
   migrators = [];
 

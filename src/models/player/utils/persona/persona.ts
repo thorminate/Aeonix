@@ -1,4 +1,4 @@
-import { Fields } from "../../../core/serializable.js";
+import { baseFields, defineField } from "../../../core/serializable.js";
 import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
@@ -7,16 +7,14 @@ export interface RawPersona {
   avatar: string; // avatar
 }
 
-const v1: Fields<RawPersona> = {
-  version: 1,
-  shape: {
-    name: { id: 0, type: String },
-    avatar: { id: 1, type: String },
+const v1 = defineField(baseFields, {
+  add: {
+    name: { id: 1, type: String },
+    avatar: { id: 2, type: String },
   },
-};
+});
 
 export default class Persona extends PlayerSubclassBase<RawPersona> {
-  version: number = 1;
   fields = [v1];
   migrators = [];
 

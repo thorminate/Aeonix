@@ -41,7 +41,8 @@ import { PlayerCreationOptions } from "../../managers/playerManager.js";
 import playerModel from "./utils/playerModel.js";
 import isSerializedData from "./utils/isSerializedData.js";
 import Serializable, {
-  MigrationEntry,
+  baseFields,
+  defineField,
   SerializedData,
 } from "../core/serializable.js";
 import ConcreteConstructor from "../core/concreteConstructor.js";
@@ -57,12 +58,10 @@ export interface RawPlayer {
   settings: RawSettings;
   stats: RawStats;
   statusEffects: RawStatusEffects;
-  wows: number;
 }
 
-const v1 = {
-  version: 1,
-  shape: {
+const v1 = defineField(baseFields, {
+  add: {
     _id: { id: 1, type: String },
     lastAccessed: { id: 2, type: Number },
     inbox: { id: 3, type: Inbox as ConcreteConstructor<Inbox> },
@@ -89,18 +88,15 @@ const v1 = {
       type: StatusEffects as ConcreteConstructor<StatusEffects>,
     },
   },
-} as const;
+});
 
 export default class Player extends Serializable<RawPlayer> {
-  version = 1;
   fields = [v1];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  migrators: MigrationEntry<any, any>[] = [];
+  migrators = [];
 
   _id!: string;
   lastAccessed!: number;
 
-  wows = 0;
   inbox!: Inbox;
   inventory!: Inventory;
   location!: Location;

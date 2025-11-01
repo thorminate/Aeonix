@@ -1,6 +1,10 @@
 import aeonix from "../../../../index.js";
 import { ClassConstructor } from "../../../../utils/typeDescriptor.js";
-import { dynamicArrayOf } from "../../../core/serializable.js";
+import {
+  baseFields,
+  defineField,
+  dynamicArrayOf,
+} from "../../../core/serializable.js";
 import Letter from "../inbox/letter.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import Quest, { RawQuest } from "./quest.js";
@@ -10,9 +14,8 @@ export interface RawQuests {
   quests: RawQuest[]; // quests
 }
 
-const v1 = {
-  version: 1,
-  shape: {
+const v1 = defineField(baseFields, {
+  add: {
     quests: {
       id: 0,
       type: dynamicArrayOf(async (o) => {
@@ -30,10 +33,9 @@ const v1 = {
       }),
     },
   },
-};
+});
 
 export default class Quests extends PlayerSubclassBase<RawQuests> {
-  version = 1;
   fields = [v1];
   quests: Quest[] = [];
   migrators = [];

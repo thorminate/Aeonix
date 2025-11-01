@@ -181,12 +181,10 @@ export default class PlayerManager extends LifecycleCachedManager<
       content: `<@${user.id}> has joined the game! Please check your inbox for further instructions (\`/inbox\`).`,
     });
 
-    log({
-      header: "Player created",
-      processName: "PlayerManager.create",
-      type: "Info",
-      payload: player,
-    });
+    player.environmentChannel = await player.fetchEnvironmentChannel();
+    player.dmChannel = await player.user?.createDM().catch(() => undefined);
+    player.user = await player.fetchUser();
+    player.environment = await player.fetchEnvironment();
 
     return player;
   }

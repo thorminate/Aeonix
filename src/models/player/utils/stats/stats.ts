@@ -1,4 +1,4 @@
-import { Fields } from "../../../core/serializable.js";
+import { baseFields, defineField } from "../../../core/serializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import calculateXpRequirement from "./calculateXpRequirement.js";
 
@@ -14,23 +14,21 @@ export interface RawStats {
   hasCompletedTutorial: boolean; // hasCompletedTutorial
 }
 
-const v1: Fields<RawStats> = {
-  version: 1,
-  shape: {
-    level: { id: 0, type: Number }, // level
-    xp: { id: 1, type: Number }, // xp
-    maxHealth: { id: 2, type: Number }, // maxHealth
-    health: { id: 3, type: Number }, // health
-    strength: { id: 4, type: Number }, // strength
-    will: { id: 5, type: Number }, // will
-    cognition: { id: 6, type: Number }, // cognition
-    hasNausea: { id: 7, type: Boolean }, // hasNausea
-    hasCompletedTutorial: { id: 8, type: Boolean }, // hasCompletedTutorial
+const v1 = defineField(baseFields, {
+  add: {
+    level: { id: 1, type: Number },
+    xp: { id: 2, type: Number },
+    maxHealth: { id: 3, type: Number },
+    health: { id: 4, type: Number },
+    strength: { id: 5, type: Number },
+    will: { id: 6, type: Number },
+    cognition: { id: 7, type: Number },
+    hasNausea: { id: 8, type: Boolean },
+    hasCompletedTutorial: { id: 9, type: Boolean },
   },
-};
+});
 
 export default class Stats extends PlayerSubclassBase<RawStats> {
-  version = 1;
   fields = [v1];
   migrators = [];
 

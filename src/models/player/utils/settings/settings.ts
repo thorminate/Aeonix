@@ -1,4 +1,4 @@
-import { Fields } from "../../../core/serializable.js";
+import { baseFields, defineField } from "../../../core/serializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 
 export interface RawSettings {
@@ -6,16 +6,14 @@ export interface RawSettings {
   inboxShowNotifications: boolean; // inboxShowNotifications
 }
 
-const v1: Fields<RawSettings> = {
-  version: 1,
-  shape: {
-    inboxShowArchived: { id: 0, type: Boolean }, // inboxShowArchived
-    inboxShowNotifications: { id: 1, type: Boolean }, // inboxShowNotifications
+const v1 = defineField(baseFields, {
+  add: {
+    inboxShowArchived: { id: 1, type: Boolean },
+    inboxShowNotifications: { id: 2, type: Boolean },
   },
-};
+});
 
 export default class Settings extends PlayerSubclassBase<RawSettings> {
-  version = 1;
   fields = [v1];
   migrators = [];
 

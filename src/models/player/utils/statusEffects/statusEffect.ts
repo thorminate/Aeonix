@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
 import Player from "../../player.js";
-import Serializable, { Fields } from "../../../core/serializable.js";
+import Serializable, {
+  baseFields,
+  defineField,
+} from "../../../core/serializable.js";
 
 export interface RawStatusEffect {
   id: string;
@@ -9,20 +12,18 @@ export interface RawStatusEffect {
   data?: object;
 }
 
-const v1: Fields<StatusEffect> = {
-  version: 1,
-  shape: {
-    id: { id: 0, type: String },
-    type: { id: 1, type: String },
-    exposure: { id: 2, type: Number },
-    data: { id: 3, type: Object },
+const v1 = defineField(baseFields, {
+  add: {
+    id: { id: 1, type: String },
+    type: { id: 2, type: String },
+    exposure: { id: 3, type: Number },
+    data: { id: 4, type: Object },
   },
-} as const;
+});
 
 export default abstract class StatusEffect<
   Data = object
 > extends Serializable<RawStatusEffect> {
-  version = 1;
   fields = [v1];
   migrators = [];
 

@@ -1,6 +1,11 @@
 import aeonix from "../../../../index.js";
 import { ClassConstructor } from "../../../../utils/typeDescriptor.js";
-import { dynamicArrayOf, SerializedData } from "../../../core/serializable.js";
+import {
+  baseFields,
+  defineField,
+  dynamicArrayOf,
+  SerializedData,
+} from "../../../core/serializable.js";
 import Item, { RawItem } from "../../../item/item.js";
 import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
@@ -10,9 +15,8 @@ export interface RawInventory {
   capacity: number; // capacity
 }
 
-const v1 = {
-  version: 1,
-  shape: {
+const v1 = defineField(baseFields, {
+  add: {
     entries: {
       id: 0,
       type: dynamicArrayOf(async (o: SerializedData) => {
@@ -31,10 +35,9 @@ const v1 = {
     },
     capacity: { id: 1, type: Number },
   },
-};
+});
 
 export default class Inventory extends PlayerSubclassBase<RawInventory> {
-  version = 1;
   fields = [v1];
   migrators = [];
 

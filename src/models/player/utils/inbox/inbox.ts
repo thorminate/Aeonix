@@ -1,7 +1,11 @@
 import aeonix from "../../../../index.js";
 import ParentAwareSubArray from "../../../../utils/parentAwareSubArray.js";
 import { ClassConstructor } from "../../../../utils/typeDescriptor.js";
-import { dynamicArrayOf, Fields } from "../../../core/serializable.js";
+import {
+  baseFields,
+  defineField,
+  dynamicArrayOf,
+} from "../../../core/serializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import Letter, { RawLetter } from "./letter.js";
 
@@ -9,9 +13,8 @@ export interface RawInbox {
   letters: RawLetter[];
 }
 
-const v1: Fields<RawInbox> = {
-  version: 1,
-  shape: {
+const v1 = defineField(baseFields, {
+  add: {
     letters: {
       id: 1,
       type: dynamicArrayOf(async (o: unknown) => {
@@ -29,7 +32,7 @@ const v1: Fields<RawInbox> = {
       }),
     },
   },
-};
+});
 
 export default class Inbox extends PlayerSubclassBase<RawInbox> {
   version = 1;

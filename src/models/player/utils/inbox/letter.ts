@@ -1,6 +1,9 @@
 import { randomUUID } from "crypto";
 import Player from "../../player.js";
-import Serializable, { Fields } from "../../../core/serializable.js";
+import Serializable, {
+  baseFields,
+  defineField,
+} from "../../../core/serializable.js";
 
 export interface RawLetter {
   id: string; // id
@@ -12,9 +15,8 @@ export interface RawLetter {
   isInteracted: boolean; // isInteracted
 }
 
-const v1: Fields<RawLetter> = {
-  version: 1,
-  shape: {
+const v1 = defineField(baseFields, {
+  add: {
     id: { id: 1, type: String },
     type: { id: 2, type: String },
     createdAt: { id: 3, type: Number },
@@ -22,12 +24,11 @@ const v1: Fields<RawLetter> = {
     isArchived: { id: 5, type: Boolean },
     isInteracted: { id: 6, type: Boolean },
   },
-};
+});
 
 export default abstract class Letter<
   Data extends Record<string, unknown> = Record<string, unknown>
 > extends Serializable<RawLetter> {
-  version: number = 1;
   fields = [v1];
   migrators = [];
 
