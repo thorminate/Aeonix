@@ -26,14 +26,14 @@
     "decrypt": "dotenvx decrypt"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.51.0",
+    "@dotenvx/dotenvx": "^1.51.1",
     "@typegoose/typegoose": "^12.20.0",
-    "@types/node": "^24.9.2",
+    "@types/node": "^24.10.1",
     "ansis": "^4.2.0",
     "cbor2": "^2.0.1",
     "discord.js": "^14.24.2",
-    "mongodb": "^6.20.0",
-    "mongoose": "^8.19.2",
+    "mongodb": "^7.0.0",
+    "mongoose": "^8.19.4",
     "package-json-type": "^1.0.3",
     "package-run": "^3.0.1",
     "typescript": "^5.9.3",
@@ -47,9 +47,9 @@
     "url": "https://github.com/thorminate/Aeonix/issues"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.0",
-    "eslint": "^9.39.0",
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
     "globals": "^16.5.0",
-    "typescript-eslint": "^8.46.2"
+    "typescript-eslint": "^8.46.4"
   }
 }
