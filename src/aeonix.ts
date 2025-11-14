@@ -26,7 +26,7 @@ import StatusManager from "./managers/statusManager.js";
 import PlayerManager from "./managers/playerManager.js";
 import QuestManager from "./managers/questManager.js";
 import { IPackageJson } from "package-json-type";
-import { tickPlayers } from "./events/tick/tickPlayers.js";
+import { tickPlayers } from "./events/discord/tick/tickPlayers.js";
 import AeonixCLI from "./models/core/cli.js";
 
 export type AeonixEvents = ClientEvents & {
@@ -61,6 +61,8 @@ export default class Aeonix extends Client {
   packageJson: IPackageJson = JSON.parse(
     readFileSync("./package.json").toString()
   );
+
+  ticker: NodeJS.Timeout;
 
   players = new PlayerManager(this);
   buttons = new ButtonManager(this);
@@ -272,7 +274,7 @@ export default class Aeonix extends Client {
       }
     })();
 
-    setInterval(() => {
+    this.ticker = setInterval(() => {
       this.status.refresh();
       this.tick();
     }, this.config.tickRate);
@@ -281,43 +283,38 @@ export default class Aeonix extends Client {
   override on<Event extends keyof AeonixEvents>(
     event: Event,
     listener: (...args: AeonixEvents[Event]) => void
-  ): this;
-  override on(event: string, listener: (...args: unknown[]) => void): this {
-    super.on(event, listener);
+  ): this {
+    super.on(event as string, listener);
     return this;
   }
 
   override once<Event extends keyof AeonixEvents>(
     event: Event,
     listener: (...args: AeonixEvents[Event]) => void
-  ): this;
-  override once(event: string, listener: (...args: unknown[]) => void): this {
-    super.once(event, listener);
+  ): this {
+    super.once(event as string, listener);
     return this;
   }
 
   override emit<Event extends keyof AeonixEvents>(
     event: Event,
     ...args: AeonixEvents[Event]
-  ): boolean;
-  override emit(event: string, ...args: unknown[]): boolean {
-    return super.emit(event, ...args);
+  ): boolean {
+    return super.emit(event as string, ...args);
   }
 
   override off<Event extends keyof AeonixEvents>(
     event: Event,
     listener: (...args: AeonixEvents[Event]) => void
-  ): this;
-  override off(event: string, listener: (...args: unknown[]) => void): this {
-    super.off(event, listener);
+  ): this {
+    super.off(event as string, listener);
     return this;
   }
 
   override removeAllListeners<Event extends keyof AeonixEvents>(
     event?: Event
-  ): this;
-  override removeAllListeners(event?: string): this {
-    super.removeAllListeners(event);
+  ): this {
+    super.removeAllListeners(event as string);
     return this;
   }
 }

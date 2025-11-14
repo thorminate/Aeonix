@@ -1,4 +1,13 @@
-import { TextChannel } from "discord.js";
+import {
+  ContainerBuilder,
+  Message,
+  MessageCreateOptions,
+  MessageFlags,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  TextChannel,
+  TextDisplayBuilder,
+} from "discord.js";
 import aeonix from "../../index.js";
 import Player from "../player/player.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
@@ -15,10 +24,14 @@ export default abstract class Environment {
   abstract name: string;
   abstract description: string;
   abstract adjacentEnvironments: string[];
+  overviewMessageId: string = "";
+  overviewMessage?: Message;
   players: string[] = [];
   items: Item[] = [];
 
   async commit(saveIntoCache = true): Promise<void> {
+    delete this.overviewMessage;
+
     if (saveIntoCache) aeonix.environments.set(this);
     await environmentModel.findByIdAndUpdate(
       this._id,
@@ -29,6 +42,20 @@ export default abstract class Environment {
         setDefaultsOnInsert: true,
       }
     );
+  }
+
+  async fetchLastOverviewMessage(): Promise<Message | undefined> {
+    if (!this.overviewMessageId) return undefined;
+
+    const channel = await this.fetchChannel();
+    if (!channel) return undefined;
+
+    const fetched = await channel.messages
+      .fetch(this.overviewMessageId)
+      .catch(() => undefined);
+
+    this.overviewMessage = fetched;
+    return fetched;
   }
 
   async fetchChannel(): Promise<TextChannel | undefined> {
@@ -75,6 +102,29 @@ export default abstract class Environment {
     );
 
     return item;
+  }
+
+  overview(): MessageCreateOptions {
+    const c = new ContainerBuilder();
+
+    c.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `## ${this.name}\n${this.description}`
+      )
+    );
+    c.addSeparatorComponents(
+      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
+    );
+    c.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `Players: ${this.players.length}\nItems: ${this.items.length}`
+      )
+    );
+
+    return {
+      flags: MessageFlags.IsComponentsV2,
+      components: [c],
+    };
   }
 
   // Hooks & Events

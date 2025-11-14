@@ -4,15 +4,15 @@ import {
   PermissionsBitField,
   AutocompleteInteraction,
 } from "discord.js";
-import log from "../../utils/log.js";
-import Event from "../../models/core/event.js";
+import log from "../../../utils/log.js";
+import DiscordEvent from "../../../models/core/event.js";
 import Interaction, {
   InteractionTypes,
-} from "../../models/core/interaction.js";
-import PlayerRef from "../../models/player/utils/playerRef.js";
-import Player from "../../models/player/player.js";
+} from "../../../models/core/interaction.js";
+import PlayerRef from "../../../models/player/utils/playerRef.js";
+import Player from "../../../models/player/player.js";
 
-export default new Event<"interactionCreate">({
+export default new DiscordEvent<"interactionCreate">({
   callback: async ({ args: [context], aeonix }) => {
     if (!context.isAutocomplete()) {
       return;

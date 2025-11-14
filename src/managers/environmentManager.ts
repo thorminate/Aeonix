@@ -14,11 +14,15 @@ export default class EnvironmentManager extends HybridCachedManager<
   Holds,
   StoredEnvironment
 > {
+  channelToEnv: Map<string, string> = new Map();
+
   model(): Model<StoredEnvironment> {
     return environmentModel;
   }
 
-  async onLoad(): Promise<void> {
+  override async onAccess(instance: Environment): Promise<void> {
+    instance.overviewMessage = await instance.fetchLastOverviewMessage();
+    this.channelToEnv.set(instance.channelId, instance.type);
     return;
   }
 

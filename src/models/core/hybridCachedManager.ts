@@ -70,6 +70,7 @@ export default abstract class HybridCachedManager<
     emptyInst._id = rawDoc._id!;
 
     const instance = merge(emptyInst, rawDoc, emptyInst.getClassMap());
+
     await this.onAccess?.(instance);
     this.set(instance);
 

@@ -47,7 +47,7 @@ export default class Inventory extends PlayerSubclassBase<RawInventory> {
   add(...entries: Item[]): void {
     for (const entry of entries) {
       this.entries.push(entry);
-      this.parent.quests.callEvent({ type: "inventoryAdd", args: [entry] });
+      this.parent.emit("inventoryItemAdded", entry);
     }
   }
 
@@ -57,6 +57,8 @@ export default class Inventory extends PlayerSubclassBase<RawInventory> {
 
       return;
     }
+
+    this.parent.emit("inventoryItemRemoved", entry);
 
     this.entries = this.entries.filter((e: Item) => e.name != entry.name);
   }

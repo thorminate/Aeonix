@@ -20,12 +20,12 @@ export default class WeaponItem extends Item<IWeaponData> {
   oneTimeInteraction: boolean = false;
   canDrop: boolean = true;
 
-  override onDrop(): ItemEventResult {
+  override async onDrop(): Promise<ItemEventResult> {
     this.data.wear++;
     return new ItemEventResult("Your weapon took damage!", true);
   }
 
-  async use(player: Player): Promise<ItemUsageResult> {
+  override async onInteract(player: Player): Promise<ItemUsageResult> {
     player.stats.giveXpFromRange(5, 10);
 
     this.data.wear++;

@@ -1,9 +1,9 @@
-import BackpackItem from "../../content/items/backpackItem/backpackItem.js";
-import TutorialQuestLetter from "../../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
-import Event from "../../models/core/event.js";
-import log from "../../utils/log.js";
+import BackpackItem from "../../../content/items/backpackItem/backpackItem.js";
+import TutorialQuestLetter from "../../../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
+import DiscordEvent from "../../../models/core/event.js";
+import log from "../../../utils/log.js";
 
-export default new Event<"ready">({
+export default new DiscordEvent<"ready">({
   callback: async ({ aeonix }) => {
     log({
       header: "Running tests",

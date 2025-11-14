@@ -10,7 +10,7 @@
   "description": "Aeonix is a discord bot I made for my fun and learning. It does not have a lot of features, but it is still a work in progress. If you have any suggestions, please let me know. in my [Discord server](https://discord.gg/9UsdKFAtEF).",
   "keywords": [],
   "engines": {
-    "node": "24.3.0"
+    "node": "25.1.0"
   },
   "author": {
     "name": "thorminate",
@@ -31,7 +31,7 @@
     "@types/node": "^24.9.2",
     "ansis": "^4.2.0",
     "cbor2": "^2.0.1",
-    "discord.js": "^14.24.1",
+    "discord.js": "^14.24.2",
     "mongodb": "^6.20.0",
     "mongoose": "^8.19.2",
     "package-json-type": "^1.0.3",
@@ -47,9 +47,9 @@
     "url": "https://github.com/thorminate/Aeonix/issues"
   },
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
-    "eslint": "^9.38.0",
-    "globals": "^16.4.0",
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "globals": "^16.5.0",
     "typescript-eslint": "^8.46.2"
   }
 }

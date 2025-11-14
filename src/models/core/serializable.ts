@@ -15,8 +15,7 @@ export interface SerializedData<
   d: Data;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const baseFields: Fields<any> = {
+export const baseFields: Fields<FieldSchema> = {
   version: 0,
   shape: {},
 };
@@ -27,10 +26,8 @@ interface FieldData {
 }
 
 export interface MigrationEntry<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  FromShape extends Record<string, unknown> = any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ToShape extends Record<string, unknown> = any
+  FromShape extends Record<string, unknown> = Record<string, unknown>,
+  ToShape extends Record<string, unknown> = Record<string, unknown>
 > {
   from: number;
   to: number;
@@ -150,6 +147,10 @@ export function defineField<
     shape: newShape as MergeShape<PrevShape, D>,
   };
 }
+
+type ShapeToObj<Shape extends FieldSchema> = Partial<{
+  [K in keyof Shape]: TypeDescriptorValue<Shape[K]["type"]>;
+}>;
 
 export default abstract class Serializable<
   T extends object,
@@ -290,7 +291,7 @@ export default abstract class Serializable<
         );
 
       if (typeof type === "function") {
-        return !(value === null || value === undefined); // TODO: add checking for custom types
+        return typeof value === "object";
       }
 
       if (type.kind === "array") {
@@ -362,7 +363,7 @@ export default abstract class Serializable<
         });
       }
 
-      // resync data version with actual version (some migrator functions dont already do this)
+      // resync data version with actual version (some migrator functions don't already do this)
       working.v = current;
       return working as unknown as T;
     } catch (e) {
@@ -440,12 +441,13 @@ export default abstract class Serializable<
           key as keyof typeof fieldsForCurrentVersion
         ] as FieldData | undefined;
         if (!fieldData) continue;
-        const raw = input.d[fieldData.id] as unknown;
+        const value = (inst as unknown as Record<string, unknown>)[key];
+
         (inst as unknown as Record<string, unknown>)[key] =
           await Serializable._deserializeValue.call(
             this,
             fieldData.type,
-            raw,
+            value,
             inst,
             key
           );
@@ -607,21 +609,8 @@ export default abstract class Serializable<
   >(
     from: Fields<FromShape>,
     to: Fields<ToShape>,
-    fn: (
-      data: Partial<{
-        [K in keyof FromShape]: TypeDescriptorValue<FromShape[K]["type"]>;
-      }>
-    ) => Promise<
-      Partial<{
-        [K in keyof ToShape]: TypeDescriptorValue<ToShape[K]["type"]>;
-      }>
-    >
-  ): MigrationEntry<
-    Partial<{
-      [K in keyof FromShape]: TypeDescriptorValue<FromShape[K]["type"]>;
-    }>,
-    Partial<{ [K in keyof ToShape]: TypeDescriptorValue<ToShape[K]["type"]> }>
-  > {
+    fn: (data: ShapeToObj<FromShape>) => Promise<ShapeToObj<ToShape>>
+  ): MigrationEntry<ShapeToObj<FromShape>, ShapeToObj<ToShape>> {
     return {
       from: from.version,
       to: to.version,

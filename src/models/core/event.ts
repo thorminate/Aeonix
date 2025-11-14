@@ -1,6 +1,6 @@
 import Aeonix, { AeonixEvents } from "../../aeonix.js";
 
-export class EventParams<Args extends AeonixEvents[keyof AeonixEvents]> {
+export class DiscordEventParams<Args extends AeonixEvents[keyof AeonixEvents]> {
   aeonix: Aeonix;
   args: Args;
 
@@ -10,16 +10,16 @@ export class EventParams<Args extends AeonixEvents[keyof AeonixEvents]> {
   }
 }
 
-export default class Event<T extends keyof AeonixEvents> {
-  callback: (event: EventParams<AeonixEvents[T]>) => Promise<void>;
-  onError: (e: unknown, event: EventParams<AeonixEvents[T]>) => void;
+export default class DiscordEvent<T extends keyof AeonixEvents> {
+  callback: (event: DiscordEventParams<AeonixEvents[T]>) => Promise<void>;
+  onError: (e: unknown, event: DiscordEventParams<AeonixEvents[T]>) => void;
 
   constructor({
     callback,
     onError,
   }: {
-    callback: (event: EventParams<AeonixEvents[T]>) => Promise<void>;
-    onError: (e: unknown, event: EventParams<AeonixEvents[T]>) => void;
+    callback: (event: DiscordEventParams<AeonixEvents[T]>) => Promise<void>;
+    onError: (e: unknown, event: DiscordEventParams<AeonixEvents[T]>) => void;
   }) {
     this.callback = callback;
     this.onError = onError;

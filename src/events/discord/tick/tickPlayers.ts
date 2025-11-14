@@ -1,6 +1,6 @@
-import Aeonix from "../../aeonix.js";
-import Event from "../../models/core/event.js";
-import log from "../../utils/log.js";
+import Aeonix from "../../../aeonix.js";
+import DiscordEvent from "../../../models/core/event.js";
+import log from "../../../utils/log.js";
 
 export async function tickPlayers(aeonix: Aeonix) {
   const allPlayers = await aeonix.players.getAll(false);
@@ -8,7 +8,7 @@ export async function tickPlayers(aeonix: Aeonix) {
   for (const player of allPlayers) {
     const diff = Date.now() - player.lastAccessed!;
 
-    // if the difference is bigger than 15 minutes, unload the player from the cache
+    // if the player has not been accessed within the alloted tick rate, unload the player from the cache
     if (diff > aeonix.config.tickRate) {
       await player.commit(false);
       aeonix.players.release(player._id);
@@ -18,7 +18,7 @@ export async function tickPlayers(aeonix: Aeonix) {
   }
 }
 
-export default new Event<"tick">({
+export default new DiscordEvent<"tick">({
   async callback({ aeonix }) {
     await tickPlayers(aeonix);
   },

@@ -19,6 +19,8 @@ import generateEntryContainer from "./utils/generateEntryContainer.js";
 import stringifyEntry from "./utils/stringifyEntry.js";
 import Item from "../../../models/item/item.js";
 import { search } from "../../../utils/levenshtein.js";
+import generateNoticeCard from "../../../utils/generateNoticeCard.js";
+import ItemUsageResult from "../../../models/item/utils/itemUsageResult.js";
 
 export default new Interaction({
   interactionType: InteractionTypes.Command,
@@ -141,6 +143,7 @@ export default new Interaction({
             }
             break;
 
+          case "#dismiss":
           case "#close": {
             await player.use(async (p) => {
               snippets = generateInventoryContents(p);
@@ -153,14 +156,59 @@ export default new Interaction({
             break;
           }
           case "#drop": {
-            await buttonContext.reply({
-              content: "Not implemented yet. (Wait for environments first!)",
-              flags: MessageFlags.Ephemeral,
+            const entry = await player.use(async (p) => {
+              const [entry] = findEntryFromIdStrict(p.inventory.entries, id);
+
+              if (!entry) {
+                log({
+                  header: "Item not found in inventory",
+                  processName: "InventoryCommand",
+                  payload: [id, p.inventory.entries],
+                  type: "Error",
+                });
+                return;
+              }
+
+              const res = await entry.drop(p);
+
+              let env = p.environment;
+
+              if (!env) {
+                env = await p.fetchEnvironment();
+                if (!env) {
+                  log({
+                    header: "Player has no environment",
+                    processName: "InventoryCommand",
+                    type: "Error",
+                  });
+                  return;
+                }
+              }
+
+              env.dropItem(p, entry);
+
+              p.inventory.remove(entry);
+
+              buttonContext.update({
+                components: [generateNoticeCard("Item dropped", res.message)],
+              });
+
+              return entry;
             });
+
+            if (!entry) {
+              log({
+                header: "Item not found in inventory",
+                processName: "InventoryCommand",
+                payload: [id],
+                type: "Error",
+              });
+              return;
+            }
             break;
           }
           case "#use": {
-            const entry = await player.use(async (p) => {
+            const tup = (await player.use(async (p) => {
               const [entry, index] = findEntryFromIdStrict(
                 p.inventory.entries,
                 id
@@ -176,16 +224,14 @@ export default new Interaction({
                 return;
               }
 
-              entry.onInteract?.(p);
-
-              entry.isInteracted = true;
+              const res = await entry.use(p);
 
               p.inventory.entries[index] = entry;
 
-              return entry;
-            });
+              return [entry, res];
+            })) as [Item, ItemUsageResult];
 
-            if (!entry) {
+            if (!tup) {
               log({
                 header: "Item not found in inventory",
                 processName: "InventoryCommand",
@@ -195,9 +241,17 @@ export default new Interaction({
               return;
             }
 
+            const [entry, res] = tup;
+
             await buttonContext.update({
               components: [generateEntryContainer(entry)],
             });
+
+            await buttonContext.followUp({
+              components: [generateNoticeCard("Item used", res.message)],
+              flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
+            });
+
             break;
           }
         }

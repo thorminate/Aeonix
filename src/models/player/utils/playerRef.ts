@@ -1,5 +1,5 @@
-import { log } from "console";
 import aeonix from "../../../index.js";
+import log from "../../../utils/log.js";
 import Player from "../player.js";
 
 export default class PlayerRef {
@@ -30,11 +30,11 @@ export default class PlayerRef {
 
     const result = await fn(player).catch((err) => {
       log({
-        header: "PlayerRef.use",
-        payload: err,
+        header: "Player usage caused an error",
+        payload: [err, player],
         type: "Error",
       });
-      throw err;
+      return undefined;
     });
     player = undefined;
     return result;

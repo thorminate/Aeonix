@@ -18,7 +18,7 @@ export default class SwordItem extends Item<ISwordData> {
   oneTimeInteraction: boolean = false;
   canDrop: boolean = true;
 
-  async use(): Promise<ItemUsageResult> {
+  override async onInteract(): Promise<ItemUsageResult> {
     if (this.data.wear >= 10) {
       this.interactable = false;
       return new ItemUsageResult("Your sword broke!", true);

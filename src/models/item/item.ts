@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import ItemUsageResult from "./utils/itemUsageResult.js";
-import ItemEventContext from "./utils/itemEventContext.js";
 import ItemEventResult from "./utils/itemEventResult.js";
 import Player from "../player/player.js";
 import Serializable, { baseFields, defineField } from "../core/serializable.js";
@@ -52,7 +51,20 @@ export default abstract class Item<
   data: Data;
 
   onInteract?(player: Player): Promise<ItemUsageResult>;
-  onDrop?(context: ItemEventContext): ItemEventResult;
+  onDrop?(player: Player): Promise<ItemEventResult>;
+
+  async drop(player: Player): Promise<ItemEventResult> {
+    const result = await this.onDrop?.(player);
+    await player.emit("inventoryItemDropped", this);
+    return result || new ItemEventResult("You dropped the item!", true);
+  }
+
+  async use(player: Player): Promise<ItemUsageResult> {
+    this.isInteracted = true;
+    const result = await this.onInteract?.(player);
+    await player.emit("inventoryItemUsed", this);
+    return result || new ItemUsageResult("You used the item!", true);
+  }
 
   constructor(data?: Data) {
     super();

@@ -4,7 +4,13 @@ export default class QuestTemplate extends Quest {
   name: string = "Template Quest";
   description: string = "A placeholder quest.";
 
+  createData(): Record<string, unknown> {
+    return {};
+  }
+
   onFulfill(): void {}
+
+  onFail(): void {}
 
   onEvent(): void {}
 }

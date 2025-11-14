@@ -46,6 +46,10 @@ import Serializable, {
   SerializedData,
 } from "../core/serializable.js";
 import ConcreteConstructor from "../core/concreteConstructor.js";
+import PlayerEventsDeclaration, {
+  AnyPlayerEvent,
+  PlayerEvents,
+} from "./utils/playerEvents.js";
 
 export interface RawPlayer {
   _id: string;
@@ -96,7 +100,6 @@ export default class Player extends Serializable<RawPlayer> {
 
   _id!: string;
   lastAccessed!: number;
-
   inbox!: Inbox;
   inventory!: Inventory;
   location!: Location;
@@ -111,16 +114,39 @@ export default class Player extends Serializable<RawPlayer> {
   environmentChannel?: TextChannel;
   dmChannel?: DMChannel;
 
+  _events: PlayerEventsDeclaration;
+
+  async emit<T extends keyof PlayerEvents>(
+    e: T,
+    ...args: PlayerEvents[T]
+  ): Promise<boolean> {
+    const event = {
+      type: e,
+      args: args,
+      player: this,
+    } as AnyPlayerEvent;
+    this.quests.quests.forEach((quest) => quest.onEvent(event));
+    return this._events.emit(e, ...args);
+  }
+
   async fetchUser() {
-    return aeonix.users.cache.get(this._id);
+    this.user = aeonix.users.cache.get(this._id);
+    return this.user;
   }
   async fetchEnvironmentChannel() {
-    return aeonix.channels.cache.get(this.location.channelId) as
-      | TextChannel
-      | undefined;
+    this.environmentChannel = aeonix.channels.cache.get(
+      this.location.channelId
+    ) as TextChannel | undefined;
+    return this.environmentChannel;
   }
   async fetchEnvironment() {
-    return aeonix.environments.get(this.location.id);
+    this.environment = await aeonix.environments.get(this.location.id);
+    return this.environment;
+  }
+  async fetchDMChannel() {
+    if (!this.user) this.fetchUser();
+    this.dmChannel = await this.user?.createDM().catch(() => undefined);
+    return this.dmChannel;
   }
 
   async moveTo(
@@ -354,6 +380,8 @@ export default class Player extends Serializable<RawPlayer> {
     this.settings = new Settings(this);
     this.stats = new Stats(this);
     this.statusEffects = new StatusEffects(this);
+
+    this._events = new PlayerEventsDeclaration(this);
 
     this.lastAccessed = Date.now();
   }

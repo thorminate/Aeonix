@@ -7,10 +7,10 @@ import {
   TextDisplayBuilder,
   TextDisplayComponent,
 } from "discord.js";
-import log from "../../utils/log.js";
-import Event from "../../models/core/event.js";
-import componentWrapper from "../../utils/componentWrapper.js";
-import onboarding0 from "../../content/buttons/onboarding0/onboarding0.js";
+import log from "../../../utils/log.js";
+import DiscordEvent from "../../../models/core/event.js";
+import componentWrapper from "../../../utils/componentWrapper.js";
+import onboarding0 from "../../../content/buttons/onboarding0/onboarding0.js";
 
 // turn on word wrap to see the full message
 
@@ -30,7 +30,7 @@ export const welcomeImage = new AttachmentBuilder("./assets/welcome.png", {
   name: "welcome.png",
 });
 
-export default new Event<"ready">({
+export default new DiscordEvent<"ready">({
   callback: async ({ aeonix }) => {
     const onboardingChannelId = aeonix.onboardingChannelId;
 

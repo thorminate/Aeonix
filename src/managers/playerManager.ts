@@ -13,6 +13,7 @@ import { decode } from "cbor2";
 import semibinaryToBuffer from "../models/player/utils/semibinaryToBuffer.js";
 import { SerializedData } from "../models/core/serializable.js";
 import { inflateSync } from "zlib";
+import PlayerEventsManager from "../models/player/utils/playerEvents.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -98,14 +99,13 @@ export default class PlayerManager extends LifecycleCachedManager<
     inst.user = await inst.fetchUser();
     inst.environment = await inst.fetchEnvironment();
     inst.environmentChannel = await inst.fetchEnvironmentChannel();
-    inst.dmChannel = await inst.user?.createDM().catch(() => undefined);
+    inst.dmChannel = await inst.fetchDMChannel();
 
     return inst;
   }
 
   async getRef(id: string): Promise<PlayerRef | undefined> {
-    const exists = await this.exists(id);
-    return exists ? new PlayerRef(id) : undefined;
+    return (await this.exists(id)) ? new PlayerRef(id) : undefined;
   }
 
   async create({
@@ -185,6 +185,8 @@ export default class PlayerManager extends LifecycleCachedManager<
     player.dmChannel = await player.user?.createDM().catch(() => undefined);
     player.user = await player.fetchUser();
     player.environment = await player.fetchEnvironment();
+
+    player._events = new PlayerEventsManager(player);
 
     return player;
   }

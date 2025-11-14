@@ -15,7 +15,7 @@ export default class TutorialQuestLetter extends Letter {
   isNotification: boolean = false;
 
   override onInteract(player: Player): void {
-    player.quests.append(new TutorialQuest());
+    player.quests.add(new TutorialQuest());
     this.interactionType = "Quest accepted";
     this.canDismiss = true;
   }

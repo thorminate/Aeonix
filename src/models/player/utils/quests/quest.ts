@@ -1,10 +1,10 @@
 import { randomUUID } from "crypto";
 import Player from "../../player.js";
-import { AnyQuestEvent } from "./questEvents.js";
 import Serializable, {
   baseFields,
   defineField,
 } from "../../../core/serializable.js";
+import { AnyPlayerEvent } from "../playerEvents.js";
 
 export interface RawQuest {
   id: string; // id
@@ -23,30 +23,42 @@ const v1 = defineField(baseFields, {
 });
 
 export default abstract class Quest<
-  Data extends object = object
+  Data extends Record<string, unknown> = Record<string, unknown>
 > extends Serializable<RawQuest> {
   fields = [v1];
   migrators = [];
+
+  abstract createData(): Data;
 
   id: string = randomUUID();
   abstract type: string;
   abstract name: string;
   abstract description: string;
   completed: boolean = false;
-  data?: Data;
+  data: Data;
 
   constructor(data?: Data) {
     super();
-    this.data = data;
+    this.data = data || this.createData();
   }
 
   async fulfill(player: Player) {
     this.completed = true;
 
+    await player.emit("questFulfilled", this);
+
     if (this.onFulfill) this.onFulfill(player);
   }
 
-  abstract onEvent(event: AnyQuestEvent, player: Player): void;
+  async fail(player: Player) {
+    await player.emit("questFailed", this);
+
+    if (this.onFail) this.onFail(player);
+  }
 
   abstract onFulfill(player: Player): void;
+
+  abstract onFail(player: Player): void;
+
+  abstract onEvent(event: AnyPlayerEvent): void;
 }

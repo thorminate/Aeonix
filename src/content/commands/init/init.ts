@@ -7,7 +7,7 @@ import {
 import {
   welcomeImage,
   welcomeMessage,
-} from "../../../events/clientReady/02verifyOnboardingMsg.js";
+} from "../../../events/discord/clientReady/02verifyOnboardingMsg.js";
 import log from "../../../utils/log.js";
 import deletePlayer from "../../buttons/deletePlayer/deletePlayer.js";
 import componentWrapper from "../../../utils/componentWrapper.js";

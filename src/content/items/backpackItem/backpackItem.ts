@@ -19,11 +19,11 @@ export default class BackpackItem extends Item<IBackpackData> {
   oneTimeInteraction: boolean = true;
   canDrop: boolean = true;
 
-  override onDrop(): ItemEventResult {
+  override async onDrop(): Promise<ItemEventResult> {
     return new ItemEventResult("Your backpack took damage!", true);
   }
 
-  async use(player: Player): Promise<ItemUsageResult> {
+  override async onInteract(player: Player): Promise<ItemUsageResult> {
     this.interactionType = "Opened";
     player.stats.giveXpFromRange(5, 10);
     return new ItemUsageResult("Wow!", true);
