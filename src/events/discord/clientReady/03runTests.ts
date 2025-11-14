@@ -77,7 +77,7 @@ export default new DiscordEvent<"ready">({
       test = false;
     }
 
-    // #region Environment
+    // #region Environments
 
     const startEnvironment = await aeonix.environments.get("start");
 

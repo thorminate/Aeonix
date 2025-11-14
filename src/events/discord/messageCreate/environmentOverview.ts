@@ -14,15 +14,11 @@ export default new DiscordEvent<"messageCreate">({
     if (env.players.includes(message.author.id) && !message.author.bot) return;
 
     const lastMsg = await env.fetchLastOverviewMessage().catch(() => undefined);
-    let msg;
-    if (lastMsg) {
-      [, msg] = await Promise.all([
-        lastMsg.delete(),
-        message.channel.send(env.overview()),
-      ]);
-    } else {
-      msg = await message.channel.send(env.overview());
-    }
+
+    const [, msg] = await Promise.all([
+      lastMsg?.delete(),
+      message.channel.send(env.overview()),
+    ]);
 
     env.overviewMessageId = msg.id;
   },

@@ -1,8 +1,11 @@
 import {
+  ButtonBuilder,
+  ButtonStyle,
   ContainerBuilder,
   Message,
   MessageCreateOptions,
   MessageFlags,
+  SectionBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
   TextChannel,
@@ -16,8 +19,52 @@ import environmentModel from "./utils/environmentModel.js";
 import { randomUUID } from "crypto";
 import Item from "../item/item.js";
 import log from "../../utils/log.js";
-import ConcreteConstructor from "../core/concreteConstructor.js";
-export default abstract class Environment {
+import merge from "../../utils/merge.js";
+import Serializable, {
+  arrayOf,
+  baseFields,
+  defineField,
+  dynamicArrayOf,
+} from "../core/serializable.js";
+import { ClassConstructor } from "../../utils/typeDescriptor.js";
+
+interface RawEnvironment {
+  _id: string;
+  type: string;
+  overviewMessageId: string;
+  players: string[];
+  items: Item[];
+}
+
+const v1 = defineField(baseFields, {
+  add: {
+    _id: { id: 0, type: String },
+    type: { id: 1, type: String },
+    overviewMessageId: { id: 2, type: String },
+    players: { id: 3, type: arrayOf(String) },
+    items: {
+      id: 4,
+      type: dynamicArrayOf(async (o) => {
+        if (
+          !o ||
+          !(typeof o === "object") ||
+          !("d" in o) ||
+          !(typeof o.d === "object") ||
+          !("2" in o.d!) ||
+          !(typeof o.d[2] === "string")
+        )
+          return Item as unknown as ClassConstructor;
+        const cls = await aeonix.items.loadRaw(o.d[2]);
+        return cls ? cls : (Item as unknown as ClassConstructor);
+      }),
+    },
+  },
+});
+
+export default abstract class Environment extends Serializable<RawEnvironment> {
+  fields = [v1];
+  migrators = [];
+
   _id: string;
   abstract type: string;
   abstract channelId: string;
@@ -30,18 +77,15 @@ export default abstract class Environment {
   items: Item[] = [];
 
   async commit(saveIntoCache = true): Promise<void> {
-    delete this.overviewMessage;
-
     if (saveIntoCache) aeonix.environments.set(this);
-    await environmentModel.findByIdAndUpdate(
-      this._id,
-      aeonix.environments.fixInst(this),
-      {
-        upsert: true,
-        new: true,
-        setDefaultsOnInsert: true,
-      }
-    );
+
+    const data = await aeonix.environments.onSave(this);
+
+    await environmentModel.findByIdAndUpdate(this._id, merge({}, data), {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    });
   }
 
   async fetchLastOverviewMessage(): Promise<Message | undefined> {
@@ -107,10 +151,19 @@ export default abstract class Environment {
   overview(): MessageCreateOptions {
     const c = new ContainerBuilder();
 
-    c.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `## ${this.name}\n${this.description}`
-      )
+    c.addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `## ${this.name}\n${this.description}`
+          )
+        )
+        .setButtonAccessory(
+          new ButtonBuilder()
+            .setCustomId(`env-inspect`)
+            .setLabel("Inspect")
+            .setStyle(ButtonStyle.Primary)
+        )
     );
     c.addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
@@ -163,22 +216,8 @@ export default abstract class Environment {
     }
   }
 
-  _getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
-    return {
-      items: Item as unknown as ConcreteConstructor<Item>,
-    };
-  }
-
-  abstract __getClassMap(): Record<string, new (...args: unknown[]) => unknown>;
-
-  getClassMap(): Record<string, new (...args: unknown[]) => unknown> {
-    return {
-      ...this._getClassMap(),
-      ...this.__getClassMap(),
-    };
-  }
-
   constructor(id?: string) {
+    super();
     this._id = id ?? randomUUID();
   }
 }

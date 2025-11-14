@@ -380,21 +380,24 @@ export default abstract class Serializable<
   static async deserialize<T extends Serializable<T>>(
     this: new () => T,
     input: SerializedData,
-    parent?: object
+    parent?: object,
+    ctor: new () => T = this
   ): Promise<T> {
     if (!input || typeof input !== "object" || !input.d)
       return input as unknown as T;
 
     let inst;
 
+    const usedCtor = ctor || this;
+
     try {
-      inst = new this();
+      inst = new usedCtor();
     } catch (e) {
       log({
-        header: `[${this.name}] Failed to deserialize`,
+        header: `[${usedCtor.name}] Failed to deserialize`,
         type: "Error",
         processName: "Serializable.deserialize",
-        payload: { e, input, this: this },
+        payload: { e, input, this: usedCtor },
       });
       return input as unknown as T;
     }
@@ -409,7 +412,7 @@ export default abstract class Serializable<
 
       if (!fieldsForCurrentVersion) {
         log({
-          header: `[${this.name}] No fields found for version ${input.v}`,
+          header: `[${usedCtor.name}] No fields found for version ${input.v}`,
           type: "Error",
           processName: "Serializable.deserialize",
           payload: { inst, input },
@@ -445,7 +448,7 @@ export default abstract class Serializable<
 
         (inst as unknown as Record<string, unknown>)[key] =
           await Serializable._deserializeValue.call(
-            this,
+            usedCtor,
             fieldData.type,
             value,
             inst,
@@ -455,13 +458,13 @@ export default abstract class Serializable<
 
       if (input.v !== version) {
         log({
-          header: `[${this.name}] Migrating from v${input.v} to v${version}`,
+          header: `[${usedCtor.name}] Migrating from v${input.v} to v${version}`,
           type: "Info",
           processName: "Serializable.deserialize",
           payload: { inst, input },
         });
         inst = (await Serializable._runMigrations.call(
-          this,
+          usedCtor,
           inst as Record<string, unknown>,
           input.v,
           inst
@@ -472,7 +475,7 @@ export default abstract class Serializable<
       return inst;
     } catch (e) {
       log({
-        header: `[${this.name}] Deserialization failed`,
+        header: `[${usedCtor.name}] Deserialization failed`,
         type: "Error",
         processName: "Serializable.deserialize",
         payload: { e, input, inst },

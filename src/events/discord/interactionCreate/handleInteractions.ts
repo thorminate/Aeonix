@@ -60,10 +60,7 @@ export default new DiscordEvent<"interactionCreate">({
       return;
     }
 
-    const id =
-      context.isAnySelectMenu() || context.isButton() || context.isModalSubmit()
-        ? context.customId
-        : context.commandName;
+    const id = context.isCommand() ? context.commandName : context.customId;
 
     const interaction =
       type === "button"

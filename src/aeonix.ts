@@ -62,7 +62,7 @@ export default class Aeonix extends Client {
     readFileSync("./package.json").toString()
   );
 
-  ticker: NodeJS.Timeout;
+  ticker!: NodeJS.Timeout;
 
   players = new PlayerManager(this);
   buttons = new ButtonManager(this);
@@ -153,6 +153,14 @@ export default class Aeonix extends Client {
     this.onboardingChannelId = process.env.ONBOARDING_CHANNEL || "";
     this.rulesChannelId = process.env.RULES_CHANNEL || "";
     this.masterRoleId = process.env.MASTER_ROLE || "";
+  }
+
+  reloadTicker(rate: number) {
+    if (this.ticker) clearInterval(this.ticker);
+    this.ticker = setInterval(() => {
+      this.status.refresh();
+      this.tick();
+    }, rate);
   }
 
   constructor(rl: readline.Interface, config: AeonixConfig) {
@@ -274,10 +282,7 @@ export default class Aeonix extends Client {
       }
     })();
 
-    this.ticker = setInterval(() => {
-      this.status.refresh();
-      this.tick();
-    }, this.config.tickRate);
+    this.reloadTicker(this.config.tickRate);
   }
 
   override on<Event extends keyof AeonixEvents>(

@@ -1,5 +1,4 @@
-import { model } from "mongoose";
-import environmentSchema from "./environmentSchema.js";
-import StoredEnvironment from "./storedEnvironment.js";
+import StoredEnvironment from "./environmentStorage.js";
+import { getModelForClass } from "@typegoose/typegoose";
 
-export default model<StoredEnvironment>("Environment", environmentSchema);
+export default getModelForClass(StoredEnvironment);
