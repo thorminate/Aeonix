@@ -28,7 +28,7 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.51.0",
     "@typegoose/typegoose": "^12.20.0",
-    "@types/node": "^24.9.2",
+    "@types/node": "^24.10.1",
     "ansis": "^4.2.0",
     "cbor2": "^2.0.1",
     "discord.js": "^14.24.2",
