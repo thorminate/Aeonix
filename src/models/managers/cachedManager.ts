@@ -17,6 +17,7 @@ export default abstract class CachedManager<
     if (!instance) {
       instance = await this.load(id);
       if (!instance) return;
+      runOnAccess = false;
     }
 
     this.set(instance);
@@ -33,6 +34,9 @@ export default abstract class CachedManager<
     return instances;
   }
 
+  empty() {
+    this._cache.clear();
+  }
   has(id: Key) {
     return this._cache.has(id);
   }

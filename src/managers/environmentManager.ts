@@ -1,7 +1,6 @@
 import path from "path";
 import url from "url";
 import Environment from "../models/environment/environment.js";
-import HybridCachedManager from "../models/core/hybridCachedManager.js";
 import { Model } from "mongoose";
 import environmentModel from "../models/environment/utils/environmentModel.js";
 import EnvironmentStorage from "../models/environment/utils/environmentStorage.js";
@@ -9,8 +8,9 @@ import log from "../utils/log.js";
 import { decode } from "cbor2";
 import { inflateSync } from "zlib";
 import semibinaryToBuffer from "../models/player/utils/semibinaryToBuffer.js";
-import EnvironmentSerializedData from "../models/environment/utils/environmentSerializedData.js";
-import ConcreteConstructor from "../models/core/concreteConstructor.js";
+import ConcreteConstructor from "../utils/concreteConstructor.js";
+import HybridCachedManager from "../models/managers/hybridCachedManager.js";
+import { SerializedData } from "../models/core/serializable.js";
 
 type Holds = Environment;
 
@@ -27,7 +27,8 @@ export default class EnvironmentManager extends HybridCachedManager<
   }
 
   override async onAccess(instance: Environment): Promise<void> {
-    this.channelToEnv.set(instance.channelId, instance.type);
+    this.channelToEnv.set(instance.channelId, instance._id);
+    instance.lastAccessed = Date.now();
   }
 
   async onSave(inst: Environment): Promise<EnvironmentStorage | undefined> {
@@ -43,7 +44,7 @@ export default class EnvironmentManager extends HybridCachedManager<
     }
 
     // Compress class and convert to pojo
-    const compressed = new EnvironmentStorage({ ...rawEnv, type: inst.type });
+    const compressed = new EnvironmentStorage(rawEnv);
 
     return compressed;
   }
@@ -56,11 +57,10 @@ export default class EnvironmentManager extends HybridCachedManager<
       const uncompressed = decode(
         inflateSync(semibinaryToBuffer(data.d))
       ) as Record<string, unknown>;
-      const obj: EnvironmentSerializedData = {
+      const obj: SerializedData = {
         _id: data._id,
         d: uncompressed,
         v: data.v,
-        type: data.type,
       };
 
       return obj;
@@ -79,7 +79,7 @@ export default class EnvironmentManager extends HybridCachedManager<
   }
 
   getKey(instance: Environment): string {
-    const key = instance.type;
+    const key = instance._id;
     if (!key)
       throw new Error("No type found in environment", { cause: instance });
     return key;

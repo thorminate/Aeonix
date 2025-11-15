@@ -1,7 +1,7 @@
-import DiscordEvent from "../../../models/core/event.js";
+import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import log from "../../../utils/log.js";
 
-export default new DiscordEvent<"typingStart">({
+export default new AeonixEvent<"typingStart">({
   async callback({ aeonix, args: [typeContext] }) {
     const userId = typeContext.user.id;
     await aeonix.players.preload(userId);

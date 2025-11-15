@@ -14,7 +14,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { CommandContext } from "../models/core/interaction.js";
+import { CommandContext } from "../models/events/interaction.js";
 import log from "./log.js";
 
 interface SnippetPaginatorReturn<ReturnType extends "ok" | "error"> {

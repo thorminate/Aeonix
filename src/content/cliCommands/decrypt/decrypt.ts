@@ -1,12 +1,13 @@
 import run from "package-run";
-import CLICommand, { CLIOption } from "../../../models/core/cliCommand.js";
+import CLICommand from "../../../models/cli/cliCommand.js";
 import log from "../../../utils/log.js";
 
-export default class EncryptCommand extends CLICommand {
-  name: string = "decrypt";
-  description: string = "Decrypts the .env file.";
-  options: CLIOption<string, (raw: string) => string | undefined>[] = [];
-  async execute(): Promise<void> {
+export default new CLICommand({
+  name: "decrypt",
+  description: "Decrypts the .env file.",
+  options: [],
+  acceptsPrimaryArg: false,
+  async execute() {
     log({
       header: "Decrypting .env file...",
       type: "Info",
@@ -21,5 +22,5 @@ export default class EncryptCommand extends CLICommand {
       header: "Done",
       type: "Info",
     });
-  }
-}
+  },
+});

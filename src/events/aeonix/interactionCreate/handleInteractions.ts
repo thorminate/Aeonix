@@ -14,7 +14,7 @@ import {
 } from "discord.js";
 import Player from "../../../models/player/player.js";
 import log from "../../../utils/log.js";
-import DiscordEvent from "../../../models/core/event.js";
+import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import Environment from "../../../models/environment/environment.js";
 import Aeonix from "../../../aeonix.js";
 import PlayerRef from "../../../models/player/utils/playerRef.js";
@@ -28,7 +28,7 @@ type AnyInteraction<CT extends CacheType> = ButtonInteraction<CT> &
   StringSelectMenuInteraction<CT> &
   UserSelectMenuInteraction<CT>;
 
-export default new DiscordEvent<"interactionCreate">({
+export default new AeonixEvent<"interactionCreate">({
   callback: async ({ args: [context], aeonix }) => {
     let type = "";
 

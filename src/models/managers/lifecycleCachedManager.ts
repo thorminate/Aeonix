@@ -57,7 +57,6 @@ export default abstract class LifecycleCachedManager<
 
     instance = await this.load(id);
     if (instance) {
-      this.onAccess?.(instance);
       this.set(instance);
       this._weakRefs.set(id, new WeakRef(instance));
       this._finalizationRegistry.register(instance, id);
@@ -71,6 +70,8 @@ export default abstract class LifecycleCachedManager<
 
     const instance = await this.onLoad(raw);
 
+    this.onAccess?.(instance);
+
     this.set(instance);
     return instance;
   }
@@ -83,19 +84,19 @@ export default abstract class LifecycleCachedManager<
     if (!allDocs || !allDocs.length || allDocs.length === 0) return [];
 
     const total: Holds[] = [];
-    const batchSize = 100;
+    const batchSize = 500;
     for (let i = 0; i < allDocs.length; i += batchSize) {
       const batch = allDocs.slice(i, i + batchSize);
 
       const batchPromises = batch.map(async (doc) => {
         if (noDuplicates && (await this.exists(doc._id))) return null;
-        if (this._cache.has(doc._id)) {
-          const cached = this._cache.get(doc._id)!;
-          this.onAccess?.(cached);
+        if (this.has(doc._id)) {
+          const cached = (await this.get(doc._id))!;
           return cached;
         }
 
         const instance = await this.onLoad(doc as DB);
+        this.onAccess?.(instance);
         return instance;
       });
 

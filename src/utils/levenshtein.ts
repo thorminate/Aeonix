@@ -1,4 +1,4 @@
-export default function levenshtein(a: string, b: string) {
+export default function levenshtein(a: string, b: string): number {
   const m = a.length,
     n = b.length;
   const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));

@@ -1,7 +1,7 @@
 import path from "path";
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import ConcreteConstructor from "./concreteConstructor.js";
+import ConcreteConstructor from "../../utils/concreteConstructor.js";
 import FileBasedManager from "./fileBasedManager.js";
 
 export abstract class ConstructableManager<T> extends FileBasedManager<T> {
@@ -16,8 +16,14 @@ export abstract class ConstructableManager<T> extends FileBasedManager<T> {
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
-    const imported = (await import(fileUrl.toString()))
-      .default as ConcreteConstructor<T>;
+    const imported = (
+      await import(
+        fileUrl.toString() +
+          "?t=" +
+          Date.now() +
+          "&debug=fromConstructableManager"
+      )
+    ).default as ConcreteConstructor<T>;
 
     this._classCache.set(id, imported);
     return imported;
@@ -42,8 +48,14 @@ export abstract class ConstructableManager<T> extends FileBasedManager<T> {
 
     for (const file of files) {
       const fileUrl = url.pathToFileURL(file);
-      const imported = (await import(fileUrl.toString()))
-        .default as ConcreteConstructor<T>;
+      const imported = (
+        await import(
+          fileUrl.toString() +
+            "?t=" +
+            Date.now() +
+            "&debug=fromConstructableManager"
+        )
+      ).default as ConcreteConstructor<T>;
       total.push(imported);
       this._classCache.set(path.basename(file, ".js"), imported);
     }
@@ -59,6 +71,7 @@ export abstract class ConstructableManager<T> extends FileBasedManager<T> {
       const instance = new rawClass();
       const id = this.getKey(instance);
       if (id && (!noDuplicates || !this.exists(id))) {
+        await this.onAccess?.(instance);
         this.set(instance);
         total.push(instance);
       }

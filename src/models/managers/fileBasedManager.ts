@@ -7,7 +7,12 @@ export default abstract class FileBasedManager<T> extends CachedManager<T> {
   protected pathsLoaded = false;
 
   abstract folder(): string;
-  abstract override getKey(instance: T): string;
+
+  override empty(): void {
+    super.empty();
+    this.pathCache.clear();
+    this.pathsLoaded = false;
+  }
 
   protected async ensurePathsLoaded() {
     if (this.pathsLoaded) return;

@@ -1,8 +1,8 @@
-import DiscordEvent from "../../../models/core/event.js";
+import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import channelToEnvironment from "../../../models/environment/utils/channelToEnvironment.js";
 import log from "../../../utils/log.js";
 
-export default new DiscordEvent<"messageCreate">({
+export default new AeonixEvent<"messageCreate">({
   async callback({ args: [message], aeonix }) {
     if (!message.guild || message.author.id === aeonix.user?.id) return;
 

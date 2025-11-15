@@ -1,6 +1,6 @@
 import { ActivityType } from "discord.js";
-import BaseManager from "../models/core/baseManager.js";
 import log from "../utils/log.js";
+import BaseManager from "../models/managers/baseManager.js";
 
 export default class StatusManager extends BaseManager {
   verbs: string[] = [

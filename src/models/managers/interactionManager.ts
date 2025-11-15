@@ -1,6 +1,6 @@
 import url from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
-import Interaction, { InteractionTypes } from "./interaction.js";
+import Interaction, { InteractionTypes } from "../events/interaction.js";
 import FileBasedManager from "./fileBasedManager.js";
 export default abstract class InteractionManager<
   T extends Interaction<InteractionTypes, boolean, boolean, boolean, boolean>
@@ -12,7 +12,17 @@ export default abstract class InteractionManager<
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
-    const imported = (await import(fileUrl.toString())).default as T;
+    const imported = (
+      await import(
+        fileUrl.toString() +
+          "?t=" +
+          Date.now() +
+          "&debug=fromInteractionManager"
+      )
+    ).default as T;
+
+    this.onAccess?.(imported);
+    this.set(imported);
 
     return imported;
   }
@@ -25,11 +35,19 @@ export default abstract class InteractionManager<
 
     for (const file of files) {
       const fileUrl = url.pathToFileURL(file);
-      const imported: T = (await import(fileUrl.toString())).default;
+      const imported: T = (
+        await import(
+          fileUrl.toString() +
+            "?t=" +
+            Date.now() +
+            "&debug=fromInteractionManager"
+        )
+      ).default;
 
       const id = this.getKey(imported);
 
       if (id && (!noDuplicates || !this.exists(id))) {
+        this.onAccess?.(imported);
         this.set(imported);
         total.push(imported);
       }

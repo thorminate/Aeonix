@@ -1,6 +1,6 @@
-import { AeonixConfig } from "./aeonix.js";
+import AeonixConfig from "./models/core/aeonixConfig.js";
 
-export default {
+export default new AeonixConfig({
   tickRate: 10 * 1000,
   maxNotifications: 50,
-} as AeonixConfig;
+});

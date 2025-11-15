@@ -14,6 +14,9 @@ importers:
       '@typegoose/typegoose':
         specifier: ^12.20.0
         version: 12.20.0(mongoose@8.19.4)
+      '@types/ms':
+        specifier: ^2.1.0
+        version: 2.1.0
       '@types/node':
         specifier: ^24.10.1
         version: 24.10.1
@@ -32,6 +35,9 @@ importers:
       mongoose:
         specifier: ^8.19.4
         version: 8.19.4
+      ms:
+        specifier: ^2.1.3
+        version: 2.1.3
       package-json-type:
         specifier: ^1.0.3
         version: 1.0.3
@@ -209,6 +215,9 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/ms@2.1.0':
+    resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
   '@types/node@24.10.1':
     resolution: {integrity: sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==}
@@ -1263,6 +1272,8 @@ snapshots:
   '@types/estree@1.0.8': {}
 
   '@types/json-schema@7.0.15': {}
+
+  '@types/ms@2.1.0': {}
 
   '@types/node@24.10.1':
     dependencies:

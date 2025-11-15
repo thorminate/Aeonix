@@ -26,8 +26,8 @@ import StatusManager from "./managers/statusManager.js";
 import PlayerManager from "./managers/playerManager.js";
 import QuestManager from "./managers/questManager.js";
 import { IPackageJson } from "package-json-type";
-import { tickPlayers } from "./events/discord/tick/tickPlayers.js";
-import AeonixCLI from "./models/core/cli.js";
+import AeonixCLI from "./models/cli/cli.js";
+import config from "./config.js";
 
 export type AeonixEvents = ClientEvents & {
   tick: [
@@ -38,15 +38,9 @@ export type AeonixEvents = ClientEvents & {
   ];
 };
 
-export interface AeonixConfig {
-  tickRate: number;
-  maxNotifications: number;
-}
 export default class Aeonix extends Client {
   rl: readline.Interface;
   db = mongoose;
-
-  config: AeonixConfig;
 
   private _currentTime = 1;
   private _currentDay = 1;
@@ -80,6 +74,7 @@ export default class Aeonix extends Client {
   userSelectMenus = new UserSelectMenuManager(this);
   status = new StatusManager(this);
   cli = new AeonixCLI(this);
+  config = config;
 
   get currentTime() {
     const now = this._currentTime;
@@ -130,7 +125,7 @@ export default class Aeonix extends Client {
       doNotPrompt: true,
     });
     try {
-      tickPlayers(this);
+      await this.fullSave();
       if (this.user) {
         this.user.setPresence({ status: "invisible" });
       }
@@ -155,6 +150,95 @@ export default class Aeonix extends Client {
     this.masterRoleId = process.env.MASTER_ROLE || "";
   }
 
+  async savePlayers() {
+    const allPlayers = await this.players.getAll(false);
+
+    for (const player of allPlayers) {
+      const diff = Date.now() - player.lastAccessed!;
+
+      // if the player has not been accessed within the alloted tick rate, unload the player from the cache
+      if (diff > this.config.tickRate) {
+        await player.commit(false);
+        this.players.release(player._id);
+      } else {
+        await player.commit();
+      }
+    }
+  }
+
+  async saveEnvironments() {
+    const allEnvironments = await this.environments.getAll(false);
+
+    for (const environment of allEnvironments) {
+      const diff = Date.now() - environment.lastAccessed!;
+
+      // if the environment has not been accessed within the alloted tick rate, unload the environment from the cache
+      if (diff > this.config.tickRate) {
+        await environment.commit(false);
+        this.environments.release(environment._id);
+      } else {
+        await environment.commit();
+      }
+    }
+  }
+
+  async fullSave() {
+    await this.savePlayers();
+    await this.saveEnvironments();
+  }
+
+  async makeAllCaches(o: Aeonix, shouldInitCLI = false, shouldClear = false) {
+    if (shouldClear) {
+      const clearCLI = () => {
+        o.cli.cache.clear();
+        o.rl.removeAllListeners("line");
+      };
+
+      o.buttons.empty();
+      o.channelSelectMenus.empty();
+      o.commands.empty();
+      o.environments.empty();
+      o.items.empty();
+      o.letters.empty();
+      o.mentionableSelectMenus.empty();
+      o.modals.empty();
+      o.players.empty();
+      o.quests.empty();
+      o.roleSelectMenus.empty();
+      o.statusEffects.empty();
+      o.stringSelectMenus.empty();
+      o.userSelectMenus.empty();
+
+      if (shouldInitCLI) clearCLI();
+    }
+
+    await Promise.all([
+      o.buttons.loadAll(),
+      o.channelSelectMenus.loadAll(),
+      o.commands.loadAll(),
+      o.environments.loadAll(),
+      o.items.loadAll(),
+      o.letters.loadAll(),
+      o.mentionableSelectMenus.loadAll(),
+      o.modals.loadAll(),
+      o.players.markReady(),
+      o.quests.loadAll(),
+      o.roleSelectMenus.loadAll(),
+      o.statusEffects.loadAll(),
+      o.stringSelectMenus.loadAll(),
+      o.userSelectMenus.loadAll(),
+      shouldInitCLI ? o.cli.init() : null,
+    ]);
+
+    log({
+      header: "All caches made",
+      processName: "CacheOrchestrator",
+      type: "Info",
+    });
+
+    return o;
+  }
+
   reloadTicker(rate: number) {
     if (this.ticker) clearInterval(this.ticker);
     this.ticker = setInterval(() => {
@@ -163,7 +247,11 @@ export default class Aeonix extends Client {
     }, rate);
   }
 
-  constructor(rl: readline.Interface, config: AeonixConfig) {
+  async refreshCaches() {
+    await this.makeAllCaches(this, true, true);
+  }
+
+  constructor(rl: readline.Interface) {
     log({
       header: "Starting boot-up sequence",
       processName: "AeonixConstructor",
@@ -270,7 +358,7 @@ export default class Aeonix extends Client {
           });
         });
 
-        await makeAllCaches(this);
+        await this.makeAllCaches(this);
       } catch (e) {
         log({
           header: "Error whilst creating Aeonix object",
@@ -322,31 +410,4 @@ export default class Aeonix extends Client {
     super.removeAllListeners(event as string);
     return this;
   }
-}
-
-async function makeAllCaches(o: Aeonix) {
-  await Promise.all([
-    o.buttons.loadAll(),
-    o.channelSelectMenus.loadAll(),
-    o.commands.loadAll(),
-    o.environments.loadAll(),
-    o.items.loadAll(),
-    o.letters.loadAll(),
-    o.mentionableSelectMenus.loadAll(),
-    o.modals.loadAll(),
-    o.players.markReady(),
-    o.quests.loadAll(),
-    o.roleSelectMenus.loadAll(),
-    o.statusEffects.loadAll(),
-    o.stringSelectMenus.loadAll(),
-    o.userSelectMenus.loadAll(),
-  ]);
-
-  log({
-    header: "All caches made",
-    processName: "CacheOrchestrator",
-    type: "Info",
-  });
-
-  return o;
 }

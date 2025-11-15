@@ -8,7 +8,7 @@ import {
 import log from "../../../utils/log.js";
 import Interaction, {
   InteractionTypes,
-} from "../../../models/core/interaction.js";
+} from "../../../models/events/interaction.js";
 import containerSnippetPaginator, {
   containerSnippetPaginatorWithUpdate,
 } from "../../../utils/containerSnippetPaginator.js";

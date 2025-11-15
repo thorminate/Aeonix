@@ -16,7 +16,6 @@ import Player from "../player/player.js";
 import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
-import { randomUUID } from "crypto";
 import Item from "../item/item.js";
 import log from "../../utils/log.js";
 import merge from "../../utils/merge.js";
@@ -30,7 +29,7 @@ import { ClassConstructor } from "../../utils/typeDescriptor.js";
 
 interface RawEnvironment {
   _id: string;
-  type: string;
+  lastAccessed: number;
   overviewMessageId: string;
   players: string[];
   items: Item[];
@@ -39,11 +38,11 @@ interface RawEnvironment {
 const v1 = defineField(baseFields, {
   add: {
     _id: { id: 0, type: String },
-    type: { id: 1, type: String },
-    overviewMessageId: { id: 2, type: String },
-    players: { id: 3, type: arrayOf(String) },
+    lastAccessed: { id: 1, type: Number },
+    overviewMessageId: { id: 3, type: String },
+    players: { id: 4, type: arrayOf(String) },
     items: {
-      id: 4,
+      id: 5,
       type: dynamicArrayOf(async (o) => {
         if (
           !o ||
@@ -65,8 +64,8 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
   fields = [v1];
   migrators = [];
 
-  _id: string;
-  abstract type: string;
+  abstract _id: string;
+  lastAccessed: number = 0;
   abstract channelId: string;
   abstract name: string;
   abstract description: string;
@@ -110,7 +109,7 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
 
   adjacentTo(environment: Environment | string): boolean {
     return this.adjacentEnvironments.includes(
-      typeof environment === "string" ? environment : environment.type
+      typeof environment === "string" ? environment : environment._id
     );
   }
 
@@ -214,10 +213,5 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
         name: this.name,
       });
     }
-  }
-
-  constructor(id?: string) {
-    super();
-    this._id = id ?? randomUUID();
   }
 }

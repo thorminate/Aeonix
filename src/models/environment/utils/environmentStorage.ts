@@ -1,7 +1,7 @@
 import { modelOptions, Severity, prop } from "@typegoose/typegoose";
 import { encode } from "cbor2";
 import { deflateSync } from "zlib";
-import EnvironmentSerializedData from "./environmentSerializedData.js";
+import { SerializedData } from "../../core/serializable.js";
 
 @modelOptions({
   schemaOptions: { collection: "environments" },
@@ -10,16 +10,13 @@ import EnvironmentSerializedData from "./environmentSerializedData.js";
 export default class EnvironmentStorage {
   @prop({ type: String, required: true })
   _id!: string;
-  @prop({ type: String, required: true })
-  type!: string;
   @prop({ type: Number, required: true })
   v!: number; // version
   @prop({ type: Buffer, required: true })
   d!: Buffer; // rawPlayer
 
-  constructor({ _id, type, d, v }: EnvironmentSerializedData) {
+  constructor({ _id, d, v }: SerializedData) {
     this._id = _id!;
-    this.type = type!;
     this.v = v!;
     this.d = deflateSync(encode(d));
   }

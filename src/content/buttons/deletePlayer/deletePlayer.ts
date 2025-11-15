@@ -5,7 +5,7 @@ import componentWrapper from "../../../utils/componentWrapper.js";
 import Interaction, {
   ButtonBuilderV2,
   InteractionTypes,
-} from "../../../models/core/interaction.js";
+} from "../../../models/events/interaction.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()

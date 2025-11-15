@@ -6,7 +6,6 @@ import { appendFileSync, existsSync, writeFileSync } from "fs";
 import { config as dotenv } from "@dotenvx/dotenvx";
 import { magenta, green } from "ansis";
 import Aeonix from "./aeonix.js";
-import config from "./config.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -65,6 +64,6 @@ log({
   type: "Info",
 });
 
-const aeonix = new Aeonix(rl, config);
+const aeonix = new Aeonix(rl);
 
 export default aeonix;

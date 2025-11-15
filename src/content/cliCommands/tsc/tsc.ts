@@ -1,14 +1,14 @@
 import { rmSync } from "fs";
-import CLICommand, { CLIOption } from "../../../models/core/cliCommand.js";
+import CLICommand from "../../../models/cli/cliCommand.js";
 import log from "../../../utils/log.js";
 import { execSync } from "child_process";
 
-export default class TscCommand extends CLICommand {
-  name: string = "tsc";
-  description: string = "Recompiles the Aeonix's source code.";
-  options: CLIOption[] = [];
-  acceptsPrimaryArg: boolean = false;
-  async execute(): Promise<void> {
+export default new CLICommand({
+  name: "tsc",
+  description: "Recompiles the Aeonix's source code.",
+  options: [],
+  acceptsPrimaryArg: false,
+  async execute() {
     log({
       header: "Recompiling",
       processName: "CLI",
@@ -26,5 +26,5 @@ export default class TscCommand extends CLICommand {
         type: "Error",
       });
     }
-  }
-}
+  },
+});

@@ -1,18 +1,14 @@
 import run from "package-run";
-import CLICommand, {
-  CLICommandArgs,
-  CLIOption,
-} from "../../../models/core/cliCommand.js";
+import CLICommand from "../../../models/cli/cliCommand.js";
 import log from "../../../utils/log.js";
 import { config } from "@dotenvx/dotenvx";
 
-export default class EncryptCommand extends CLICommand {
-  name: string = "encrypt";
-  description: string = "Encrypts the .env file.";
-  options: CLIOption<string, (raw: string) => string | undefined>[] = [];
-  async execute({
-    aeonix,
-  }: CLICommandArgs<typeof this.options>): Promise<void> {
+export default new CLICommand({
+  name: "encrypt",
+  description: "Encrypts the .env file.",
+  acceptsPrimaryArg: false,
+  options: [],
+  async execute({ aeonix }) {
     log({
       header: "Encrypting .env file...",
       type: "Info",
@@ -41,5 +37,5 @@ export default class EncryptCommand extends CLICommand {
       header: "Done",
       type: "Info",
     });
-  }
-}
+  },
+});

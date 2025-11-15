@@ -1,20 +1,16 @@
 import { blue, blueBright, redBright } from "ansis";
-import CLICommand, {
-  CLIOption,
-  CLICommandArgs,
-} from "../../../models/core/cliCommand.js";
+import CLICommand from "../../../models/cli/cliCommand.js";
 import log from "../../../utils/log.js";
 import { execSync } from "child_process";
 import path from "path";
 
-export default class InfoCommand extends CLICommand {
-  name: string = "info";
-  description: string = "Displays information about the Aeonix.";
-  options: CLIOption[] = [];
-  acceptsPrimaryArg: boolean = false;
-  async execute({
-    aeonix,
-  }: CLICommandArgs<typeof this.options>): Promise<void> {
+export default new CLICommand({
+  name: "info",
+  description: "Displays information about the Aeonix.",
+  options: [],
+  acceptsPrimaryArg: false,
+
+  async execute({ aeonix }) {
     const deps = aeonix.packageJson.dependencies;
     const devDeps = aeonix.packageJson.devDependencies;
     log({
@@ -48,5 +44,5 @@ export default class InfoCommand extends CLICommand {
       ],
       type: "Info",
     });
-  }
-}
+  },
+});

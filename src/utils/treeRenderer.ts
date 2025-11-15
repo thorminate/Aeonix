@@ -1,10 +1,10 @@
-export type CommandTree = {
+export type Tree = {
   name: string;
   description?: string;
-  children?: CommandTree[];
+  children?: Tree[];
 };
 
-export default function renderTree(node: CommandTree): string {
+export default function renderTree(node: Tree): string {
   const lines: string[] = [node.name];
   if (node.children) {
     lines.push(...renderSegment(node.children, ""));
@@ -12,9 +12,9 @@ export default function renderTree(node: CommandTree): string {
   return lines.join("\n");
 }
 
-function renderSegment(nodes: CommandTree[], prefix: string): string[] {
+function renderSegment(nodes: Tree[], prefix: string): string[] {
   const lines: string[] = [];
-  let segment: CommandTree[] = [];
+  let segment: Tree[] = [];
 
   const flushSegment = () => {
     if (segment.length === 0) return;
@@ -49,7 +49,7 @@ function renderSegment(nodes: CommandTree[], prefix: string): string[] {
 }
 
 function renderNode(
-  node: CommandTree,
+  node: Tree,
   prefix: string,
   isLast: boolean,
   align: boolean,

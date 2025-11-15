@@ -1,7 +1,7 @@
-import Interaction, { InteractionTypes } from "../models/core/interaction.js";
+import Interaction, { InteractionTypes } from "../models/events/interaction.js";
 import path from "path";
 import url from "url";
-import InteractionManager from "../models/core/interactionManager.js";
+import InteractionManager from "../models/managers/interactionManager.js";
 
 type Holds = Interaction<
   InteractionTypes.ChannelSelectMenu,

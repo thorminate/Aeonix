@@ -4,7 +4,6 @@ import Aeonix from "../../aeonix.js";
 import { fileURLToPath, pathToFileURL } from "url";
 import getAllFiles from "../../utils/getAllFiles.js";
 import CLICommand, { CLIOption, CLIOptionResult } from "./cliCommand.js";
-import ConcreteConstructor from "./concreteConstructor.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,22 +24,15 @@ export default class CLI {
       const filePath = path.resolve(folder, folderName + ".js");
       const fileUrl = pathToFileURL(filePath);
 
-      const imported = (await import(fileUrl.toString()))
-        .default as ConcreteConstructor<CLICommand>;
+      const inst = (
+        await import(
+          fileUrl.toString() + "?t=" + Date.now() + "&debug=fromCliInit"
+        )
+      ).default as CLICommand;
 
-      if (!imported) {
-        log({
-          header: `CLI Command, ${folderName}, does not have a default import! Skipping...`,
-          processName: "AeonixCLI",
-          type: "Warn",
-        });
-        continue;
-      }
-
-      const inst = new imported();
       if (!inst) {
         log({
-          header: `CLI Command, ${folderName}, does not return a constructible class! Skipping...`,
+          header: `CLI Command, ${folderName}, does not have a default import! Skipping...`,
           processName: "AeonixCLI",
           type: "Warn",
         });
@@ -57,14 +49,12 @@ export default class CLI {
       );
 
       const command = inputArr[0]?.toLowerCase().trim();
-      const primaryInputArr = inputArr.slice(
+      const primaryInputs = inputArr.slice(
         1,
-        firstOptionIndex == -1 ? 2 : firstOptionIndex
+        firstOptionIndex == -1 ? inputArr.length : firstOptionIndex
       );
-
-      const primaryInput = primaryInputArr.join(" ");
       const options = inputArr.slice(
-        firstOptionIndex == -1 ? 1 + primaryInputArr.length : firstOptionIndex
+        firstOptionIndex == -1 ? 1 + primaryInputs.length : firstOptionIndex
       );
       const providedOptions: CLIOptionResult<CLIOption[]> = {};
 
@@ -80,10 +70,7 @@ export default class CLI {
         return;
       }
 
-      if (
-        commandToExecute.primaryArg === undefined &&
-        primaryInput.length > 0
-      ) {
+      if (!commandToExecute.acceptsPrimaryArg && primaryInputs.length > 0) {
         log({
           header: `Command ${command} does not accept a primary argument! Use --flags to pass options.`,
           processName: "AeonixCLI",
@@ -158,7 +145,7 @@ export default class CLI {
         await commandToExecute.execute({
           aeonix: this.aeonix,
           options: providedOptions,
-          primaryArg: primaryInput,
+          primaryArgs: primaryInputs,
         });
       } catch (e) {
         log({

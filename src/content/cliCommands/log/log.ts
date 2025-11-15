@@ -1,11 +1,11 @@
-import CLICommand, { CLICommandArgs } from "../../../models/core/cliCommand.js";
+import path from "path";
+import CLICommand from "../../../models/cli/cliCommand.js";
 import log, { LogType } from "../../../utils/log.js";
-import tuplify from "../../../utils/tuplify.js";
 
-export default class LogCommand extends CLICommand {
-  name: string = "log";
-  description: string = "Logs a message.";
-  options = tuplify([
+export default new CLICommand({
+  name: "log",
+  description: "Logs a message.",
+  options: [
     {
       name: "payload",
       description: "The payload to log.",
@@ -17,6 +17,8 @@ export default class LogCommand extends CLICommand {
     {
       name: "folder",
       description: "The folder to save the log into.",
+      transform: (value: string) =>
+        path.isAbsolute(value) ? value : undefined,
     },
     {
       name: "type",
@@ -34,18 +36,15 @@ export default class LogCommand extends CLICommand {
         return (allowedTypes.includes(value) ? value : "Info") as LogType;
       },
     },
-  ]);
-  acceptsPrimaryArg: boolean = true;
-  async execute({
-    options,
-    primaryArg,
-  }: CLICommandArgs<typeof this.options>): Promise<void> {
+  ] as const,
+  acceptsPrimaryArg: true,
+  async execute({ options, primaryArgs }): Promise<void> {
     log({
-      header: primaryArg || "Aeonix Log",
+      header: primaryArgs.join(" ") || "Aeonix Log",
       payload: options["payload"] ?? undefined,
       processName: options["processName"] ?? undefined,
       type: (options["type"] ?? "Info") as LogType,
       folder: options["folder"] ?? undefined,
     });
-  }
-}
+  },
+});

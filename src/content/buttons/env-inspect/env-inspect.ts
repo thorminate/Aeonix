@@ -2,7 +2,7 @@ import { ButtonStyle } from "discord.js";
 import Interaction, {
   ButtonBuilderV2,
   InteractionTypes,
-} from "../../../models/core/interaction.js";
+} from "../../../models/events/interaction.js";
 import log from "../../../utils/log.js";
 
 export default new Interaction({

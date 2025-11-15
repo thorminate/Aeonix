@@ -1,12 +1,12 @@
-import CLICommand, { CLIOption } from "../../../models/core/cliCommand.js";
+import CLICommand from "../../../models/cli/cliCommand.js";
 import log from "../../../utils/log.js";
 
-export default class ClearCommand extends CLICommand {
-  name: string = "clear";
-  description: string = "Clears the console. (Log files are not affected)";
-  options: CLIOption[] = [];
-  acceptsPrimaryArg: boolean = false;
-  async execute(): Promise<void> {
+export default new CLICommand({
+  name: "clear",
+  description: "Clears the console. (Log files are not affected)",
+  options: [],
+  acceptsPrimaryArg: false,
+  async execute() {
     log({
       header: "Clearing console",
       processName: "CLI",
@@ -14,5 +14,5 @@ export default class ClearCommand extends CLICommand {
     });
     process.stdout.write("\x1B[2J\x1B[0f");
     console.clear();
-  }
-}
+  },
+});

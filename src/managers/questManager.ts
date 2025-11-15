@@ -1,7 +1,7 @@
 import path from "path";
 import url from "url";
 import Quest from "../models/player/utils/quests/quest.js";
-import { ConstructableManager } from "../models/core/constructibleManager.js";
+import { ConstructableManager } from "../models/managers/constructableManager.js";
 
 type Holds = Quest;
 

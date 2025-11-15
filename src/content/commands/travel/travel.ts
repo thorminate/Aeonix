@@ -9,7 +9,7 @@ import log from "../../../utils/log.js";
 import containerSnippetPaginator from "../../../utils/containerSnippetPaginator.js";
 import Interaction, {
   InteractionTypes,
-} from "../../../models/core/interaction.js";
+} from "../../../models/events/interaction.js";
 import PlayerMoveToResult from "../../../models/player/utils/playerMoveToResult.js";
 import generateTravelContents from "./utils/generateTravelContents.js";
 import travelHeader from "./utils/travelHeader.js";

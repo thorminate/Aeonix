@@ -7,7 +7,7 @@ import log from "../../../utils/log.js";
 import Player from "../player.js";
 import PlayerEventDeclaration, {
   PlayerEventParams,
-} from "../../core/playerEvent.js";
+} from "../../events/playerEvent.js";
 import Environment from "../../environment/environment.js";
 import Item from "../../item/item.js";
 
@@ -186,7 +186,12 @@ export default class PlayerEventsManager extends EventEmitter {
             const fileUrl = url.pathToFileURL(filePath);
             const eventModule: {
               default: PlayerEventDeclaration<keyof PlayerEvents>;
-            } = await import(fileUrl.toString());
+            } = await import(
+              fileUrl.toString() +
+                "?t=" +
+                Date.now() +
+                "&debug=fromPlayerEventHandler"
+            );
 
             const params = new PlayerEventParams(this.parent, ...args);
 

@@ -8,7 +8,7 @@ import {
   TextDisplayComponent,
 } from "discord.js";
 import log from "../../../utils/log.js";
-import DiscordEvent from "../../../models/core/event.js";
+import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
 import onboarding0 from "../../../content/buttons/onboarding0/onboarding0.js";
 
@@ -30,7 +30,7 @@ export const welcomeImage = new AttachmentBuilder("./assets/welcome.png", {
   name: "welcome.png",
 });
 
-export default new DiscordEvent<"ready">({
+export default new AeonixEvent<"ready">({
   callback: async ({ aeonix }) => {
     const onboardingChannelId = aeonix.onboardingChannelId;
 

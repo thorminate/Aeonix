@@ -1,8 +1,8 @@
 import { Message } from "discord.js";
-import DiscordEvent from "../../../models/core/event.js";
+import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import log from "../../../utils/log.js";
 
-export default new DiscordEvent<"messageCreate">({
+export default new AeonixEvent<"messageCreate">({
   async callback({ args: [context], aeonix }) {
     if (!(context instanceof Message)) return;
 

@@ -7,14 +7,14 @@ import {
 import {
   welcomeImage,
   welcomeMessage,
-} from "../../../events/discord/clientReady/02verifyOnboardingMsg.js";
+} from "../../../events/aeonix/clientReady/02verifyOnboardingMsg.js";
 import log from "../../../utils/log.js";
 import deletePlayer from "../../buttons/deletePlayer/deletePlayer.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
 import onboarding0 from "../../buttons/onboarding0/onboarding0.js";
 import Interaction, {
   InteractionTypes,
-} from "../../../models/core/interaction.js";
+} from "../../../models/events/interaction.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()

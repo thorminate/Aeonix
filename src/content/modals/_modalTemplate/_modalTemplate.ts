@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import Interaction, {
   InteractionTypes,
-} from "../../../models/core/interaction.js";
+} from "../../../models/events/interaction.js";
 import log from "../../../utils/log.js";
 
 export default new Interaction({

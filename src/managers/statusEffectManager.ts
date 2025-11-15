@@ -1,7 +1,7 @@
 import path from "path";
 import url from "url";
 import StatusEffect from "../models/player/utils/statusEffects/statusEffect.js";
-import { ConstructableManager } from "../models/core/constructibleManager.js";
+import { ConstructableManager } from "../models/managers/constructableManager.js";
 
 type Holds = StatusEffect;
 

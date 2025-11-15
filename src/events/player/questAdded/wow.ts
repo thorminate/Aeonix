@@ -1,5 +1,5 @@
 import TestNotification from "../../../content/letters/testNotification/testNotification.js";
-import PlayerEvent from "../../../models/core/playerEvent.js";
+import PlayerEvent from "../../../models/events/playerEvent.js";
 import log from "../../../utils/log.js";
 
 export default new PlayerEvent<"questAdded">({

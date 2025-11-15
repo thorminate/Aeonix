@@ -1,19 +1,15 @@
-import CLICommand, {
-  CLICommandArgs,
-  CLIOption,
-} from "../../../models/core/cliCommand.js";
+import CLICommand from "../../../models/cli/cliCommand.js";
 import log from "../../../utils/log.js";
-import renderTree, { CommandTree } from "../../../utils/treeRenderer.js";
-export default class HelpCommand extends CLICommand {
-  name: string = "help";
-  description: string = "Displays a list of available commands.";
-  options: CLIOption[] = [];
-  acceptsPrimaryArg: boolean = false;
-  async execute({
-    aeonix,
-  }: CLICommandArgs<typeof this.options>): Promise<void> {
+import renderTree, { Tree } from "../../../utils/treeRenderer.js";
+
+export default new CLICommand({
+  name: "help",
+  description: "Displays a list of available commands.",
+  options: [],
+  acceptsPrimaryArg: false,
+  async execute({ aeonix }) {
     const allCommands = Array.from(aeonix.cli.cache.values());
-    const commandTree: CommandTree = {
+    const commandTree: Tree = {
       name: "Commands",
       children: allCommands.map((cmd) => ({
         name: cmd.name,
@@ -21,7 +17,7 @@ export default class HelpCommand extends CLICommand {
         children: cmd.options.map((option) => ({
           name: `--${option.name}`,
           description: option.description,
-        })) as CommandTree[],
+        })),
       })),
     };
     log({
@@ -30,5 +26,5 @@ export default class HelpCommand extends CLICommand {
       payload: renderTree(commandTree),
       type: "Info",
     });
-  }
-}
+  },
+});

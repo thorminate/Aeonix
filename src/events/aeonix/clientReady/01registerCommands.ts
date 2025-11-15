@@ -1,5 +1,5 @@
 import log from "../../../utils/log.js";
-import DiscordEvent from "../../../models/core/event.js";
+import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import {
   ApplicationCommand,
   ApplicationCommandChoicesOption,
@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import Interaction, {
   InteractionTypes,
-} from "../../../models/core/interaction.js";
+} from "../../../models/events/interaction.js";
 import Aeonix from "../../../aeonix.js";
 
 async function getApplicationCommands(aeonix: Aeonix, guildId: string) {
@@ -104,7 +104,7 @@ function areCommandsDifferent(
   return false;
 }
 
-export default new DiscordEvent<"ready">({
+export default new AeonixEvent<"ready">({
   callback: async ({ aeonix }) => {
     log({
       header: "Registering commands",

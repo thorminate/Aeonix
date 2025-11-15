@@ -2,7 +2,9 @@ import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
 import url from "url";
 import log from "../utils/log.js";
-import DiscordEvent, { DiscordEventParams } from "../models/core/event.js";
+import AeonixEvent, {
+  AeonixEventParams,
+} from "../models/events/aeonixEvent.js";
 import Aeonix, { AeonixEvents } from "../aeonix.js";
 
 export default async (aeonix: Aeonix) => {
@@ -10,7 +12,7 @@ export default async (aeonix: Aeonix) => {
     const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
     const eventFolders = await getAllFiles(
-      path.join(__dirname, "..", "events", "discord"),
+      path.join(__dirname, "..", "events", "aeonix"),
       true
     );
 
@@ -35,10 +37,15 @@ export default async (aeonix: Aeonix) => {
           const filePath = path.resolve(eventFile);
           const fileUrl = url.pathToFileURL(filePath);
           const eventModule: {
-            default: DiscordEvent<keyof AeonixEvents>;
-          } = await import(fileUrl.toString());
+            default: AeonixEvent<keyof AeonixEvents>;
+          } = await import(
+            fileUrl.toString() +
+              "?t=" +
+              Date.now() +
+              "&debug=fromDiscordEventHandler"
+          );
 
-          const params = new DiscordEventParams(aeonix, ...args);
+          const params = new AeonixEventParams(aeonix, ...args);
 
           await eventModule.default.callback(params).catch((e: unknown) => {
             eventModule.default.onError(e, params);

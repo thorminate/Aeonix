@@ -1,5 +1,4 @@
 import { GuildMemberRoleManager, User } from "discord.js";
-import LifecycleCachedManager from "../models/core/lifecycleCachedManager.js";
 import Player from "../models/player/player.js";
 import PlayerRef from "../models/player/utils/playerRef.js";
 import aeonix from "../index.js";
@@ -14,6 +13,7 @@ import semibinaryToBuffer from "../models/player/utils/semibinaryToBuffer.js";
 import { SerializedData } from "../models/core/serializable.js";
 import { inflateSync } from "zlib";
 import PlayerEventsManager from "../models/player/utils/playerEvents.js";
+import LifecycleCachedManager from "../models/managers/lifecycleCachedManager.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -168,7 +168,7 @@ export default class PlayerManager extends LifecycleCachedManager<
 
     await (member.roles as GuildMemberRoleManager).add(playerRole);
 
-    await player.moveTo("start", true, true, true, true);
+    await player.moveTo("start", true, true, true);
 
     player.inbox.add(new TutorialQuestLetter());
 

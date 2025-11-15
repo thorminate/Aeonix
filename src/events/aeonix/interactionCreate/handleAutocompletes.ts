@@ -5,14 +5,14 @@ import {
   AutocompleteInteraction,
 } from "discord.js";
 import log from "../../../utils/log.js";
-import DiscordEvent from "../../../models/core/event.js";
+import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import Interaction, {
   InteractionTypes,
-} from "../../../models/core/interaction.js";
+} from "../../../models/events/interaction.js";
 import PlayerRef from "../../../models/player/utils/playerRef.js";
 import Player from "../../../models/player/player.js";
 
-export default new DiscordEvent<"interactionCreate">({
+export default new AeonixEvent<"interactionCreate">({
   callback: async ({ args: [context], aeonix }) => {
     if (!context.isAutocomplete()) {
       return;

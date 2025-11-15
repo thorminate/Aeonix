@@ -1,7 +1,7 @@
 import path from "path";
 import url from "url";
 import Letter from "../models/player/utils/inbox/letter.js";
-import { ConstructableManager } from "../models/core/constructibleManager.js";
+import { ConstructableManager } from "../models/managers/constructableManager.js";
 
 type Holds = Letter;
 

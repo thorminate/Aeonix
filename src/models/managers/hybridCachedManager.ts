@@ -1,21 +1,16 @@
-import getAllFiles from "../../utils/getAllFiles.js";
-import path from "path";
 import url from "url";
-import ConcreteConstructor from "./concreteConstructor.js";
+import ConcreteConstructor from "../../utils/concreteConstructor.js";
 import { Model } from "mongoose";
-import CachedManager from "./cachedManager.js";
+import FileBasedManager from "./fileBasedManager.js";
 
 export default abstract class HybridCachedManager<
   Holds extends {
-    type: string;
     _id: string;
   },
   DbData extends {
     _id: string;
-    type: string;
   }
-> extends CachedManager<Holds> {
-  abstract folder(): string;
+> extends FileBasedManager<Holds> {
   abstract model(): Model<DbData>;
   abstract onSave(inst: Holds): Promise<DbData | undefined>;
   abstract onLoad(
@@ -23,45 +18,32 @@ export default abstract class HybridCachedManager<
     ctor: ConcreteConstructor<Holds>
   ): Promise<Holds>;
 
-  protected pathCache: Map<string, string> = new Map();
-  protected pathsLoaded = false;
-
-  protected async ensurePathsLoaded() {
-    if (this.pathsLoaded) return;
-
-    const folders = await getAllFiles(this.folder(), true);
-
-    for (const folder of folders) {
-      const folderName = path.basename(folder);
-      const filePath = path.resolve(folder, folderName + ".js");
-      this.pathCache.set(folderName, filePath);
-    }
-
-    this.pathsLoaded = true;
-  }
-
   protected async loadRawClass(
-    id: string
+    type: string
   ): Promise<ConcreteConstructor<Holds> | undefined> {
     await this.ensurePathsLoaded();
-    const filePath = this.pathCache.get(id);
+    const filePath = this.pathCache.get(type);
     if (!filePath) return;
 
     const fileUrl = url.pathToFileURL(filePath);
-    return (await import(fileUrl.toString()))
-      .default as ConcreteConstructor<Holds>;
+    return (
+      await import(
+        fileUrl.toString() +
+          "?t=" +
+          Date.now() +
+          "&debug=fromHybridCachedManager"
+      )
+    ).default as ConcreteConstructor<Holds>;
   }
 
-  protected async instFromId(id: string): Promise<Holds | undefined> {
-    const RawClass = await this.loadRawClass(id);
+  protected async instFromId(type: string): Promise<Holds | undefined> {
+    const RawClass = await this.loadRawClass(type);
     if (!RawClass) return;
     return new RawClass() as Holds;
   }
 
   async load(id: string): Promise<Holds | undefined> {
-    let doc = (await this.model()
-      .findOne({ type: id })
-      .lean()) as unknown as DbData;
+    let doc = (await this.model().findById(id).lean()) as unknown as DbData;
 
     if (!doc) {
       const inst = await this.instFromId(id);
@@ -91,31 +73,31 @@ export default abstract class HybridCachedManager<
     const allIds = [...this.pathCache.keys()];
 
     const dbDocs = (await this.model()
-      .find({ type: { $in: allIds } })
+      .find({ _id: { $in: allIds } })
       .lean()) as DbData[];
-    const dbMap = new Map(dbDocs.map((d) => [d.type, d]));
+    const dbMap = new Map(dbDocs.map((d) => [d._id, d]));
 
     const total: Holds[] = [];
 
-    for (const id of allIds) {
-      if (noDuplicates && (await this.exists(id))) continue;
-      if (this.has(id)) {
-        const cached = (await this.get(id))!;
-        this.onAccess?.(cached);
-        total.push(cached);
-        continue;
-      }
-
+    for (const [id] of this.pathCache.entries()) {
       let doc = dbMap.get(id);
+
       if (!doc) {
         const inst = await this.instFromId(id);
         if (!inst) continue;
-        // create base document
 
         const data = await this.onSave(inst);
         if (!data) continue;
 
         doc = (await this.model().create(data)) as DbData;
+      }
+
+      if (noDuplicates && (await this.exists(id))) continue;
+
+      if (this.has(id)) {
+        const cached = (await this.get(id))!;
+        total.push(cached);
+        continue;
       }
 
       const ctor = await this.loadRawClass(id);

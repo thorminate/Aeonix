@@ -31,9 +31,6 @@ import merge from "../../utils/merge.js";
 import Quests, { RawQuests } from "./utils/quests/quests.js";
 import Settings, { RawSettings } from "./utils/settings/settings.js";
 import PlayerRef from "./utils/playerRef.js";
-import idToType from "../../utils/idToType.js";
-import environmentModel from "../environment/utils/environmentModel.js";
-import { Model } from "mongoose";
 import Environment from "../environment/environment.js";
 import formatNotification from "./utils/inbox/formatNotification.js";
 import Notification from "../../content/letters/notification/notification.js";
@@ -45,7 +42,7 @@ import Serializable, {
   defineField,
   SerializedData,
 } from "../core/serializable.js";
-import ConcreteConstructor from "../core/concreteConstructor.js";
+import ConcreteConstructor from "../../utils/concreteConstructor.js";
 import PlayerEventsDeclaration, {
   AnyPlayerEvent,
   PlayerEvents,
@@ -151,21 +148,13 @@ export default class Player extends Serializable<RawPlayer> {
 
   async moveTo(
     id: string,
-    isType = false,
     disregardAdjacents = false,
     disregardAlreadyHere = false,
     disregardOldEnvironment = false
   ): Promise<PlayerMoveToResult> {
-    const location = isType
-      ? id
-      : await idToType(
-          id,
-          environmentModel as unknown as Model<{ _id: string; type: string }>
-        );
-    if (this.location.id === location && !disregardAlreadyHere)
-      return "already here";
+    if (this.location.id === id && !disregardAlreadyHere) return "already here";
 
-    const env = await aeonix.environments.get(location);
+    const env = await aeonix.environments.get(id);
     if (!env) return "invalid location";
 
     const channel = await env.fetchChannel();
@@ -212,19 +201,15 @@ export default class Player extends Serializable<RawPlayer> {
       }
 
       oldEnv.leave(this);
-
-      oldEnv.commit();
     } else if (!disregardOldEnvironment) {
       return "no old environment";
     }
 
     env.join(this);
 
-    this.location.id = location;
+    this.location.id = id;
     this.location.channelId = channel.id;
     this.location.adjacents = env.adjacentEnvironments;
-
-    await env.commit();
 
     return env;
   }
