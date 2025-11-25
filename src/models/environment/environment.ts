@@ -154,17 +154,23 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
   leave(player: Player) {
     if (this.onLeave) this.onLeave({ eventType: "leave", player });
 
+    this.emit("playerLeft", player);
+
     this.players = this.players.filter((p) => p !== player._id);
   }
 
   join(player: Player) {
     if (this.onJoin) this.onJoin({ eventType: "join", player });
 
+    this.emit("playerJoined", player);
+
     if (!this.players.includes(player._id)) this.players.push(player._id);
   }
 
   dropItem(player: Player, item: Item) {
     if (this.onItemDrop) this.onItemDrop({ eventType: "drop", player, item });
+
+    this.emit("itemDropped", player, item);
 
     this.items.push(item);
   }
@@ -181,6 +187,10 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
     this.items = this.items.filter(
       (i) => i.id !== (typeof id === "string" ? id : id.id)
     );
+
+    if (!item) return;
+
+    this.emit("itemPickedUp", player, item);
 
     return item;
   }
