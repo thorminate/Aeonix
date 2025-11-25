@@ -1,4 +1,4 @@
-import log from "../../utils/log.js";
+import aeonix from "../../index.js";
 import TypeDescriptor, {
   ArrayTypeDescriptor,
   FunctionOrLiteralTypeDescriptor,
@@ -164,6 +164,7 @@ export default abstract class Serializable<
   protected excluded: string[] = [];
 
   async serialize(): Promise<SerializedData | undefined> {
+    const log = aeonix.logger.for("Serializable.serialize");
     try {
       const data: Record<number, unknown> = {};
 
@@ -174,11 +175,9 @@ export default abstract class Serializable<
       )?.shape;
 
       if (!fieldsForCurrentVersion) {
-        log({
-          header: `No fields found for version ${version}`,
-          type: "Error",
-          processName: "Serializable.serialize",
-          payload: { fields: this.fields, version: version },
+        log.error(`No fields found for version ${version}`, {
+          fields: this.fields,
+          version: version,
         });
         return;
       }
@@ -208,12 +207,7 @@ export default abstract class Serializable<
 
       return obj as SerializedData;
     } catch (e) {
-      log({
-        header: "Error serializing object",
-        type: "Error",
-        processName: "Serializable.serialize",
-        payload: { e, serializable: this },
-      });
+      log.error("Error serializing object", { e, serializable: this });
       return;
     }
   }
@@ -222,6 +216,7 @@ export default abstract class Serializable<
     type: TypeDescriptor,
     value: unknown
   ): Promise<unknown> {
+    const log = aeonix.logger.for("Serializable._serializeValue");
     try {
       if (typeof type === "function") {
         if (
@@ -244,13 +239,11 @@ export default abstract class Serializable<
             value.map(async (item: SerializedData) => {
               const literal = await literalOf(type.of, item);
               if (!literal) {
-                log({
-                  header:
-                    "Unable to serialize array item, type could not be resolved.",
-                  type: "Warn",
-                  processName: "Serializable._serializeValue",
-                  payload: [item, type],
-                });
+                log.warn(
+                  "Unable to serialize array item, type could not be resolved.",
+                  item,
+                  type
+                );
                 return item;
               }
               return await this._serializeValue(literal, item);
@@ -260,12 +253,7 @@ export default abstract class Serializable<
       }
       return [];
     } catch (e) {
-      log({
-        header: "Error serializing value",
-        type: "Error",
-        processName: "Serializable._serializeValue",
-        payload: { e, type, value },
-      });
+      log.error("Error serializing value", e, { type, value });
       return [];
     }
   }
@@ -274,6 +262,7 @@ export default abstract class Serializable<
     type: TypeDescriptor,
     value: unknown
   ): Promise<boolean> {
+    const log = aeonix.logger.for("Serializable._validateValue");
     try {
       if (type === null || type === undefined) return true;
 
@@ -303,12 +292,7 @@ export default abstract class Serializable<
 
       return false;
     } catch (e) {
-      log({
-        header: "Error validating value",
-        type: "Error",
-        processName: "Serializable._validateValue",
-        payload: { e, type, value },
-      });
+      log.error("Error validating value", e, { type, value });
       return false;
     }
   }
@@ -319,6 +303,7 @@ export default abstract class Serializable<
     version: number,
     inst: T
   ): Promise<T> {
+    const log = aeonix.logger.for("Serializable._runMigrations");
     try {
       const migrators = [...(inst.migrators ?? [])].sort(
         (a, b) => a.from - b.from
@@ -336,43 +321,44 @@ export default abstract class Serializable<
           working = await step.migrate(working);
           current = step.to;
         } catch (e) {
-          log({
-            header: `[${this.name}] Migration ${current} → ${step.to} failed`,
-            type: "Error",
-            processName: "Serializable._runMigrations",
-            payload: { e, data: working, step },
-          });
+          log.error(
+            `[${this.name}] Migration ${current} → ${step.to} failed`,
+            e,
+            {
+              migrator: step,
+              data,
+            }
+          );
         }
       }
 
       if (safeguard < 0) {
-        log({
-          header: `[${this.name}] Migration incomplete: exceeded max iterations`,
-          type: "Error",
-          processName: "Serializable._runMigrations",
-          payload: { current, inst, migrators },
-        });
+        log.error(
+          `[${this.name}] Migration incomplete: exceeded max iterations`,
+          {
+            current,
+            inst,
+            migrators,
+          }
+        );
       }
 
       if (current !== version) {
-        log({
-          header: `[${this.name}] Migration incomplete: stopped at v${current}, expected v${version}`,
-          type: "Error",
-          processName: "Serializable._runMigrations",
-          payload: { current, inst, migrators },
-        });
+        log.error(
+          `[${this.name}] Migration incomplete: stopped at v${current}, expected v${version}`,
+          {
+            current,
+            inst,
+            migrators,
+          }
+        );
       }
 
       // resync data version with actual version (some migrator functions don't already do this)
       working.v = current;
       return working as unknown as T;
     } catch (e) {
-      log({
-        header: `[${this.name}] Migration failed`,
-        type: "Error",
-        processName: "Serializable._runMigrations",
-        payload: { e, data, version, inst },
-      });
+      log.error("Error running migrations", e, { inst, data, version });
       return inst;
     }
   }
@@ -383,6 +369,7 @@ export default abstract class Serializable<
     parent?: object,
     ctor: new () => T = this
   ): Promise<T> {
+    const log = aeonix.logger.for("Serializable.deserialize");
     if (!input || typeof input !== "object" || !input.d)
       return input as unknown as T;
 
@@ -393,12 +380,11 @@ export default abstract class Serializable<
     try {
       inst = new usedCtor();
     } catch (e) {
-      log({
-        header: `[${usedCtor.name}] Failed to deserialize`,
-        type: "Error",
-        processName: "Serializable.deserialize",
-        payload: { e, input, this: usedCtor },
-      });
+      log.error(
+        `[${usedCtor.name}] Failed to deserialize: error creating instance`,
+        e,
+        { input }
+      );
       return input as unknown as T;
     }
     try {
@@ -411,11 +397,9 @@ export default abstract class Serializable<
       )?.shape;
 
       if (!fieldsForCurrentVersion) {
-        log({
-          header: `[${usedCtor.name}] No fields found for version ${input.v}`,
-          type: "Error",
-          processName: "Serializable.deserialize",
-          payload: { inst, input },
+        log.error(`[${usedCtor.name}] No fields found for version ${input.v}`, {
+          fields: inst.fields,
+          version: input.v,
         });
         return inst;
       }
@@ -457,12 +441,9 @@ export default abstract class Serializable<
       }
 
       if (input.v !== version) {
-        log({
-          header: `[${usedCtor.name}] Migrating from v${input.v} to v${version}`,
-          type: "Info",
-          processName: "Serializable.deserialize",
-          payload: { inst, input },
-        });
+        log.info(
+          `[${usedCtor.name}] Migrating from v${input.v} to v${version}`
+        );
         inst = (await Serializable._runMigrations.call(
           usedCtor,
           inst as Record<string, unknown>,
@@ -474,11 +455,9 @@ export default abstract class Serializable<
       inst.onDeserialize?.(inst, parent);
       return inst;
     } catch (e) {
-      log({
-        header: `[${usedCtor.name}] Deserialization failed`,
-        type: "Error",
-        processName: "Serializable.deserialize",
-        payload: { e, input, inst },
+      log.error(`[${usedCtor.name}] Deserialization failed`, e, {
+        inst,
+        input,
       });
       return inst;
     }
@@ -490,14 +469,13 @@ export default abstract class Serializable<
     parent: unknown,
     parentKey: string
   ): Promise<unknown> {
+    const log = aeonix.logger.for("Serializable._deserializeValue");
     try {
       if (!(await this._validateValue(type, value))) {
-        log({
-          header: `[${this.name}] Type mismatch: ${value} (${parentKey}) is not ${type}`,
-          type: "Error",
-          processName: "Serializable.deserialize",
-          payload: { type, value, parent },
-        });
+        log.error(
+          `[${this.name}] Type mismatch: ${value} (${parentKey}) is not ${type}`,
+          { type, value, parent }
+        );
       }
 
       if (
@@ -531,11 +509,9 @@ export default abstract class Serializable<
             )?.shape as Record<string, FieldData> | undefined;
 
             if (!fieldMap) {
-              log({
-                header: `No fields found for version ${version}`,
-                type: "Error",
-                processName: "Serializable.deserialize",
-                payload: { inst, input: value },
+              log.error(`No fields found for version ${version}`, {
+                fields: inst.fields,
+                version: version,
               });
               return value;
             }
@@ -558,11 +534,8 @@ export default abstract class Serializable<
               return inst;
             }
           } catch (e) {
-            log({
-              header: `[${ctor.name}] Failed to calculate version`,
-              type: "Error",
-              processName: "Serializable.deserialize",
-              payload: { inst, input: value, error: e },
+            log.error(`[${ctor.name}] Failed to calculate version`, e, {
+              fields: inst.fields,
             });
           }
         }
@@ -575,13 +548,10 @@ export default abstract class Serializable<
           (value as SerializedData[]).map(async (item: SerializedData, i) => {
             const literal = await literalOf(type.of, item);
             if (!literal) {
-              log({
-                header:
-                  "Unable to serialize array item, type could not be resolved.",
-                type: "Warn",
-                processName: "Serializable._serializeValue",
-                payload: [item, type],
-              });
+              log.warn(
+                "Unable to serialize array item, type could not be resolved.",
+                { item, type }
+              );
               return item;
             }
             return await this._deserializeValue(
@@ -596,11 +566,10 @@ export default abstract class Serializable<
 
       return value;
     } catch (e) {
-      log({
-        header: `[${this.name}] Deserialization failed`,
-        type: "Error",
-        processName: "Serializable.deserialize",
-        payload: { e, input: value, this: JSON.stringify(this) },
+      log.error(`[${this.name}] Deserialization failed`, e, {
+        type,
+        value,
+        this: JSON.stringify(this),
       });
       return value;
     }

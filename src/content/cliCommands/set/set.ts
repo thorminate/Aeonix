@@ -1,5 +1,4 @@
 import CLICommand from "../../../models/cli/cliCommand.js";
-import log from "../../../utils/log.js";
 import ms, { StringValue } from "ms";
 
 export default new CLICommand({
@@ -8,51 +7,36 @@ export default new CLICommand({
   options: [],
   acceptsPrimaryArg: true,
   async execute({ primaryArgs, aeonix }) {
+    const log = aeonix.logger.for("SetCLICommand");
+
     if (!primaryArgs[0]) {
-      log({
-        header: "Missing argument",
-        processName: "CLI",
-        type: "Error",
-      });
+      log.error("Missing argument, requires a config key");
+      return;
     }
 
     switch (primaryArgs[0]) {
       case "tickRate": {
         if (!primaryArgs[1]) {
-          log({
-            header:
-              "Missing argument, requires a parsable ms value (1s, 6h, 4w)",
-            processName: "CLI",
-            type: "Error",
-          });
+          log.error(
+            "Missing argument, requires a parsable ms value (1s, 6h, 4w)"
+          );
           return;
         }
         const int = ms(primaryArgs[1] as StringValue);
         if (!int) {
-          log({
-            header:
-              "Invalid argument, requires a parsable ms value (1s, 6h, 4w)",
-            processName: "CLI",
-            type: "Error",
-          });
+          log.error(
+            "Invalid argument, requires a parsable ms value (1s, 6h, 4w)"
+          );
           return;
         }
         aeonix.config.set("tickRate", int);
         aeonix.reloadTicker(aeonix.config.tickRate);
 
-        log({
-          header: `Set the tickrate to ${ms(int, { long: true })}`,
-          processName: "CLI",
-          type: "Info",
-        });
+        log.info(`Set the tickrate to ${ms(int, { long: true })}`);
         break;
       }
       default: {
-        log({
-          header: "Invalid argument",
-          processName: "CLI",
-          type: "Error",
-        });
+        log.error("Invalid config key");
         break;
       }
     }

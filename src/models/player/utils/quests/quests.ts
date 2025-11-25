@@ -13,7 +13,7 @@ export interface RawQuests {
 }
 
 // TODO: add a discord command that lists and allows the player to interact with quests.
-// TODO: make a discord event listener that adds an environment overview to the respective channel, should resend itself every time a new message appears in the channel to keep it at the bottom, should also update itself when something changes in the environment. (like a new item appears, or a new travel route appears)
+// TODO: make an event system for environments to hook into, like, "playerJoined" or "itemDropped", this should also make the overview box update dynamically.
 
 const v1 = defineField(baseFields, {
   add: {

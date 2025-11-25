@@ -1,6 +1,5 @@
-import path from "path";
 import CLICommand from "../../../models/cli/cliCommand.js";
-import log, { LogType } from "../../../utils/log.js";
+import { LogType } from "../../../utils/log.js";
 
 export default new CLICommand({
   name: "log",
@@ -13,12 +12,6 @@ export default new CLICommand({
     {
       name: "processName",
       description: "The process name to log.",
-    },
-    {
-      name: "folder",
-      description: "The folder to save the log into.",
-      transform: (value: string) =>
-        path.isAbsolute(value) ? value : undefined,
     },
     {
       name: "type",
@@ -38,13 +31,12 @@ export default new CLICommand({
     },
   ] as const,
   acceptsPrimaryArg: true,
-  async execute({ options, primaryArgs }): Promise<void> {
-    log({
-      header: primaryArgs.join(" ") || "Aeonix Log",
-      payload: options["payload"] ?? undefined,
-      processName: options["processName"] ?? undefined,
-      type: (options["type"] ?? "Info") as LogType,
-      folder: options["folder"] ?? undefined,
-    });
+  async execute({ options, primaryArgs, aeonix }): Promise<void> {
+    aeonix.logger.log(
+      (options["type"] ?? "Info") as LogType,
+      options["processName"] ?? "LogCLICommand",
+      primaryArgs.join(" ") || "Aeonix Log",
+      options["payload"] ?? ""
+    );
   },
 });

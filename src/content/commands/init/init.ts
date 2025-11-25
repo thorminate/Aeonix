@@ -8,13 +8,13 @@ import {
   welcomeImage,
   welcomeMessage,
 } from "../../../events/aeonix/clientReady/02verifyOnboardingMsg.js";
-import log from "../../../utils/log.js";
 import deletePlayer from "../../buttons/deletePlayer/deletePlayer.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
 import onboarding0 from "../../buttons/onboarding0/onboarding0.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
+import aeonix from "../../../index.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
@@ -57,11 +57,6 @@ export default new Interaction({
   },
 
   onError(e) {
-    log({
-      header: "Error with init command",
-      processName: "InitCommand",
-      payload: e,
-      type: "Error",
-    });
+    aeonix.logger.error("InitCommand", "Error with init command", e);
   },
 });

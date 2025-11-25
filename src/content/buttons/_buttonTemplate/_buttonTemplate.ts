@@ -3,7 +3,7 @@ import Interaction, {
   ButtonBuilderV2,
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import log from "../../../utils/log.js";
+import aeonix from "../../../index.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()
@@ -25,11 +25,6 @@ export default new Interaction({
   },
 
   onError: (e) => {
-    log({
-      header: "Button Error",
-      processName: "TemplateButton",
-      payload: e,
-      type: "Error",
-    });
+    aeonix.logger.error("ButtonTemplate", "Button Error", e);
   },
 });

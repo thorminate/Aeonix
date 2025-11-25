@@ -1,23 +1,14 @@
 import BackpackItem from "../../../content/items/backpackItem/backpackItem.js";
 import TutorialQuestLetter from "../../../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
 import AeonixEvent from "../../../models/events/aeonixEvent.js";
-import log from "../../../utils/log.js";
 
 export default new AeonixEvent<"ready">({
   callback: async ({ aeonix }) => {
-    log({
-      header: "Running tests",
-      processName: "TestRunner",
-      type: "Info",
-    });
+    const log = aeonix.logger.for("TestRunner");
+    log.info("Running tests...");
 
     if (!aeonix.user) {
-      log({
-        header: "User is falsy",
-        processName: "TestRunner",
-        payload: aeonix.user,
-        type: "Error",
-      });
+      log.error("User is falsy", aeonix);
       return;
     }
 
@@ -30,20 +21,10 @@ export default new AeonixEvent<"ready">({
     if (player === "playerAlreadyExists") {
       player = (await aeonix.players.load(aeonix.user.id))!;
     } else if (player === "notAnImageUrl") {
-      log({
-        header: "Test Error, avatar is not an image url",
-        processName: "TestRunner",
-        payload: player,
-        type: "Error",
-      });
+      log.error("Avatar is not an image url", aeonix.user.displayAvatarURL());
       return;
     } else if (player === "internalError") {
-      log({
-        header: "Test Error, internal error",
-        processName: "TestRunner",
-        payload: player,
-        type: "Error",
-      });
+      log.error("Error creating player", aeonix.user);
       return;
     }
 
@@ -60,20 +41,13 @@ export default new AeonixEvent<"ready">({
     player.inventory.add(item);
 
     if (player.inventory.entries.length !== 1) {
-      log({
-        header: "Test Error, inventory should have 1 item",
-        processName: "TestRunner",
-        payload: player.inventory,
-        type: "Error",
-      });
+      log.error("Test Error, inventory should have 1 item", player.inventory);
       test = false;
     } else if (player.inventory.entries[0]?.quantity !== 1) {
-      log({
-        header: "Test Error, quantity should be 1",
-        processName: "TestRunner",
-        payload: `${player.inventory.entries[0]?.quantity} !== 1`,
-        type: "Error",
-      });
+      log.error(
+        "Test Error, quantity should be 1",
+        `${player.inventory.entries[0]?.quantity} !== 1`
+      );
       test = false;
     }
 
@@ -82,27 +56,16 @@ export default new AeonixEvent<"ready">({
     const startEnvironment = await aeonix.environments.get("start");
 
     if (!startEnvironment) {
-      log({
-        header: "Test Error, start environment is falsy",
-        processName: "TestRunner",
-        payload: aeonix.environments.array(),
-        type: "Error",
-      });
+      log.error("Start environment not found", aeonix.environments.array());
       test = false;
     }
 
-    log({
-      header: test ? "Tests passed" : "A test failed, check logs",
-      processName: "TestRunner",
-      type: test ? "Info" : "Error",
-    });
+    log.log(
+      test ? "Info" : "Error",
+      test ? "Tests passed" : "A test failed, check the logs"
+    );
   },
-  onError: async (e) => {
-    log({
-      header: "Error running tests",
-      processName: "TestRunner",
-      payload: e,
-      type: "Error",
-    });
+  onError: async (e, { aeonix }) => {
+    aeonix.logger.error("TestRunner", "Test Error", e);
   },
 });

@@ -5,7 +5,6 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import log from "../../../utils/log.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
@@ -35,17 +34,14 @@ export default new Interaction({
   environmentOnly: true,
   passEnvironment: false,
 
-  callback: async ({ context, player }): Promise<void> => {
+  callback: async ({ context, player, aeonix }): Promise<void> => {
+    const log = aeonix.logger.for("InventoryCommand");
     let snippets = await player.use(async (p) => {
       return generateInventoryContents(p);
     });
 
     if (!snippets) {
-      log({
-        header: "Could not generate inventory contents",
-        processName: "InventoryCommand",
-        type: "Error",
-      });
+      log.error("Could not generate inventory contents");
       return;
     }
 
@@ -61,11 +57,7 @@ export default new Interaction({
           const container = new ContainerBuilder();
           const result = content(container);
           if (!("entry" in result)) {
-            log({
-              header: "Could not get entry from container",
-              processName: "SnippetPaginator",
-              type: "Error",
-            });
+            log.error("Paginator did not return an entry");
             return false;
           }
 
@@ -77,11 +69,7 @@ export default new Interaction({
     });
 
     if (!result || !result.returnType || result.returnType === "error") {
-      log({
-        header: "Paginator returned falsy value",
-        processName: "InventoryCommand",
-        type: "Error",
-      });
+      log.error("Paginator returned an error");
       return;
     }
 
@@ -89,11 +77,7 @@ export default new Interaction({
     let collector = result.collector;
 
     if (!message) {
-      log({
-        header: "Paginator did not return a message",
-        processName: "InventoryCommand",
-        type: "Error",
-      });
+      log.error("Paginator did not return a message");
       return;
     }
 
@@ -125,12 +109,11 @@ export default new Interaction({
                 );
 
                 if (!entry) {
-                  log({
-                    header: "Item not found in inventory",
-                    processName: "InventoryCommand",
-                    payload: [id, p.inventory.entries],
-                    type: "Error",
-                  });
+                  log.error(
+                    "Item not found in inventory",
+                    id,
+                    p.inventory.entries
+                  );
                   return;
                 }
 
@@ -160,12 +143,11 @@ export default new Interaction({
               const [entry] = findEntryFromIdStrict(p.inventory.entries, id);
 
               if (!entry) {
-                log({
-                  header: "Item not found in inventory",
-                  processName: "InventoryCommand",
-                  payload: [id, p.inventory.entries],
-                  type: "Error",
-                });
+                log.error(
+                  "Item not found in inventory",
+                  id,
+                  p.inventory.entries
+                );
                 return;
               }
 
@@ -176,11 +158,7 @@ export default new Interaction({
               if (!env) {
                 env = await p.fetchEnvironment();
                 if (!env) {
-                  log({
-                    header: "Player has no environment",
-                    processName: "InventoryCommand",
-                    type: "Error",
-                  });
+                  log.error("Could not fetch environment for player");
                   return;
                 }
               }
@@ -197,12 +175,7 @@ export default new Interaction({
             });
 
             if (!entry) {
-              log({
-                header: "Item not found in inventory",
-                processName: "InventoryCommand",
-                payload: [id],
-                type: "Error",
-              });
+              log.error("Item not found in inventory", id);
               return;
             }
             break;
@@ -215,12 +188,11 @@ export default new Interaction({
               );
 
               if (!entry) {
-                log({
-                  header: "Item not found in inventory",
-                  processName: "InventoryCommand",
-                  payload: [id, p.inventory.entries],
-                  type: "Error",
-                });
+                log.error(
+                  "Item not found in inventory",
+                  id,
+                  p.inventory.entries
+                );
                 return;
               }
 
@@ -232,12 +204,7 @@ export default new Interaction({
             })) as [Item, ItemUsageResult];
 
             if (!tup) {
-              log({
-                header: "Item not found in inventory",
-                processName: "InventoryCommand",
-                payload: [id],
-                type: "Error",
-              });
+              log.error("Item not found in inventory", id);
               return;
             }
 
@@ -256,22 +223,12 @@ export default new Interaction({
           }
         }
       } catch (e) {
-        log({
-          header: "Error in inventory command component handling",
-          processName: "InventoryCommand",
-          type: "Error",
-          payload: e,
-        });
+        log.error("Error in inventory command", e);
       }
     });
   },
 
-  onError(e) {
-    log({
-      header: "Error in inventory command",
-      processName: "InventoryCommand",
-      type: "Error",
-      payload: e,
-    });
+  onError(e, aeonix) {
+    aeonix.logger.error("InventoryCommand", "Error with inventory command", e);
   },
 });

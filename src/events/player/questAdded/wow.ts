@@ -1,6 +1,5 @@
 import TestNotification from "../../../content/letters/testNotification/testNotification.js";
 import PlayerEvent from "../../../models/events/playerEvent.js";
-import log from "../../../utils/log.js";
 
 export default new PlayerEvent<"questAdded">({
   callback: async ({ args: [quest], player }) => {
@@ -8,12 +7,7 @@ export default new PlayerEvent<"questAdded">({
     forgedNotification.subject = `New Quest: ${quest.name}`;
     player.notify(forgedNotification);
   },
-  onError: (e) => {
-    log({
-      header: "Error with questAdded event",
-      processName: "QuestAddedEvent",
-      payload: e,
-      type: "Error",
-    });
+  onError: (e, { aeonix }) => {
+    aeonix.logger.error("QuestAdded", "Error with questAdded event", e);
   },
 });

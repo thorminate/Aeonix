@@ -292,7 +292,7 @@ export default class Interaction<
     InteractionType
   >;
   autocomplete?: TAutocompleteHandler<InteractionType, AutocompletePassPlayer>;
-  onError!: (e: unknown) => void;
+  onError!: (e: unknown, aeonix: Aeonix) => void;
 
   constructor(
     o: Interaction<

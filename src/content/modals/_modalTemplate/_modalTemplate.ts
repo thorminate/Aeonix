@@ -7,7 +7,6 @@ import {
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import log from "../../../utils/log.js";
 
 export default new Interaction({
   data: new ModalBuilder()
@@ -32,12 +31,7 @@ export default new Interaction({
     });
   },
 
-  onError: (e) => {
-    log({
-      header: "Modal Error",
-      processName: "TemplateModal",
-      payload: e,
-      type: "Error",
-    });
+  onError: (e, aeonix) => {
+    aeonix.logger.error("ModalTemplate", "Modal Error", e);
   },
 });

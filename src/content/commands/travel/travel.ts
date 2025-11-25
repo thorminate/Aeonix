@@ -5,12 +5,10 @@ import {
   SlashCommandBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import log from "../../../utils/log.js";
 import containerSnippetPaginator from "../../../utils/containerSnippetPaginator.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import PlayerMoveToResult from "../../../models/player/utils/playerMoveToResult.js";
 import generateTravelContents from "./utils/generateTravelContents.js";
 import travelHeader from "./utils/travelHeader.js";
 import stringifyAdjacent from "./utils/stringifyAdjacent.js";
@@ -29,7 +27,8 @@ export default new Interaction({
   environmentOnly: true,
   passEnvironment: true,
 
-  callback: async ({ context, player }) => {
+  callback: async ({ context, player, aeonix }) => {
+    const log = aeonix.logger.for("TravelCommand");
     const snippets = await player.use(async (p) => {
       return await generateTravelContents(p);
     });
@@ -44,11 +43,7 @@ export default new Interaction({
       (keyword, content) => {
         const result = content(new ContainerBuilder());
         if (!("adjacent" in result)) {
-          log({
-            header: "Could not get location from container",
-            processName: "SnippetPaginator",
-            type: "Error",
-          });
+          log.error("Could not get location from container");
           return false;
         }
 
@@ -59,11 +54,7 @@ export default new Interaction({
     );
 
     if (!result || result.returnType === "error") {
-      log({
-        header: "Paginator returned an error",
-        processName: "TravelCommand",
-        type: "Error",
-      });
+      log.error("Could not get result from paginator");
       return;
     }
 
@@ -71,11 +62,7 @@ export default new Interaction({
     let collector = result.collector;
 
     if (!msg) {
-      log({
-        header: "Could not get message from paginator",
-        processName: "TravelCommand",
-        type: "Error",
-      });
+      log.error("Could not get message from paginator");
       return;
     }
 
@@ -88,19 +75,13 @@ export default new Interaction({
 
     collector.on("collect", async (buttonContext: ButtonInteraction) => {
       try {
-        let result: undefined | PlayerMoveToResult;
         const id = buttonContext.customId.split("-").slice(1).join("-") || "";
-        await player.use(async (p) => {
-          result = await p.moveTo(id);
+        const result = await player.use(async (p) => {
+          return await p.moveTo(id);
         });
 
         if (!result) {
-          log({
-            header: "Travel command could not be handled correctly",
-            processName: "TravelCommandCollector",
-            type: "Error",
-            payload: result,
-          });
+          log.error("Could not get result from player.moveTo", id);
           buttonContext.update({
             components: [
               new ContainerBuilder().addTextDisplayComponents(
@@ -117,12 +98,11 @@ export default new Interaction({
           result === "location channel not found" ||
           result === "no old environment"
         ) {
-          log({
-            header: "Travel command could not be handled correctly",
-            processName: "TravelCommandCollector",
-            type: "Error",
-            payload: [result, id],
-          });
+          log.error(
+            "Travel command could not be handled correctly",
+            id,
+            result
+          );
           await buttonContext.update({
             components: [
               new ContainerBuilder().addTextDisplayComponents(
@@ -152,22 +132,12 @@ export default new Interaction({
           ],
         });
       } catch (e) {
-        log({
-          header: "Travel command could not be handled correctly",
-          processName: "TravelCommandCollector",
-          payload: e,
-          type: "Error",
-        });
+        log.error("Travel command could not be handled correctly", e);
       }
     });
   },
 
-  onError(e) {
-    log({
-      header: "Travel command could not be handled correctly",
-      processName: "TravelCommandHandler",
-      payload: e,
-      type: "Error",
-    });
+  onError(e, aeonix) {
+    aeonix.logger.error("TravelCommand", "Command Error", e);
   },
 });

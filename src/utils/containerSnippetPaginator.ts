@@ -15,7 +15,7 @@ import {
   TextInputStyle,
 } from "discord.js";
 import { CommandContext } from "../models/events/interaction.js";
-import log from "./log.js";
+import aeonix from "../index.js";
 
 interface SnippetPaginatorReturn<ReturnType extends "ok" | "error"> {
   message: Message;
@@ -262,12 +262,7 @@ function listenToCollector(
         }
       }
     } catch (e) {
-      log({
-        header: "Paginator collector reset timer error",
-        processName: "SnippetPaginator",
-        type: "Error",
-        payload: e,
-      });
+      aeonix.logger.error("SnippetPaginator", "Collector error", e);
     }
   });
 }

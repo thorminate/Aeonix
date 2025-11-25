@@ -2,7 +2,6 @@ import { StringSelectMenuBuilder } from "discord.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import log from "../../../utils/log.js";
 
 export default new Interaction({
   data: new StringSelectMenuBuilder()
@@ -18,12 +17,7 @@ export default new Interaction({
     });
   },
 
-  onError: (e) => {
-    log({
-      header: "StringSelectMenu Error",
-      processName: "TemplateStringSelectMenu",
-      payload: e,
-      type: "Error",
-    });
+  onError: (e, aeonix) => {
+    aeonix.logger.error("StringSelectMenuTemplate", "Command Error", e);
   },
 });

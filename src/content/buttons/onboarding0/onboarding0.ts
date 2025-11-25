@@ -1,5 +1,4 @@
 import { ButtonStyle, MessageFlags } from "discord.js";
-import log from "../../../utils/log.js";
 import deletePlayer from "./../deletePlayer/deletePlayer.js";
 import onboarding1 from "../../modals/onboarding1/onboarding1.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
@@ -7,6 +6,7 @@ import Interaction, {
   ButtonBuilderV2,
   InteractionTypes,
 } from "../../../models/events/interaction.js";
+import aeonix from "../../../index.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()
@@ -37,11 +37,6 @@ export default new Interaction({
   },
 
   onError(e) {
-    log({
-      header: "Button Error",
-      processName: "Onboarding0Button",
-      payload: e,
-      type: "Error",
-    });
+    aeonix.logger.error("Onboarding0", "Button Error", e);
   },
 });

@@ -13,7 +13,6 @@ import {
   UserSelectMenuInteraction,
 } from "discord.js";
 import Player from "../../../models/player/player.js";
-import log from "../../../utils/log.js";
 import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import Environment from "../../../models/environment/environment.js";
 import Aeonix from "../../../aeonix.js";
@@ -30,6 +29,7 @@ type AnyInteraction<CT extends CacheType> = ButtonInteraction<CT> &
 
 export default new AeonixEvent<"interactionCreate">({
   callback: async ({ args: [context], aeonix }) => {
+    const log = aeonix.logger.for("InteractionHandler");
     let type = "";
 
     if (context.isButton()) {
@@ -84,12 +84,7 @@ export default new AeonixEvent<"interactionCreate">({
     if (!interaction) return;
 
     if (!context.member) {
-      log({
-        header: "Interaction member is falsy",
-        processName: "ButtonHandler",
-        payload: context,
-        type: "Error",
-      });
+      log.error("Interaction member is falsy", context);
       return;
     }
 
@@ -181,18 +176,13 @@ export default new AeonixEvent<"interactionCreate">({
       })
       .catch((e: unknown) => {
         try {
-          interaction.onError(e);
+          interaction.onError(e, aeonix);
         } catch (e) {
-          log({
-            header: "Error in interaction error handler",
-            processName: "InteractionHandler",
-            payload: e,
-            type: "Error",
-          });
+          log.error("Interaction error handler error", e);
         }
       });
   },
-  onError: async (e, { args: [context] }) => {
+  onError: async (e, { args: [context], aeonix }) => {
     if (context.isRepliable() && !context.replied)
       if (!context.deferred)
         await context
@@ -211,11 +201,6 @@ export default new AeonixEvent<"interactionCreate">({
               e,
           })
           .catch(() => undefined);
-    log({
-      header: "An interaction could not be handled correctly",
-      processName: "InteractionHandler",
-      payload: e,
-      type: "Error",
-    });
+    aeonix.logger.error("InteractionHandler", "Interaction Error", e);
   },
 });

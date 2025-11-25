@@ -1,5 +1,4 @@
 import AeonixEvent from "../../../models/events/aeonixEvent.js";
-import log from "../../../utils/log.js";
 
 export default new AeonixEvent<"typingStart">({
   async callback({ aeonix, args: [typeContext] }) {
@@ -7,12 +6,7 @@ export default new AeonixEvent<"typingStart">({
     await aeonix.players.preload(userId);
   },
 
-  onError(e) {
-    log({
-      header: "Error with typingStart event",
-      processName: "TypingStartEvent",
-      payload: e,
-      type: "Error",
-    });
+  onError(e, { aeonix }) {
+    aeonix.logger.error("PreloadPlayer", "Error with preloadPlayer event", e);
   },
 });

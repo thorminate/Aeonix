@@ -1,6 +1,5 @@
 // shows your status
-import { HTTPError, MessageFlags, SlashCommandBuilder } from "discord.js";
-import log from "../../../utils/log.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
@@ -26,21 +25,7 @@ export default new Interaction({
     });
   },
 
-  onError(e) {
-    if (e instanceof HTTPError && e.status === 503) {
-      log({
-        header: "Stats Error, the API did not respond in time.",
-        processName: "StatsCommand",
-        payload: e,
-        type: "Error",
-      });
-      return;
-    }
-    log({
-      header: "Stats Error",
-      processName: "StatsCommand",
-      payload: e,
-      type: "Error",
-    });
+  onError(e, aeonix) {
+    aeonix.logger.info("StatusCommand", "Command Error", e);
   },
 });

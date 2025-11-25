@@ -1,4 +1,3 @@
-import log from "../../utils/log.js";
 import path from "path";
 import Aeonix from "../../aeonix.js";
 import { fileURLToPath, pathToFileURL } from "url";
@@ -17,6 +16,7 @@ export default class CLI {
   }
 
   async init() {
+    const log = this.aeonix.logger.for("CLI");
     const folders = await getAllFiles(this.folder, true);
 
     for (const folder of folders) {
@@ -31,11 +31,9 @@ export default class CLI {
       ).default as CLICommand;
 
       if (!inst) {
-        log({
-          header: `CLI Command, ${folderName}, does not have a default import! Skipping...`,
-          processName: "AeonixCLI",
-          type: "Warn",
-        });
+        log.warn(
+          `CLI Command, ${folderName}, does not have a default import! Skipping...`
+        );
         continue;
       }
 
@@ -61,21 +59,15 @@ export default class CLI {
       const commandToExecute = this.cache.get(command ?? "");
 
       if (!commandToExecute) {
-        log({
-          header: `Command ${command} not found!`,
-          processName: "AeonixCLI",
-          type: "Warn",
-        });
+        log.warn(`Command ${command} not found!`);
         this.aeonix.rl.prompt();
         return;
       }
 
       if (!commandToExecute.acceptsPrimaryArg && primaryInputs.length > 0) {
-        log({
-          header: `Command ${command} does not accept a primary argument! Use --flags to pass options.`,
-          processName: "AeonixCLI",
-          type: "Warn",
-        });
+        log.warn(
+          `Command ${command} does not accept a primary argument! Use --flags to pass options.`
+        );
         return;
       }
 
@@ -94,11 +86,7 @@ export default class CLI {
           );
 
           if (!option) {
-            log({
-              header: `Option ${optionName} not found in schema!`,
-              processName: "AeonixCLI",
-              type: "Warn",
-            });
+            log.warn(`Option ${optionName} not found in schema!`);
             return;
           }
 
@@ -123,11 +111,7 @@ export default class CLI {
             : optionValue;
 
           if (!transformedValue) {
-            log({
-              header: `Invalid value for option ${optionName}!`,
-              processName: "AeonixCLI",
-              type: "Warn",
-            });
+            log.warn(`Invalid value for option ${optionName}!`);
             return;
           }
 
@@ -148,12 +132,7 @@ export default class CLI {
           primaryArgs: primaryInputs,
         });
       } catch (e) {
-        log({
-          header: `Error executing command ${command}`,
-          processName: "AeonixCLI",
-          payload: e,
-          type: "Error",
-        });
+        log.error(`Error executing command ${command}`, e);
         this.aeonix.rl.prompt();
         return;
       }

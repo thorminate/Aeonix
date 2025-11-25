@@ -1,81 +1,75 @@
 import { EventEmitter } from "events";
-import Quest from "./quests/quest.js";
 import path from "path";
 import url from "url";
 import getAllFiles from "../../../utils/getAllFiles.js";
-import Player from "../player.js";
-import PlayerEventDeclaration, {
-  PlayerEventParams,
-} from "../../events/playerEvent.js";
+import EnvironmentEventDeclaration, {
+  EnvironmentEventParams,
+} from "../../events/environmentEvent.js";
 import Environment from "../../environment/environment.js";
 import Item from "../../item/item.js";
+import Player from "../../player/player.js";
 import aeonix from "../../../index.js";
 
-export interface PlayerEvents {
-  questAdded: [quest: Quest];
-  questFulfilled: [quest: Quest];
-  questFailed: [quest: Quest];
-  questRemoved: [quest: Quest];
-  inventoryItemAdded: [item: Item];
-  inventoryItemRemoved: [item: Item];
-  inventoryItemUsed: [item: Item];
-  inventoryItemDropped: [item: Item];
-  arrivedAtLocation: [env: Environment];
+export interface EnvironmentEvents {
+  playerJoined: [player: Player];
+  playerLeft: [player: Player];
+  itemDropped: [player: Player, item: Item];
+  itemPickedUp: [player: Player, item: Item];
 }
 
-export type PlayerEvent = keyof PlayerEvents;
+export type EnvironmentEvent = keyof EnvironmentEvents;
 
-export type PlayerEventUnion<
+export type EnvironmentEventUnion<
   T extends { [K in keyof T]: unknown[] },
   Discriminant extends string = "type",
   PayloadProp extends string = "args"
 > = {
   [K in keyof T]: { [P in Discriminant]: K } & { [P in PayloadProp]: T[K] } & {
-    player: Player;
+    env: Environment;
   };
 }[keyof T];
 
-export type AnyPlayerEvent = PlayerEventUnion<PlayerEvents>;
+export type AnyEnvironmentEvent = EnvironmentEventUnion<EnvironmentEvents>;
 
-export default class PlayerEventsManager extends EventEmitter {
-  parent: Player;
+export default class EnvironmentEventsManager extends EventEmitter {
+  parent: Environment;
 
-  override emit<Event extends keyof PlayerEvents>(
+  override emit<Event extends keyof EnvironmentEvents>(
     eventName: Event,
-    ...args: PlayerEvents[Event]
+    ...args: EnvironmentEvents[Event]
   ): boolean;
   override emit(eventName: string, ...args: unknown[]): boolean {
     return super.emit(eventName, ...args);
   }
 
-  override on<Event extends keyof PlayerEvents>(
+  override on<Event extends keyof EnvironmentEvents>(
     event: Event,
-    listener: (...args: PlayerEvents[Event]) => void
+    listener: (...args: EnvironmentEvents[Event]) => void
   ): this;
   override on(event: string, listener: (...args: unknown[]) => void): this {
     super.on(event, listener);
     return this;
   }
 
-  override once<Event extends keyof PlayerEvents>(
+  override once<Event extends keyof EnvironmentEvents>(
     event: Event,
-    listener: (...args: PlayerEvents[Event]) => void
+    listener: (...args: EnvironmentEvents[Event]) => void
   ): this;
   override once(event: string, listener: (...args: unknown[]) => void): this {
     super.once(event, listener);
     return this;
   }
 
-  override off<Event extends keyof PlayerEvents>(
+  override off<Event extends keyof EnvironmentEvents>(
     event: Event,
-    listener: (...args: PlayerEvents[Event]) => void
+    listener: (...args: EnvironmentEvents[Event]) => void
   ): this;
   override off(event: string, listener: (...args: unknown[]) => void): this {
     super.off(event, listener);
     return this;
   }
 
-  override removeAllListeners<Event extends keyof PlayerEvents>(
+  override removeAllListeners<Event extends keyof EnvironmentEvents>(
     event?: Event
   ): this;
   override removeAllListeners(event?: string): this {
@@ -83,9 +77,9 @@ export default class PlayerEventsManager extends EventEmitter {
     return this;
   }
 
-  override addListener<Event extends keyof PlayerEvents>(
+  override addListener<Event extends keyof EnvironmentEvents>(
     event: Event,
-    listener: (...args: PlayerEvents[Event]) => void
+    listener: (...args: EnvironmentEvents[Event]) => void
   ): this;
   override addListener(
     event: string,
@@ -95,9 +89,9 @@ export default class PlayerEventsManager extends EventEmitter {
     return this;
   }
 
-  override prependListener<Event extends keyof PlayerEvents>(
+  override prependListener<Event extends keyof EnvironmentEvents>(
     event: Event,
-    listener: (...args: PlayerEvents[Event]) => void
+    listener: (...args: EnvironmentEvents[Event]) => void
   ): this;
   override prependListener(
     event: string,
@@ -107,9 +101,9 @@ export default class PlayerEventsManager extends EventEmitter {
     return this;
   }
 
-  override prependOnceListener<Event extends keyof PlayerEvents>(
+  override prependOnceListener<Event extends keyof EnvironmentEvents>(
     event: Event,
-    listener: (...args: PlayerEvents[Event]) => void
+    listener: (...args: EnvironmentEvents[Event]) => void
   ): this;
   override prependOnceListener(
     event: string,
@@ -119,48 +113,52 @@ export default class PlayerEventsManager extends EventEmitter {
     return this;
   }
 
-  override listeners<Event extends keyof PlayerEvents>(
+  override listeners<Event extends keyof EnvironmentEvents>(
     event: Event
   ): Array<(...args: unknown[]) => void>;
   override listeners(event: string): Array<(...args: unknown[]) => void> {
     return super.listeners(event) as Array<(...args: unknown[]) => void>;
   }
 
-  override rawListeners<Event extends keyof PlayerEvents>(
+  override rawListeners<Event extends keyof EnvironmentEvents>(
     event: Event
   ): Array<(...args: unknown[]) => void>;
   override rawListeners(event: string): Array<(...args: unknown[]) => void> {
     return super.rawListeners(event) as Array<(...args: unknown[]) => void>;
   }
 
-  override listenerCount<Event extends keyof PlayerEvents>(
+  override listenerCount<Event extends keyof EnvironmentEvents>(
     event: Event
   ): number;
   override listenerCount(event: string): number {
     return super.listenerCount(event);
   }
 
-  override eventNames(): Array<keyof PlayerEvents> {
-    return super.eventNames() as Array<keyof PlayerEvents>;
+  override eventNames(): Array<keyof EnvironmentEvents> {
+    return super.eventNames() as Array<keyof EnvironmentEvents>;
   }
 
-  constructor(player: Player) {
+  constructor(env: Environment) {
     super();
-    this.parent = player;
+    this.parent = env;
     this.setUpListeners();
   }
 
-  call<T extends keyof PlayerEvents>(e: T, ...args: PlayerEvents[T]): boolean;
+  call<T extends keyof EnvironmentEvents>(
+    e: T,
+    ...args: EnvironmentEvents[T]
+  ): boolean;
   call(e: string, ...args: unknown[]): boolean {
     return super.emit(e, ...args);
   }
 
   private async setUpListeners() {
+    const log = aeonix.logger.for("EnvironmentEventsManager.setUpListeners");
     try {
       const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
       const eventFolders = await getAllFiles(
-        path.join(__dirname, "..", "..", "..", "events", "player"),
+        path.join(__dirname, "..", "..", "..", "events", "environment"),
         true
       );
 
@@ -171,20 +169,16 @@ export default class PlayerEventsManager extends EventEmitter {
         const eventName = eventFolder.replace(/\\/g, "/").split("/").pop();
 
         if (!eventName) {
-          aeonix.logger.error(
-            "PlayerEventsManager",
-            "Event name is undefined",
-            eventFolder
-          );
+          log.error("Environment event name is undefined", eventFolder);
           return;
         }
 
-        this.on(eventName as keyof PlayerEvents, async (...args) => {
+        this.on(eventName as keyof EnvironmentEvents, async (...args) => {
           for (const eventFile of eventFiles) {
             const filePath = path.resolve(eventFile);
             const fileUrl = url.pathToFileURL(filePath);
             const eventModule: {
-              default: PlayerEventDeclaration<keyof PlayerEvents>;
+              default: EnvironmentEventDeclaration<keyof EnvironmentEvents>;
             } = await import(
               fileUrl.toString() +
                 "?t=" +
@@ -192,7 +186,11 @@ export default class PlayerEventsManager extends EventEmitter {
                 "&debug=fromPlayerEventHandler"
             );
 
-            const params = new PlayerEventParams(this.parent, aeonix, ...args);
+            const params = new EnvironmentEventParams(
+              this.parent,
+              aeonix,
+              ...args
+            );
 
             await eventModule.default.callback(params).catch((e: unknown) => {
               eventModule.default.onError(e, params);
@@ -201,7 +199,7 @@ export default class PlayerEventsManager extends EventEmitter {
         });
       }
     } catch (e) {
-      aeonix.logger.error("PlayerEventsManager", "Failed to load events", e);
+      log.error("Failed to set up environment event listeners", e);
     }
   }
 }

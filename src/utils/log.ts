@@ -1,10 +1,8 @@
 import path from "node:path";
 import fs from "node:fs";
-import url from "node:url";
 import { inspect } from "node:util";
 import readline from "node:readline";
 import { gray, cyan, red, redBright, yellow } from "ansis";
-import { actualPrimitives } from "mongoose";
 import Aeonix from "../aeonix.js";
 
 export type LogType =
@@ -16,16 +14,6 @@ export type LogType =
   | "Debug"
   | "Silly";
 
-interface LogOptions {
-  header: string;
-  processName?: string;
-  folder?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload?: any;
-  type?: LogType;
-  doNotPrompt?: boolean;
-}
-
 function stripAnsiCodes(str: string) {
   return str.replace(
     // eslint-disable-next-line no-control-regex
@@ -34,90 +22,175 @@ function stripAnsiCodes(str: string) {
   );
 }
 
-export default (options: LogOptions) => {
-  const { header, type, processName, doNotPrompt } = options;
-  let { folder, payload } = options;
+export default class Logger {
+  private stream: fs.WriteStream;
+  private logDir: string;
+  private currentDate: string;
 
-  if (!header) return;
+  constructor(logDir = path.resolve("./logs")) {
+    this.logDir = logDir;
 
-  const date = new Date();
+    if (!fs.existsSync(logDir)) {
+      console.log(
+        `Log dir ${logDir} does not exist, logger instantiation failed!`
+      );
+    }
 
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-  if (!fs.existsSync(path.join(__dirname, "..", "..", "logs"))) {
-    fs.mkdirSync(path.join(__dirname, "..", "..", "logs"), {
-      recursive: true,
-    });
-  }
-  if (!folder) {
-    folder = path.join(__dirname, "..", "..", "logs");
-  }
-  const logStream = fs.createWriteStream(
-    path.join(folder, `${date.toISOString().slice(0, 10)}.log`),
-    { flags: "a" }
-  );
-
-  if (!Array.isArray(payload)) {
-    payload = [payload];
+    this.currentDate = this.getDate();
+    this.stream = this.openStream();
   }
 
-  const fPayload: string = payload
-    .map((p: object | actualPrimitives) => {
-      const stringified =
-        typeof p === "string"
-          ? p
-          : inspect(p, { depth: Infinity, colors: true, sorted: true });
-
-      if (!stringified || stringified === "[90mundefined[39m") return "";
-
-      return "\n" + stringified;
-    })
-    .join(" ");
-
-  const headerColour =
-    type === "Fatal"
-      ? redBright
-      : type === "Error"
-      ? red
-      : type === "Warn"
-      ? yellow
-      : cyan;
-
-  date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-
-  const logTime = gray`${date.toLocaleString("sv")}`;
-  const logContent = `${headerColour(header)}${fPayload}`;
-  const logProcessName = processName ? `${processName}/` : "Main/";
-  const logType = type ? `${type}` : "Info";
-
-  const log = `[${logTime}] [${logProcessName}${logType}] ${logContent}`;
-
-  logStream.write(stripAnsiCodes(log) + "\n");
-
-  readline.clearLine(process.stdout, 0);
-  readline.cursorTo(process.stdout, 0);
-
-  switch (type) {
-    case "Fatal":
-    case "Error":
-    case "Warn":
-      console.error(log);
-      break;
-
-    case "Verbose":
-    case "Silly":
-    case "Debug":
-    case "Info":
-    default:
-      console.log(log);
-      break;
+  for(processName: string) {
+    return {
+      info: (header: string, ...payload: unknown[]) => {
+        this.write("Info", processName, header, payload);
+      },
+      warn: (header: string, ...payload: unknown[]) => {
+        this.write("Warn", processName, header, payload);
+      },
+      error: (header: string, ...payload: unknown[]) => {
+        this.write("Error", processName, header, payload);
+      },
+      fatal: (header: string, ...payload: unknown[]) => {
+        this.write("Fatal", processName, header, payload);
+      },
+      debug: (header: string, ...payload: unknown[]) => {
+        this.write("Debug", processName, header, payload);
+      },
+      silly: (header: string, ...payload: unknown[]) => {
+        this.write("Silly", processName, header, payload);
+      },
+      verbose: (header: string, ...payload: unknown[]) => {
+        this.write("Verbose", processName, header, payload);
+      },
+      log: (logType: LogType, header: string, ...payload: unknown[]) => {
+        this.write(logType, processName, header, payload);
+      },
+    };
   }
 
-  logStream.end();
-
-  if (!doNotPrompt) {
-    import("../index.js").then(({ default: aeonix }: { default: Aeonix }) => {
-      if (aeonix) aeonix.rl.prompt();
-    });
+  private getDate() {
+    const date = new Date();
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+    return date.toISOString().slice(0, 10);
   }
-};
+
+  private openStream() {
+    const file = path.join(this.logDir, `${this.currentDate}.log`);
+    return fs.createWriteStream(file, { flags: "a" });
+  }
+
+  private ensureLogStream() {
+    const today = this.getDate();
+    if (today !== this.currentDate) {
+      this.stream.end();
+      this.currentDate = today;
+      this.stream = this.openStream();
+    }
+  }
+
+  private async reprompt() {
+    const { default: aeonix }: { default: Aeonix } = await import(
+      "../index.js"
+    );
+    if (aeonix) aeonix.rl.prompt();
+  }
+
+  private color(type: LogType) {
+    switch (type) {
+      case "Fatal":
+        return redBright;
+      case "Error":
+        return red;
+      case "Warn":
+        return yellow;
+      default:
+        return cyan;
+    }
+  }
+
+  private write(
+    type: LogType,
+    processName: string,
+    header: string,
+    payload?: unknown,
+    depth = 5
+  ) {
+    this.ensureLogStream();
+
+    const now = new Date().toLocaleString("sv");
+    const ts = gray(`[${now}]`);
+    const proc = processName ? `${processName}/` : "Main/";
+    const lvl = `${proc}${type}`;
+    const color = this.color(type);
+
+    if (!Array.isArray(payload)) {
+      payload = [payload];
+    }
+
+    const formattedPayload = (payload as unknown[])
+      .map((p: unknown) => {
+        const stringified =
+          typeof p === "string"
+            ? p
+            : inspect(p, { depth, colors: true, sorted: true });
+
+        if (!stringified || stringified === "[90mundefined[39m") return "";
+
+        return "\n" + stringified;
+      })
+      .join(" ");
+
+    const line = `${ts} [${lvl}] ${color(header)}${formattedPayload}`;
+
+    this.stream.write(stripAnsiCodes(line) + "\n");
+
+    readline.clearLine(process.stdout, 0);
+    readline.cursorTo(process.stdout, 0);
+
+    if (type === "Fatal" || type === "Error" || type === "Warn") {
+      console.error(line);
+    } else {
+      console.log(line);
+    }
+
+    this.reprompt();
+  }
+
+  info(processName: string, header: string, ...payload: unknown[]) {
+    this.write("Info", processName, header, payload);
+  }
+
+  error(processName: string, header: string, ...payload: unknown[]) {
+    this.write("Error", processName, header, payload);
+  }
+
+  warn(processName: string, header: string, ...payload: unknown[]) {
+    this.write("Warn", processName, header, payload);
+  }
+
+  fatal(processName: string, header: string, ...payload: unknown[]) {
+    this.write("Fatal", processName, header, payload);
+  }
+
+  debug(processName: string, header: string, ...payload: unknown[]) {
+    this.write("Debug", processName, header, payload);
+  }
+
+  silly(processName: string, header: string, ...payload: unknown[]) {
+    this.write("Silly", processName, header, payload);
+  }
+
+  verbose(processName: string, header: string, ...payload: unknown[]) {
+    this.write("Verbose", processName, header, payload);
+  }
+
+  log(
+    logType: LogType,
+    processName: string,
+    header: string,
+    payload?: unknown
+  ) {
+    this.write(logType, processName, header, payload);
+  }
+}

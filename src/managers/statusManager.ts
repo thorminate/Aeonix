@@ -1,6 +1,6 @@
 import { ActivityType } from "discord.js";
-import log from "../utils/log.js";
 import BaseManager from "../models/managers/baseManager.js";
+import Logger from "../utils/log.js";
 
 export default class StatusManager extends BaseManager {
   verbs: string[] = [
@@ -117,11 +117,10 @@ export default class StatusManager extends BaseManager {
 
   refresh() {
     if (!this.aeonix) {
-      log({
-        header: "Aeonix is not initialized yet, cannot refresh status",
-        processName: "StatusManager.refresh",
-        type: "Warn",
-      });
+      new Logger().warn(
+        "StatusManager",
+        "Aeonix is not initialized yet, cannot refresh status"
+      );
       return;
     }
 

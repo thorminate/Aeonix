@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import log from "./utils/log.js";
 import readline from "readline/promises";
 import { appendFileSync, existsSync, writeFileSync } from "fs";
 import { config as dotenv } from "@dotenvx/dotenvx";
 import { magenta, green } from "ansis";
 import Aeonix from "./aeonix.js";
+import Logger from "./utils/log.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -15,15 +15,14 @@ const rl = readline.createInterface({
   prompt: `${magenta("Aeonix")} ${green(">>")} `,
 });
 
+const logger = new Logger();
+
 // Make sure the .env file exists
 if (!existsSync("./.env")) {
+  const log = logger.for("AeonixSetupWizard");
   // If the .env file doesn't exist, we create it.
 
-  log({
-    header: ".env file not found, starting setup wizard",
-    processName: "AeonixSetupWizard",
-    type: "Warn",
-  });
+  log.warn(".env file not found, starting setup wizard...");
 
   const token = await rl.question("Enter your token: ");
   writeFileSync("./.env", `TOKEN="${token}"`);
@@ -44,11 +43,7 @@ if (!existsSync("./.env")) {
   );
   appendFileSync("./.env", `\nRULES_CHANNEL="${rulesChannelId}"`);
 
-  log({
-    header: "Created .env file",
-    processName: "AeonixSetupWizard",
-    type: "Info",
-  });
+  log.info("Setup wizard complete!");
 }
 
 // Load environment variables
@@ -56,14 +51,11 @@ const dotenvx = dotenv({
   quiet: true,
 });
 
-log({
-  header: `Injecting env (${
-    Object.keys(dotenvx.parsed ?? {}).length
-  }) from .env`,
-  processName: "Dotenvx",
-  type: "Info",
-});
+logger.info(
+  "Dotenvx",
+  `Injecting env (${Object.keys(dotenvx.parsed ?? {}).length}) from .env`
+);
 
-const aeonix = new Aeonix(rl);
+const aeonix = new Aeonix(rl, logger);
 
 export default aeonix;

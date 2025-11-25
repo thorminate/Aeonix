@@ -1,6 +1,5 @@
 import { execSync } from "child_process";
 import CLICommand from "../../../models/cli/cliCommand.js";
-import log from "../../../utils/log.js";
 import { rmSync } from "fs";
 
 export default new CLICommand({
@@ -9,37 +8,20 @@ export default new CLICommand({
   options: [],
   acceptsPrimaryArg: false,
   execute: async ({ aeonix }) => {
-    log({
-      header: "Recompiling",
-      processName: "CLI",
-      type: "Info",
-    });
+    const log = aeonix.logger.for("RefreshCLICommand");
+    log.info("Refreshing caches and recompiling...");
 
     rmSync("./dist", { recursive: true, force: true });
     try {
       execSync("tsc", { stdio: "inherit" });
     } catch (e) {
-      log({
-        header: "Recompilation failed",
-        processName: "CLI",
-        payload: e,
-        type: "Error",
-      });
+      log.error("Recompilation failed", e);
     }
-
-    log({
-      header: "Refreshing caches",
-      processName: "CLI",
-      type: "Info",
-    });
 
     await aeonix.fullSave();
 
     await aeonix.refreshCaches();
 
-    log({
-      header: "Done",
-      type: "Info",
-    });
+    log.info("Done!");
   },
 });

@@ -1,6 +1,5 @@
 import run from "package-run";
 import CLICommand from "../../../models/cli/cliCommand.js";
-import log from "../../../utils/log.js";
 import { config } from "@dotenvx/dotenvx";
 
 export default new CLICommand({
@@ -9,33 +8,20 @@ export default new CLICommand({
   acceptsPrimaryArg: false,
   options: [],
   async execute({ aeonix }) {
-    log({
-      header: "Encrypting .env file...",
-      type: "Info",
-    });
+    const log = aeonix.logger.for("EncryptCLICommand");
+    log.info("Encrypting .env file...");
 
     await run({
       command: "encrypt",
       silent: true,
     });
 
-    log({
-      header: "Refreshing process.env...",
-      type: "Info",
-    });
+    log.info("Reloading environment variables...");
 
     config();
 
-    log({
-      header: "Reloading aeonix variables...",
-      type: "Info",
-    });
-
     aeonix.reloadEnvironmentVars();
 
-    log({
-      header: "Done",
-      type: "Info",
-    });
+    log.info("Done!");
   },
 });

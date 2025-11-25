@@ -4,7 +4,6 @@ import Environment from "../models/environment/environment.js";
 import { Model } from "mongoose";
 import environmentModel from "../models/environment/utils/environmentModel.js";
 import EnvironmentStorage from "../models/environment/utils/environmentStorage.js";
-import log from "../utils/log.js";
 import { decode } from "cbor2";
 import { inflateSync } from "zlib";
 import semibinaryToBuffer from "../models/player/utils/semibinaryToBuffer.js";
@@ -35,11 +34,11 @@ export default class EnvironmentManager extends HybridCachedManager<
     const rawEnv = await inst.serialize();
 
     if (!rawEnv) {
-      log({
-        header: `Player ${inst._id} could not be serialized, skipping save`,
-        type: "Error",
-        processName: "PlayerManager.onSave",
-      });
+      this.aeonix?.logger.error(
+        "EnvironmentManager.onSave",
+        `Environment ${inst._id} could not be serialized, skipping save`,
+        inst
+      );
       return;
     }
 

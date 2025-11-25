@@ -1,8 +1,8 @@
-import { log } from "console";
 import { ChannelSelectMenuBuilder } from "discord.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
+import aeonix from "../../../index.js";
 
 export default new Interaction({
   data: new ChannelSelectMenuBuilder()
@@ -23,11 +23,6 @@ export default new Interaction({
   },
 
   onError: (e) => {
-    log({
-      header: "ChannelSelectMenu Error",
-      processName: "TemplateChannelSelectMenu",
-      payload: e,
-      type: "Error",
-    });
+    aeonix.logger.error("ChannelSelectMenuTemplate", "Button Error", e);
   },
 });

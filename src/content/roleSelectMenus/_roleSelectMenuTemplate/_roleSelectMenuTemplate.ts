@@ -2,7 +2,6 @@ import { RoleSelectMenuBuilder } from "discord.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import log from "../../../utils/log.js";
 
 export default new Interaction({
   data: new RoleSelectMenuBuilder()
@@ -18,12 +17,7 @@ export default new Interaction({
     });
   },
 
-  onError: (e) => {
-    log({
-      header: "RoleSelectMenu Error",
-      processName: "TemplateRoleSelectMenu",
-      payload: e,
-      type: "Error",
-    });
+  onError: (e, aeonix) => {
+    aeonix.logger.error("RoleSelectMenuTemplate", "Command Error", e);
   },
 });

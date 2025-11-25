@@ -1,4 +1,3 @@
-import log from "../../../utils/log.js";
 import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import {
   ApplicationCommand,
@@ -106,11 +105,8 @@ function areCommandsDifferent(
 
 export default new AeonixEvent<"ready">({
   callback: async ({ aeonix }) => {
-    log({
-      header: "Registering commands",
-      processName: "CommandRegistrant",
-      type: "Info",
-    });
+    const log = aeonix.logger.for("CommandRegistrant");
+    log.info("Registering commands...");
 
     const localCommands = await aeonix.commands.getAll();
     const applicationCommands = await getApplicationCommands(
@@ -131,41 +127,30 @@ export default new AeonixEvent<"ready">({
 
       if (existingCommand) {
         if (localCommand.deleted) {
-          applicationCommands.delete(existingCommand.id);
-          log({
-            header: `Deleting command, ${name}`,
-            processName: "CommandRegistrant",
-            type: "Info",
-          });
+          log.info(`Deleting command, ${name}...`);
+          await applicationCommands.delete(existingCommand.id);
+          log.info(`Deleted command, ${name}`);
           continue;
         }
         if (areCommandsDifferent(existingCommand, localCommand)) {
-          applicationCommands.edit(existingCommand.id, {
+          log.info(`Updating command, ${name}...`);
+          await applicationCommands.edit(existingCommand.id, {
             description,
             options,
           });
-
-          log({
-            header: `Editing command, ${name}`,
-            processName: "CommandRegistrant",
-            type: "Info",
-          });
+          log.info(`Updated command, ${name}`);
         }
       } else {
         if (localCommand.deleted) {
           continue;
         }
-        applicationCommands.create({
+        log.info(`Creating command, ${name}...`);
+        await applicationCommands.create({
           name,
           description,
           options,
         });
-
-        log({
-          header: `Registering command, ${name}`,
-          processName: "CommandRegistrant",
-          type: "Info",
-        });
+        log.info(`Created command, ${name}`);
       }
 
       localCommand.id = existingCommand?.id;
@@ -179,29 +164,17 @@ export default new AeonixEvent<"ready">({
       );
 
       if (!isLocal) {
-        applicationCommands.delete(existingCommand.id);
-        log({
-          header: `Deleting stale command, ${existingCommand.name}`,
-          processName: "CommandRegistrant",
-          type: "Info",
-        });
+        log.info(`Deleting command, ${existingCommand.name}...`);
+        await applicationCommands.delete(existingCommand.id);
+        log.info(`Deleted command, ${existingCommand.name}`);
 
         continue;
       }
     }
 
-    log({
-      header: "Commands A-OK",
-      processName: "CommandRegistrant",
-      type: "Info",
-    });
+    log.info("Commands A-OK!");
   },
-  onError: async (e) => {
-    log({
-      header: "Error registering commands",
-      processName: "CommandRegistrant",
-      payload: e,
-      type: "Error",
-    });
+  onError: async (e, { aeonix }) => {
+    aeonix.logger.error("CommandRegistrant", "CommandRegistrant Error", e);
   },
 });

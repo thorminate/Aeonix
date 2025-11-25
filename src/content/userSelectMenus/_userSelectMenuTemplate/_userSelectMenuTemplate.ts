@@ -2,7 +2,6 @@ import { UserSelectMenuBuilder } from "discord.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import log from "../../../utils/log.js";
 
 export default new Interaction({
   data: new UserSelectMenuBuilder()
@@ -18,12 +17,7 @@ export default new Interaction({
     });
   },
 
-  onError: (e) => {
-    log({
-      header: "UserSelectMenu Error",
-      processName: "TemplateUserSelectMenu",
-      payload: e,
-      type: "Error",
-    });
+  onError: (e, aeonix) => {
+    aeonix.logger.error("UserSelectMenuTemplate", "Command Error", e);
   },
 });

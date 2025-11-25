@@ -2,7 +2,6 @@ import { MentionableSelectMenuBuilder } from "discord.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import log from "../../../utils/log.js";
 
 export default new Interaction({
   data: new MentionableSelectMenuBuilder()
@@ -18,12 +17,7 @@ export default new Interaction({
     });
   },
 
-  onError: (e) => {
-    log({
-      header: "MentionableSelectMenu Error",
-      processName: "TemplateMentionableSelectMenu",
-      payload: e,
-      type: "Error",
-    });
+  onError: (e, aeonix) => {
+    aeonix.logger.error("MentionableSelectMenuTemplate", "Command Error", e);
   },
 });

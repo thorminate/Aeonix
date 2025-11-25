@@ -7,7 +7,6 @@ import {
   TextDisplayBuilder,
   TextDisplayComponent,
 } from "discord.js";
-import log from "../../../utils/log.js";
 import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import componentWrapper from "../../../utils/componentWrapper.js";
 import onboarding0 from "../../../content/buttons/onboarding0/onboarding0.js";
@@ -32,17 +31,12 @@ export const welcomeImage = new AttachmentBuilder("./assets/welcome.png", {
 
 export default new AeonixEvent<"ready">({
   callback: async ({ aeonix }) => {
+    const log = aeonix.logger.for("OnboardingSupervisor");
     const onboardingChannelId = aeonix.onboardingChannelId;
 
     if (!onboardingChannelId) {
-      log({
-        header: "Onboarding channel id not found in aeonix object",
-        processName: "OnboardingSupervisor",
-        type: "Error",
-        payload: {
-          "The onboarding channel id: ": onboardingChannelId ?? "undefined",
-          "Aeonix: ": aeonix,
-        },
+      log.error("Onboarding channel ID not found", {
+        "The onboarding channel id: ": onboardingChannelId ?? "undefined",
       });
       return;
     }
@@ -50,10 +44,8 @@ export default new AeonixEvent<"ready">({
     const onboardingChannel = await aeonix.channels.fetch(onboardingChannelId);
 
     if (!onboardingChannel || !(onboardingChannel instanceof TextChannel)) {
-      log({
-        header: "Onboarding channel not found",
-        processName: "OnboardingSupervisor",
-        type: "Error",
+      log.error("Onboarding channel not found", {
+        "The onboarding channel: ": onboardingChannel ?? "undefined",
       });
       return;
     }
@@ -75,11 +67,7 @@ export default new AeonixEvent<"ready">({
           .split("\n")
           .join("")
       ) {
-        log({
-          header: "Onboarding message already sent",
-          processName: "OnboardingSupervisor",
-          type: "Info",
-        });
+        log.info("Onboarding messages already sent.");
         return;
       }
     }
@@ -89,12 +77,7 @@ export default new AeonixEvent<"ready">({
         // 50034 is cannot bulk delete messages older than 14 days.
         throw e;
       } else {
-        log({
-          header: "Could not bulk delete messages, they are older than 14 days",
-          processName: "OnboardingSupervisor",
-          payload: e,
-          type: "Warn",
-        });
+        log.error("Failed to bulk delete messages", e);
       }
     });
 
@@ -117,18 +100,9 @@ export default new AeonixEvent<"ready">({
       files: [welcomeImage],
     });
 
-    log({
-      header: "Sent onboarding messages.",
-      processName: "OnboardingSupervisor",
-      type: "Info",
-    });
+    log.info("Onboarding messages sent.");
   },
-  onError: async (e) => {
-    log({
-      header: "Error sending onboarding message",
-      processName: "OnboardingSupervisor",
-      payload: e,
-      type: "Error",
-    });
+  onError: async (e, { aeonix }) => {
+    aeonix.logger.error("OnboardingSupervisor", "Onboarding Error", e);
   },
 });

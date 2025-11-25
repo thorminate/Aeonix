@@ -19,7 +19,6 @@ import {
 import Inventory, { RawInventory } from "./utils/inventory/inventory.js";
 import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
 import aeonix from "../../index.js";
-import log from "../../utils/log.js";
 import PlayerMoveToResult from "./utils/playerMoveToResult.js";
 import Inbox, { RawInbox } from "./utils/inbox/inbox.js";
 import Location, { RawLocation } from "./utils/location/location.js";
@@ -177,11 +176,10 @@ export default class Player extends Serializable<RawPlayer> {
         )
         .catch(() => undefined))
     ) {
-      log({
-        header: "Failed to create permission overwrite",
-        processName: "Player.moveTo",
-        type: "Warn",
-      });
+      aeonix.logger.warn(
+        "Player.moveTo",
+        "Failed to create permission overwrite"
+      );
       return "failed to create permission overwrite";
     }
 
@@ -191,12 +189,11 @@ export default class Player extends Serializable<RawPlayer> {
       const oldChannel = await oldEnv.fetchChannel();
       if (oldChannel && oldChannel instanceof GuildChannel) {
         await oldChannel.permissionOverwrites.delete(this._id).catch((e) => {
-          log({
-            header: "Failed to delete permission overwrite",
-            processName: "Player.moveTo",
-            payload: e,
-            type: "Warn",
-          });
+          aeonix.logger.warn(
+            "Player.moveTo",
+            "Failed to delete permission overwrite",
+            e
+          );
         });
       }
 
@@ -229,22 +226,14 @@ export default class Player extends Serializable<RawPlayer> {
     const guild = aeonix.guilds.cache.get(aeonix.guildId);
 
     if (!guild) {
-      log({
-        header: "Unable to fetch master guild",
-        processName: "Player.isAdmin",
-        type: "Warn",
-      });
+      aeonix.logger.warn("Player.isAdmin", "Unable to fetch master guild");
       return false;
     }
 
     const masterRole = guild.roles.cache.get(aeonix.masterRoleId);
 
     if (!masterRole) {
-      log({
-        header: "Unable to fetch master role",
-        processName: "Player.isAdmin",
-        type: "Warn",
-      });
+      aeonix.logger.warn("Player.isAdmin", "Unable to fetch master role");
       return false;
     }
 
@@ -320,11 +309,7 @@ export default class Player extends Serializable<RawPlayer> {
     const channel = await this.fetchEnvironmentChannel();
 
     if (!channel) {
-      log({
-        header: "Environment channel not found",
-        processName: "Player.delete",
-        type: "Error",
-      });
+      aeonix.logger.warn("Player.delete", "Unable to fetch channel");
       return;
     }
 

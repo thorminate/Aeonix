@@ -6,7 +6,7 @@ import {
   Partials,
 } from "discord.js";
 import readline from "readline/promises";
-import log from "./utils/log.js";
+import Logger from "./utils/log.js";
 import mongoose from "mongoose";
 import { readFileSync } from "fs";
 import eventManager from "./handlers/eventHandler.js";
@@ -76,16 +76,17 @@ export default class Aeonix extends Client {
   cli = new AeonixCLI(this);
   config = config;
 
+  logger: Logger;
+
   get currentTime() {
     const now = this._currentTime;
 
     if (now <= 0 || now > 24) {
-      log({
-        header: "Invalid current time, resetting to 1",
-        processName: "Aeonix.currentTime",
-        type: "Error",
-        payload: { currentTime: now },
-      });
+      this.logger.error(
+        "Aeonix.currentTime",
+        "Invalid current time, resetting to 1",
+        { currentTime: now }
+      );
       this._currentTime = 1; // Reset to 1 if the time is invalid
       return 1; // Default to 1 if the time is invalid
     }
@@ -118,12 +119,8 @@ export default class Aeonix extends Client {
   }
 
   async exit(code: number = 0) {
-    log({
-      header: "Shutting down",
-      processName: "Process",
-      type: "Warn",
-      doNotPrompt: true,
-    });
+    const log = this.logger.for("Process");
+    log.warn("Shutting down...");
     try {
       await this.fullSave();
       if (this.user) {
@@ -132,12 +129,7 @@ export default class Aeonix extends Client {
       await this.destroy();
       process.exit(code); // Exit with the provided code
     } catch (e) {
-      log({
-        header: "Error while shutting down",
-        processName: "Process",
-        payload: e,
-        type: "Error",
-      });
+      log.error("Failed to shutdown", e);
       process.exit(1); // Exit with error code
     }
   }
@@ -230,11 +222,7 @@ export default class Aeonix extends Client {
       shouldInitCLI ? o.cli.init() : null,
     ]);
 
-    log({
-      header: "All caches made",
-      processName: "CacheOrchestrator",
-      type: "Info",
-    });
+    this.logger.info("CacheOrchestrator", "All caches made");
 
     return o;
   }
@@ -251,12 +239,10 @@ export default class Aeonix extends Client {
     await this.makeAllCaches(this, true, true);
   }
 
-  constructor(rl: readline.Interface) {
-    log({
-      header: "Starting boot-up sequence",
-      processName: "AeonixConstructor",
-      type: "Info",
-    });
+  constructor(rl: readline.Interface, logger: Logger) {
+    const log = logger.for("AeonixConstructor");
+
+    log.info("Starting boot-up sequence...");
 
     const statusMgr: StatusManager | null = new StatusManager();
 
@@ -313,6 +299,7 @@ export default class Aeonix extends Client {
       ],
     });
 
+    this.logger = logger;
     this.config = config;
     this.rl = rl;
 
@@ -324,11 +311,9 @@ export default class Aeonix extends Client {
     (async () => {
       try {
         if (!dscToken || !mdbToken) {
-          log({
-            header: "Missing token(s)",
-            processName: "AeonixConstructor",
-            type: "Fatal",
-            payload: { discordToken: dscToken, mongodbToken: mdbToken },
+          log.fatal("Missing token(s)", {
+            discordToken: dscToken,
+            mongodbToken: mdbToken,
           });
           return;
         }
@@ -336,22 +321,17 @@ export default class Aeonix extends Client {
         await this.cli.init();
 
         await eventManager(this).then(() => {
-          log({
-            header: "Event handler initialized.",
-            processName: "EventHandler",
-            type: "Info",
-          });
+          this.logger.info("EventDistributor", "Event handler initialized.");
         });
 
         await Promise.all([
           mongoose.connect(mdbToken),
           this.login(dscToken),
         ]).then(([db]) => {
-          log({
-            header: "Connected to external services",
-            processName: "NetworkingHandler",
-            type: "Info",
-          });
+          this.logger.info(
+            "NetworkingHandler",
+            "Established connection to external services."
+          );
           this.db = db;
           process.on("SIGINT", () => {
             mongoose.connection.close();
@@ -360,12 +340,7 @@ export default class Aeonix extends Client {
 
         await this.makeAllCaches(this);
       } catch (e) {
-        log({
-          header: "Error whilst creating Aeonix object",
-          processName: "ErrorSuppressant",
-          payload: e,
-          type: "Fatal",
-        });
+        log.fatal("Failed to start Aeonix", e);
         this.exit(1);
       }
     })();

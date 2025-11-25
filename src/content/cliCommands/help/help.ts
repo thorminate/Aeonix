@@ -1,5 +1,4 @@
 import CLICommand from "../../../models/cli/cliCommand.js";
-import log from "../../../utils/log.js";
 import renderTree, { Tree } from "../../../utils/treeRenderer.js";
 
 export default new CLICommand({
@@ -20,11 +19,10 @@ export default new CLICommand({
         })),
       })),
     };
-    log({
-      header: "Help Command",
-      processName: "CLI",
-      payload: renderTree(commandTree),
-      type: "Info",
-    });
+    aeonix.logger.info(
+      "HelpCLICommand",
+      "All commands: ",
+      renderTree(commandTree)
+    );
   },
 });

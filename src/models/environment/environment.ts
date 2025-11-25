@@ -17,7 +17,6 @@ import EnvironmentEventContext from "./utils/environmentEventContext.js";
 import EnvironmentEventResult from "./utils/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
 import Item from "../item/item.js";
-import log from "../../utils/log.js";
 import merge from "../../utils/merge.js";
 import Serializable, {
   arrayOf,
@@ -26,6 +25,9 @@ import Serializable, {
   dynamicArrayOf,
 } from "../core/serializable.js";
 import { ClassConstructor } from "../../utils/typeDescriptor.js";
+import EnvironmentEventsManager, {
+  EnvironmentEvents,
+} from "./utils/environmentEvents.js";
 
 interface RawEnvironment {
   _id: string;
@@ -75,6 +77,15 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
   players: string[] = [];
   items: Item[] = [];
 
+  _events = new EnvironmentEventsManager(this);
+
+  async emit<T extends keyof EnvironmentEvents>(
+    e: T,
+    ...args: EnvironmentEvents[T]
+  ): Promise<boolean> {
+    return this._events.emit(e, ...args);
+  }
+
   async commit(saveIntoCache = true): Promise<void> {
     if (saveIntoCache) aeonix.environments.set(this);
 
@@ -85,6 +96,33 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
       new: true,
       setDefaultsOnInsert: true,
     });
+  }
+
+  async updateOverviewMessage(): Promise<Message | undefined> {
+    const channel = await this.fetchChannel();
+    if (!channel) return;
+
+    const fetched = await channel.messages
+      .fetch(this.overviewMessageId)
+      .catch(() => undefined);
+
+    [this.overviewMessage] = await Promise.all([
+      channel.send(this.overview()),
+      fetched?.delete(),
+    ]);
+
+    if (!this.overviewMessage.id) {
+      aeonix.logger.error(
+        "Environment.updateOverviewMessage",
+        "Failed to update overview message, message could not be created",
+        this.overviewMessage
+      );
+      return;
+    }
+
+    this.overviewMessageId = this.overviewMessage.id;
+
+    return this.overviewMessage;
   }
 
   async fetchLastOverviewMessage(): Promise<Message | undefined> {
@@ -197,11 +235,10 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
     const channel = await this.fetchChannel();
 
     if (!channel) {
-      log({
-        header: "Channel not found",
-        processName: "Environment.init",
-        payload: { this: this, channel, fetchChannel: this.fetchChannel },
-        type: "Warn",
+      aeonix.logger.warn("Environment.init", "Channel not found", {
+        this: this,
+        channel,
+        fetchChannel: this.fetchChannel,
       });
       return;
     }

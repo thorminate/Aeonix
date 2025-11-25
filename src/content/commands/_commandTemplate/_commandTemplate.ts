@@ -2,7 +2,6 @@ import { SlashCommandBuilder } from "discord.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import log from "../../../utils/log.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()
@@ -16,12 +15,7 @@ export default new Interaction({
     await context.editReply("Template command executed!");
   },
 
-  onError: (e) => {
-    log({
-      header: "Command Error",
-      processName: "TemplateCommand",
-      payload: e,
-      type: "Error",
-    });
+  onError: (e, aeonix) => {
+    aeonix.logger.error("TemplateCommand", "Command Error", e);
   },
 });

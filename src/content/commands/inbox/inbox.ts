@@ -6,7 +6,6 @@ import {
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
-import log from "../../../utils/log.js";
 import containerSnippetPaginator, {
   ContainerSnippet,
   containerSnippetPaginatorWithUpdate,
@@ -29,17 +28,14 @@ export default new Interaction({
   passPlayer: true,
   environmentOnly: true,
 
-  callback: async ({ context, player }) => {
+  callback: async ({ context, player, aeonix }) => {
+    const log = aeonix.logger.for("InboxCommand");
     let snippets = await player.use(async (p) => {
       return generateInboxContents(p);
     });
 
     if (!snippets) {
-      log({
-        header: "Could not generate snippets",
-        processName: "InboxCommand",
-        type: "Error",
-      });
+      log.error("Could not generate inbox snippets");
       return;
     }
 
@@ -59,12 +55,7 @@ export default new Interaction({
           const container = new ContainerBuilder();
           const result = content(container);
           if (!("letter" in result)) {
-            log({
-              header: "Could not get letter from container",
-              processName: "SnippetPaginator",
-              type: "Error",
-              payload: result,
-            });
+            log.error("Could not get letter from container");
             return false;
           }
 
@@ -76,11 +67,7 @@ export default new Interaction({
     });
 
     if (!result || result.returnType === "error") {
-      log({
-        header: "Paginator returned an error",
-        processName: "InboxCommand",
-        type: "Error",
-      });
+      log.error("Paginator returned an error");
       return;
     }
 
@@ -88,11 +75,7 @@ export default new Interaction({
     let collector = result.collector;
 
     if (!msg) {
-      log({
-        header: "Paginator did not return a message or collect",
-        processName: "InboxCommand",
-        type: "Error",
-      });
+      log.error("Paginator did not return a message or collect");
       return;
     }
     let isPureCollector = false;
@@ -123,11 +106,7 @@ export default new Interaction({
               );
 
               if (!letter) {
-                log({
-                  header: "Could not find letter",
-                  processName: "InboxCommand",
-                  type: "Error",
-                });
+                log.error("Could not find letter");
                 return;
               }
 
@@ -232,11 +211,7 @@ export default new Interaction({
             });
 
             if (!letter) {
-              log({
-                header: "Could not find letter",
-                processName: "InboxCommand",
-                type: "Error",
-              });
+              log.error("Could not find letter");
               return;
             }
 
@@ -247,15 +222,12 @@ export default new Interaction({
           }
         }
       } catch (e) {
-        log({
-          header: "Error in inbox command collector",
-          processName: "InboxCommandCollector",
-          type: "Error",
-          payload: e,
-        });
+        log.error("Error in inbox command", e);
       }
     });
   },
 
-  onError: (e) => console.error(e),
+  onError: (e, aeonix) => {
+    aeonix.logger.error("InboxCommand", "Command Error", e);
+  },
 });

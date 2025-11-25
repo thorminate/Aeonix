@@ -4,7 +4,6 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import log from "../../../utils/log.js";
 import Interaction, {
   InteractionTypes,
 } from "../../../models/events/interaction.js";
@@ -75,12 +74,7 @@ export default new Interaction({
     });
   },
 
-  onError: (e) => {
-    log({
-      header: "Modal Error",
-      processName: "Onboarding1Modal",
-      payload: e,
-      type: "Error",
-    });
+  onError: (e, aeonix) => {
+    aeonix.logger.error("Onboarding1Modal", "Modal Error", e);
   },
 });

@@ -1,5 +1,5 @@
+import aeonix from "../../../index.js";
 import CLICommand from "../../../models/cli/cliCommand.js";
-import log from "../../../utils/log.js";
 
 export default new CLICommand({
   name: "clear",
@@ -7,11 +7,7 @@ export default new CLICommand({
   options: [],
   acceptsPrimaryArg: false,
   async execute() {
-    log({
-      header: "Clearing console",
-      processName: "CLI",
-      type: "Info",
-    });
+    aeonix.logger.info("ClearCLICommand", "Clearing console...");
     process.stdout.write("\x1B[2J\x1B[0f");
     console.clear();
   },

@@ -4,7 +4,6 @@ import {
   PermissionsBitField,
   AutocompleteInteraction,
 } from "discord.js";
-import log from "../../../utils/log.js";
 import AeonixEvent from "../../../models/events/aeonixEvent.js";
 import Interaction, {
   InteractionTypes,
@@ -14,6 +13,7 @@ import Player from "../../../models/player/player.js";
 
 export default new AeonixEvent<"interactionCreate">({
   callback: async ({ args: [context], aeonix }) => {
+    const log = aeonix.logger.for("InteractionHandler");
     if (!context.isAutocomplete()) {
       return;
     }
@@ -31,13 +31,7 @@ export default new AeonixEvent<"interactionCreate">({
     const localInteractions = aeonix.commands.array();
 
     if (!localInteractions) {
-      log({
-        header:
-          "An interaction was received but no local content were found matching it.",
-        processName: "InteractionHandler",
-        payload: context,
-        type: "Error",
-      });
+      log.error("An interaction was received, but no local content exists.");
       return;
     }
 
@@ -66,12 +60,7 @@ export default new AeonixEvent<"interactionCreate">({
     if (!interaction) return;
 
     if (!context.member) {
-      log({
-        header: "Interaction member is falsy",
-        processName: "ButtonHandler",
-        payload: context,
-        type: "Error",
-      });
+      log.error("Interaction member is falsy.", context);
       return;
     }
 
@@ -138,8 +127,8 @@ export default new AeonixEvent<"interactionCreate">({
       playerRef = player.toRef();
       player = undefined;
     }
-    await context.respond([
-      ...((await interaction.autocomplete
+    await context.respond(
+      (await interaction.autocomplete
         ?.callback({
           context,
           player: playerRef,
@@ -149,26 +138,13 @@ export default new AeonixEvent<"interactionCreate">({
         })
         .catch((e: unknown) => {
           try {
-            interaction.onError(e);
+            interaction.onError(e, aeonix);
           } catch (e) {
-            log({
-              header: "Error in interaction error handler",
-              processName: "InteractionHandler",
-              payload: e,
-              type: "Error",
-            });
+            log.error("Error with autocomplete error handler", e);
           }
-        })) as {
-        name: string;
-        value: string;
-      }[]),
-    ]);
+        })) ?? []
+    );
   },
-  onError: async (e) =>
-    log({
-      header: "An interaction could not be handled correctly",
-      processName: "InteractionHandler",
-      payload: e,
-      type: "Error",
-    }),
+  onError: async (e, { aeonix }) =>
+    aeonix.logger.error("InteractionHandler", "Autocomplete Error", e),
 });

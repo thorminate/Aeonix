@@ -2,7 +2,6 @@ import { GuildMemberRoleManager, User } from "discord.js";
 import Player from "../models/player/player.js";
 import PlayerRef from "../models/player/utils/playerRef.js";
 import aeonix from "../index.js";
-import log from "../utils/log.js";
 import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
 import { Model } from "mongoose";
 import PlayerStorage from "../models/player/utils/playerStorage.js";
@@ -65,11 +64,11 @@ export default class PlayerManager extends LifecycleCachedManager<
     const rawPlayer = await inst.serialize();
 
     if (!rawPlayer) {
-      log({
-        header: `Player ${inst._id} could not be serialized, skipping save`,
-        type: "Error",
-        processName: "PlayerManager.onSave",
-      });
+      this.aeonix?.logger.error(
+        "PlayerManager.onSave",
+        `Player ${inst._id} could not be serialized, skipping save`,
+        inst
+      );
       return;
     }
 
@@ -113,6 +112,7 @@ export default class PlayerManager extends LifecycleCachedManager<
     name,
     avatar,
   }: PlayerCreationOptions): Promise<Player | PlayerCreationResult> {
+    const log = aeonix.logger.for("PlayerManager.create");
     if (await aeonix.players.exists(user.id)) return "playerAlreadyExists";
 
     if (!avatar) avatar = user.displayAvatarURL();
@@ -123,11 +123,7 @@ export default class PlayerManager extends LifecycleCachedManager<
     const playerRole = aeonix.playerRoleId;
 
     if (!playerRole) {
-      log({
-        header: "Player role not found in environment variables",
-        processName: "PlayerManager.create",
-        type: "Error",
-      });
+      log.error("Player role not found in environment variables");
       return "internalError";
     }
 
@@ -136,20 +132,12 @@ export default class PlayerManager extends LifecycleCachedManager<
     )?.fetchChannel();
 
     if (!startChannel) {
-      log({
-        header: "Start channel not found",
-        processName: "PlayerManager.create",
-        type: "Error",
-      });
+      log.error("Start channel not found");
       return "internalError";
     }
 
     if (!startChannel.isTextBased()) {
-      log({
-        header: "Start channel is not a text channel",
-        processName: "Onboarding1Modal",
-        type: "Error",
-      });
+      log.error("Start channel is not a text channel");
       return "internalError";
     }
 
@@ -158,11 +146,7 @@ export default class PlayerManager extends LifecycleCachedManager<
       ?.members.fetch(user.id);
 
     if (!member) {
-      log({
-        header: "Member not found",
-        processName: "PlayerManager.create",
-        type: "Error",
-      });
+      log.error("Member not found in guild", aeonix.guildId, user.id);
       return "internalError";
     }
 

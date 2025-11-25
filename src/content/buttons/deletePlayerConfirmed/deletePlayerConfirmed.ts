@@ -1,9 +1,9 @@
-import log from "../../../utils/log.js";
 import { ButtonStyle } from "discord.js";
 import Interaction, {
   ButtonBuilderV2,
   InteractionTypes,
 } from "../../../models/events/interaction.js";
+import aeonix from "../../../index.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()
@@ -28,11 +28,6 @@ export default new Interaction({
   },
 
   onError(e) {
-    log({
-      header: "Button Error",
-      processName: "DeletePlayerConfirmedButton",
-      payload: e,
-      type: "Error",
-    });
+    aeonix.logger.error("DeletePlayerConfirmed", "Button Error", e);
   },
 });

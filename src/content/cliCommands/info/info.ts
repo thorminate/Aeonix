@@ -1,6 +1,5 @@
 import { blue, blueBright, redBright } from "ansis";
 import CLICommand from "../../../models/cli/cliCommand.js";
-import log from "../../../utils/log.js";
 import { execSync } from "child_process";
 import path from "path";
 
@@ -13,10 +12,10 @@ export default new CLICommand({
   async execute({ aeonix }) {
     const deps = aeonix.packageJson.dependencies;
     const devDeps = aeonix.packageJson.devDependencies;
-    log({
-      header: "Info",
-      processName: "CLI",
-      payload: [
+    aeonix.logger.info(
+      "InfoCLICommand",
+      `Aeonix v${aeonix.packageJson.version}`,
+      [
         blue`Version: ` + blueBright(aeonix.packageJson.version),
         blue`Git hash: ` +
           blueBright(execSync("git rev-parse --short HEAD").toString().trim()),
@@ -41,8 +40,7 @@ export default new CLICommand({
         `  TypeScript ESLint: ${devDeps?.["typescript-eslint"] || "N/A"}`,
         `  Globals: ${devDeps?.globals || "N/A"}`,
         " ",
-      ],
-      type: "Info",
-    });
+      ]
+    );
   },
 });

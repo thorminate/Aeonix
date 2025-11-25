@@ -1,13 +1,13 @@
 import path from "path"; // Get the path library.
 import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
 import url from "url";
-import log from "../utils/log.js";
 import AeonixEvent, {
   AeonixEventParams,
 } from "../models/events/aeonixEvent.js";
 import Aeonix, { AeonixEvents } from "../aeonix.js";
 
 export default async (aeonix: Aeonix) => {
+  const log = aeonix.logger.for("EventHandler");
   try {
     const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -23,12 +23,7 @@ export default async (aeonix: Aeonix) => {
       const eventName = eventFolder.replace(/\\/g, "/").split("/").pop();
 
       if (!eventName) {
-        log({
-          header: "Discord event name is undefined",
-          processName: "EventHandler",
-          type: "Error",
-          payload: [eventName, eventFolder],
-        });
+        log.error("Discord event name is undefined", eventFolder);
         return;
       }
 
@@ -54,11 +49,6 @@ export default async (aeonix: Aeonix) => {
       });
     }
   } catch (e) {
-    log({
-      header: "Fatal Error in event handler",
-      processName: "EventHandler",
-      type: "Fatal",
-      payload: e,
-    });
+    log.fatal("Failed to load events", e);
   }
 };

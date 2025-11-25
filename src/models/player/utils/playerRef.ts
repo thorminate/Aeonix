@@ -1,5 +1,4 @@
 import aeonix from "../../../index.js";
-import log from "../../../utils/log.js";
 import Player from "../player.js";
 
 export default class PlayerRef {
@@ -29,11 +28,11 @@ export default class PlayerRef {
     player.lastAccessed = Date.now();
 
     const result = await fn(player).catch((err) => {
-      log({
-        header: "Player usage caused an error",
-        payload: [err, player],
-        type: "Error",
-      });
+      aeonix.logger.error(
+        "PlayerRef.use",
+        "Player usage resulted in an error",
+        err
+      );
       return undefined;
     });
     player = undefined;

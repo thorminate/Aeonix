@@ -1,6 +1,6 @@
 import run from "package-run";
 import CLICommand from "../../../models/cli/cliCommand.js";
-import log from "../../../utils/log.js";
+import aeonix from "../../../index.js";
 
 export default new CLICommand({
   name: "decrypt",
@@ -8,19 +8,14 @@ export default new CLICommand({
   options: [],
   acceptsPrimaryArg: false,
   async execute() {
-    log({
-      header: "Decrypting .env file...",
-      type: "Info",
-    });
+    const log = aeonix.logger.for("DecryptCLICommand");
+    log.info("Decrypting .env file...");
 
     await run({
       command: "decrypt",
       silent: true,
     });
 
-    log({
-      header: "Done",
-      type: "Info",
-    });
+    log.info("Done!");
   },
 });

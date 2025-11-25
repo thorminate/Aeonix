@@ -1,6 +1,5 @@
 import { Message } from "discord.js";
 import AeonixEvent from "../../../models/events/aeonixEvent.js";
-import log from "../../../utils/log.js";
 
 export default new AeonixEvent<"messageCreate">({
   async callback({ args: [context], aeonix }) {
@@ -40,12 +39,11 @@ export default new AeonixEvent<"messageCreate">({
       ]);
     });
   },
-  async onError(e) {
-    log({
-      header: "Error with messageToPersona event",
-      processName: "MessageToPersonaEvent",
-      payload: e,
-      type: "Error",
-    });
+  async onError(e, { aeonix }) {
+    aeonix.logger.error(
+      "MessageToPersona",
+      "Error with messageToPersona event",
+      e
+    );
   },
 });
