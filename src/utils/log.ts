@@ -24,7 +24,7 @@ function stripAnsiCodes(str: string) {
 
 export default class Logger {
   private stream: fs.WriteStream;
-  private logDir: string;
+  private readonly logDir: string;
   private currentDate: string;
 
   constructor(logDir = path.resolve("./logs")) {
@@ -40,31 +40,83 @@ export default class Logger {
     this.stream = this.openStream();
   }
 
+  /**
+   * Creates a logger for a specific processName
+   * @param processName The name of the process that logs.
+   */
   for(processName: string) {
     return {
+      /**
+       * Logs informative data to the console.
+       * @param header The primary context of the log.
+       * @param payload Additional data, such as objects or stack traces.
+       */
       info: (header: string, ...payload: unknown[]) => {
-        this.write("Info", processName, header, payload);
+        this.info(processName, header, ...payload);
       },
-      warn: (header: string, ...payload: unknown[]) => {
-        this.write("Warn", processName, header, payload);
-      },
+
+      /**
+       * Logs an error to the console.
+       * @param header The primary context of the log.
+       * @param payload Additional data, such as objects or stack traces.
+       */
       error: (header: string, ...payload: unknown[]) => {
-        this.write("Error", processName, header, payload);
+        this.error(processName, header, ...payload);
       },
+
+      /**
+       * Logs a warning to the console.
+       * @param header The primary context of the log.
+       * @param payload Additional data, such as objects or stack traces.
+       */
+      warn: (header: string, ...payload: unknown[]) => {
+        this.warn(processName, header, ...payload);
+      },
+
+      /**
+       * Logs a fatal error to the console.
+       * @param header The primary context of the log.
+       * @param payload Additional data, such as objects or stack traces.
+       */
       fatal: (header: string, ...payload: unknown[]) => {
-        this.write("Fatal", processName, header, payload);
+        this.fatal(processName, header, ...payload);
       },
+
+      /**
+       * Logs debugging info to the console.
+       * @param header The primary context of the log.
+       * @param payload Additional data, such as objects or stack traces.
+       */
       debug: (header: string, ...payload: unknown[]) => {
-        this.write("Debug", processName, header, payload);
+        this.debug(processName, header, ...payload);
       },
+
+      /**
+       * Logs something silly to the console.
+       * @param header The primary context of the log.
+       * @param payload Additional data, such as objects or stack traces.
+       */
       silly: (header: string, ...payload: unknown[]) => {
-        this.write("Silly", processName, header, payload);
+        this.silly(processName, header, ...payload);
       },
+
+      /**
+       * Logs something verbosely to the console.
+       * @param header The primary context of the log.
+       * @param payload Additional data, such as objects or stack traces.
+       */
       verbose: (header: string, ...payload: unknown[]) => {
-        this.write("Verbose", processName, header, payload);
+        this.verbose(processName, header, ...payload);
       },
+
+      /**
+       * Logs informative data to the console.
+       * @param logType The type of log (Fatal, Warn, Info, Silly, etc.)
+       * @param header The primary context of the log.
+       * @param payload Additional data, such as objects or stack traces.
+       */
       log: (logType: LogType, header: string, ...payload: unknown[]) => {
-        this.write(logType, processName, header, payload);
+        this.log(logType, processName, header, payload);
       },
     };
   }
@@ -157,34 +209,83 @@ export default class Logger {
     this.reprompt();
   }
 
+  /**
+   * Logs informative data to the console.
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
   info(processName: string, header: string, ...payload: unknown[]) {
     this.write("Info", processName, header, payload);
   }
 
+  /**
+   * Logs an error to the console.
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
   error(processName: string, header: string, ...payload: unknown[]) {
     this.write("Error", processName, header, payload);
   }
 
+  /**
+   * Logs a warning to the console.
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
   warn(processName: string, header: string, ...payload: unknown[]) {
     this.write("Warn", processName, header, payload);
   }
 
+  /**
+   * Logs a fatal error to the console.
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
   fatal(processName: string, header: string, ...payload: unknown[]) {
     this.write("Fatal", processName, header, payload);
   }
 
+  /**
+   * Logs debugging info to the console.
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
   debug(processName: string, header: string, ...payload: unknown[]) {
     this.write("Debug", processName, header, payload);
   }
 
+  /**
+   * Logs something silly to the console.
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
   silly(processName: string, header: string, ...payload: unknown[]) {
     this.write("Silly", processName, header, payload);
   }
 
+  /**
+   * Logs something verbosely to the console.
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
   verbose(processName: string, header: string, ...payload: unknown[]) {
     this.write("Verbose", processName, header, payload);
   }
 
+  /**
+   * Logs informative data to the console.
+   * @param logType The type of log (Fatal, Warn, Info, Silly, etc.)
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
   log(
     logType: LogType,
     processName: string,
