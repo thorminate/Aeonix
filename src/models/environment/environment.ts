@@ -13,8 +13,8 @@ import {
 } from "discord.js";
 import aeonix from "../../index.js";
 import Player from "../player/player.js";
-import EnvironmentEventContext from "./utils/environmentEventContext.js";
-import EnvironmentEventResult from "./utils/environmentEventResult.js";
+import EnvironmentEventContext from "./environmentEvents/environmentEventContext.js";
+import EnvironmentEventResult from "./environmentEvents/environmentEventResult.js";
 import environmentModel from "./utils/environmentModel.js";
 import Item from "../item/item.js";
 import merge from "../../utils/merge.js";
@@ -22,19 +22,19 @@ import Serializable, {
   arrayOf,
   baseFields,
   defineField,
-  dynamicArrayOf,
 } from "../core/serializable.js";
 import { ClassConstructor } from "../../utils/typeDescriptor.js";
 import EnvironmentEventsManager, {
   EnvironmentEvents,
-} from "./utils/environmentEvents.js";
+} from "./environmentEvents/environmentEvents.js";
+import EnvironmentItems from "./environmentItems/environmentItems.js";
 
 interface RawEnvironment {
   _id: string;
   lastAccessed: number;
   overviewMessageId: string;
   players: string[];
-  items: Item[];
+  items: EnvironmentItems;
 }
 
 const v1 = defineField(baseFields, {
@@ -45,19 +45,8 @@ const v1 = defineField(baseFields, {
     players: { id: 4, type: arrayOf(String) },
     items: {
       id: 5,
-      type: dynamicArrayOf(async (o) => {
-        if (
-          !o ||
-          !(typeof o === "object") ||
-          !("d" in o) ||
-          !(typeof o.d === "object") ||
-          !("2" in o.d!) ||
-          !(typeof o.d[2] === "string")
-        )
-          return Item as unknown as ClassConstructor;
-        const cls = await aeonix.items.loadRaw(o.d[2]);
-        return cls ? cls : (Item as unknown as ClassConstructor);
-      }),
+      type: EnvironmentItems as unknown as ClassConstructor,
+      ctorArgs: (parent: unknown) => [parent as Environment],
     },
   },
 });
@@ -75,9 +64,15 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
   overviewMessageId: string = "";
   overviewMessage?: Message;
   players: string[] = [];
-  items: Item[] = [];
+  items = new EnvironmentItems(this);
+  isOverviewOnCooldown: boolean = false;
 
   _events = new EnvironmentEventsManager(this);
+
+  override onDeserialize(): void {
+    this._events.parent = this;
+    this.items.parent = this;
+  }
 
   async emit<T extends keyof EnvironmentEvents>(
     e: T,
@@ -99,8 +94,14 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
   }
 
   async updateOverviewMessage(): Promise<Message | undefined> {
+    if (this.isOverviewOnCooldown) return;
+
+    this.isOverviewOnCooldown = true;
     const channel = await this.fetchChannel();
-    if (!channel) return;
+    if (!channel) {
+      this.isOverviewOnCooldown = false;
+      return;
+    }
 
     const fetched = await channel.messages
       .fetch(this.overviewMessageId)
@@ -117,10 +118,13 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
         "Failed to update overview message, message could not be created",
         this.overviewMessage
       );
+      this.isOverviewOnCooldown = false;
       return;
     }
 
     this.overviewMessageId = this.overviewMessage.id;
+
+    setTimeout(() => (this.isOverviewOnCooldown = false), 10_000);
 
     return this.overviewMessage;
   }
@@ -170,27 +174,23 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
   dropItem(player: Player, item: Item) {
     if (this.onItemDrop) this.onItemDrop({ eventType: "drop", player, item });
 
-    this.emit("itemDropped", player, item);
+    this.emit("itemAdded", item, player);
 
-    this.items.push(item);
+    this.items.add(item);
   }
 
   pickUpItem(player: Player, id: Item | string): Item | undefined {
     const item =
-      typeof id === "string" ? this.items.find((i) => i.id === id) : id;
-
-    if (item) {
-      if (this.onItemPickup)
-        this.onItemPickup({ eventType: "pickup", player, item });
-    }
-
-    this.items = this.items.filter(
-      (i) => i.id !== (typeof id === "string" ? id : id.id)
-    );
+      typeof id === "string" ? this.items.arr.find((i) => i.id === id) : id;
 
     if (!item) return;
 
-    this.emit("itemPickedUp", player, item);
+    if (this.onItemPickup)
+      this.onItemPickup({ eventType: "pickup", player, item });
+
+    this.items.remove(item);
+
+    this.emit("itemRemoved", item, player);
 
     return item;
   }
@@ -217,7 +217,7 @@ export default abstract class Environment extends Serializable<RawEnvironment> {
     );
     c.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `Players: ${this.players.length}\nItems: ${this.items.length}`
+        `Players: ${this.players.length}\nItems: ${this.items.arr.length}`
       )
     );
 

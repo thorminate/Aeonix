@@ -1,6 +1,6 @@
 import EnvironmentEvent from "../../../models/events/environmentEvent.js";
 
-export default new EnvironmentEvent<"itemDropped">({
+export default new EnvironmentEvent<"itemAdded">({
   async callback({ env }) {
     await env.updateOverviewMessage();
   },

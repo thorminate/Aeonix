@@ -5,7 +5,7 @@ import getAllFiles from "../../../utils/getAllFiles.js";
 import EnvironmentEventDeclaration, {
   EnvironmentEventParams,
 } from "../../events/environmentEvent.js";
-import Environment from "../../environment/environment.js";
+import Environment from "../environment.js";
 import Item from "../../item/item.js";
 import Player from "../../player/player.js";
 import aeonix from "../../../index.js";
@@ -13,8 +13,8 @@ import aeonix from "../../../index.js";
 export interface EnvironmentEvents {
   playerJoined: [player: Player];
   playerLeft: [player: Player];
-  itemDropped: [player: Player, item: Item];
-  itemPickedUp: [player: Player, item: Item];
+  itemAdded: [item: Item, player?: Player];
+  itemRemoved: [item: Item, player?: Player];
 }
 
 export type EnvironmentEvent = keyof EnvironmentEvents;
@@ -32,7 +32,7 @@ export type EnvironmentEventUnion<
 export type AnyEnvironmentEvent = EnvironmentEventUnion<EnvironmentEvents>;
 
 export default class EnvironmentEventsManager extends EventEmitter {
-  parent: Environment;
+  parent: Environment | null = null;
 
   override emit<Event extends keyof EnvironmentEvents>(
     eventName: Event,
@@ -138,10 +138,10 @@ export default class EnvironmentEventsManager extends EventEmitter {
     return super.eventNames() as Array<keyof EnvironmentEvents>;
   }
 
-  constructor(env: Environment) {
+  constructor(parent?: Environment) {
     super();
-    this.parent = env;
     this.setUpListeners();
+    if (parent) this.parent = parent;
   }
 
   call<T extends keyof EnvironmentEvents>(
@@ -174,6 +174,11 @@ export default class EnvironmentEventsManager extends EventEmitter {
         }
 
         this.on(eventName as keyof EnvironmentEvents, async (...args) => {
+          if (this.parent === null) {
+            log.error("Parent is null");
+            return;
+          }
+
           for (const eventFile of eventFiles) {
             const filePath = path.resolve(eventFile);
             const fileUrl = url.pathToFileURL(filePath);

@@ -30,11 +30,12 @@ export default abstract class Quest<
 
   abstract createData(): Data;
 
-  id: string = randomUUID();
+  id = randomUUID();
   abstract type: string;
   abstract name: string;
   abstract description: string;
-  completed: boolean = false;
+  completed = false;
+  isAbandoned = false;
   data: Data;
 
   constructor(data?: Data) {

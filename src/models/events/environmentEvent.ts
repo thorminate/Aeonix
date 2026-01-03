@@ -1,6 +1,6 @@
 import Aeonix from "../../aeonix.js";
 import Environment from "../environment/environment.js";
-import { EnvironmentEvents } from "../environment/utils/environmentEvents.js";
+import { EnvironmentEvents } from "../environment/environmentEvents/environmentEvents.js";
 
 export class EnvironmentEventParams<
   Args extends EnvironmentEvents[keyof EnvironmentEvents]

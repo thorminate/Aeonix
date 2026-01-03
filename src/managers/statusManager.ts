@@ -1,6 +1,5 @@
 import { ActivityType } from "discord.js";
 import BaseManager from "../models/managers/baseManager.js";
-import Logger from "../utils/log.js";
 
 export default class StatusManager extends BaseManager {
   verbs: string[] = [
@@ -14,6 +13,7 @@ export default class StatusManager extends BaseManager {
     "Researching",
     "Delving into",
     "Investigating",
+    "Looking into",
   ];
   nouns: string[] = [
     "advanced mathematics",
@@ -116,13 +116,7 @@ export default class StatusManager extends BaseManager {
   ];
 
   refresh() {
-    if (!this.aeonix) {
-      new Logger().warn(
-        "StatusManager",
-        "Aeonix is not initialized yet, cannot refresh status"
-      );
-      return;
-    }
+    if (!this.aeonix) return;
 
     const randomChoice =
       this.verbs[Math.floor(Math.random() * (this.verbs?.length ?? 0))] +

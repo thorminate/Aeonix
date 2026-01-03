@@ -9,15 +9,14 @@ import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import Quest, { RawQuest } from "./quest.js";
 
 export interface RawQuests {
-  quests: RawQuest[]; // quests
+  arr: RawQuest[]; // quests
 }
 
-// TODO: add a discord command that lists and allows the player to interact with quests.
 // TODO: make an event system for environments to hook into, like, "playerJoined" or "itemDropped", this should also make the overview box update dynamically.
 
 const v1 = defineField(baseFields, {
   add: {
-    quests: {
+    arr: {
       id: 0,
       type: dynamicArrayOf(async (o) => {
         if (
@@ -38,16 +37,16 @@ const v1 = defineField(baseFields, {
 
 export default class Quests extends PlayerSubclassBase<RawQuests> {
   fields = [v1];
-  quests: Quest[] = [];
+  arr: Quest[] = [];
   migrators = [];
 
   add(quest: Quest) {
-    this.quests.push(quest);
+    this.arr.push(quest);
     this.parent.emit("questAdded", quest);
   }
 
   remove(quest: Quest) {
-    this.quests = this.quests.filter((q) => q.id !== quest.id);
+    this.arr = this.arr.filter((q) => q.id !== quest.id);
     this.parent.emit("questRemoved", quest);
   }
 }

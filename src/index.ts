@@ -15,7 +15,7 @@ const rl = readline.createInterface({
   prompt: `${magenta("Aeonix")} ${green(">>")} `,
 });
 
-const logger = new Logger();
+const logger = new Logger(rl);
 
 // Make sure the .env file exists
 if (!existsSync("./.env")) {

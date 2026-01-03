@@ -3,7 +3,6 @@ import fs from "node:fs";
 import { inspect } from "node:util";
 import readline from "node:readline";
 import { gray, cyan, red, redBright, yellow } from "ansis";
-import Aeonix from "../aeonix.js";
 
 export type LogType =
   | "Fatal"
@@ -22,12 +21,42 @@ function stripAnsiCodes(str: string) {
   );
 }
 
+export function stripLogNoise(
+  value: unknown,
+  seen = new WeakSet<object>()
+): unknown {
+  if (typeof value !== "object" || value === null) return value;
+  if (seen.has(value)) return "[Circular]";
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    return value.map((v) => stripLogNoise(v, seen));
+  }
+
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(value)) {
+    if (
+      k === "_unknownFields" ||
+      k === "excluded" ||
+      k === "migrators" ||
+      k === "fields" ||
+      k === "parent"
+    ) {
+      continue;
+    }
+
+    out[k] = stripLogNoise(v, seen);
+  }
+  return out;
+}
+
 export default class Logger {
   private stream: fs.WriteStream;
   private readonly logDir: string;
   private currentDate: string;
+  private rl: readline.Interface;
 
-  constructor(logDir = path.resolve("./logs")) {
+  constructor(rl: readline.Interface, logDir = path.resolve("./logs")) {
     this.logDir = logDir;
 
     if (!fs.existsSync(logDir)) {
@@ -36,6 +65,7 @@ export default class Logger {
       );
     }
 
+    this.rl = rl;
     this.currentDate = this.getDate();
     this.stream = this.openStream();
   }
@@ -141,13 +171,6 @@ export default class Logger {
     }
   }
 
-  private async reprompt() {
-    const { default: aeonix }: { default: Aeonix } = await import(
-      "../index.js"
-    );
-    if (aeonix) aeonix.rl.prompt();
-  }
-
   private color(type: LogType) {
     switch (type) {
       case "Fatal":
@@ -161,7 +184,14 @@ export default class Logger {
     }
   }
 
-  private write(
+  /**
+   * Logs informative data to the console.
+   * @param logType The type of log (Fatal, Warn, Info, Silly, etc.)
+   * @param processName The name of the process that logs.
+   * @param header The primary context of the log.
+   * @param payload Additional data, such as objects or stack traces.
+   */
+  log(
     type: LogType,
     processName: string,
     header: string,
@@ -200,13 +230,8 @@ export default class Logger {
     readline.clearLine(process.stdout, 0);
     readline.cursorTo(process.stdout, 0);
 
-    if (type === "Fatal" || type === "Error" || type === "Warn") {
-      console.error(line);
-    } else {
-      console.log(line);
-    }
-
-    this.reprompt();
+    process.stdout.write(line + "\n");
+    this.rl.prompt(true);
   }
 
   /**
@@ -216,7 +241,7 @@ export default class Logger {
    * @param payload Additional data, such as objects or stack traces.
    */
   info(processName: string, header: string, ...payload: unknown[]) {
-    this.write("Info", processName, header, payload);
+    this.log("Info", processName, header, payload);
   }
 
   /**
@@ -226,7 +251,7 @@ export default class Logger {
    * @param payload Additional data, such as objects or stack traces.
    */
   error(processName: string, header: string, ...payload: unknown[]) {
-    this.write("Error", processName, header, payload);
+    this.log("Error", processName, header, payload);
   }
 
   /**
@@ -236,7 +261,7 @@ export default class Logger {
    * @param payload Additional data, such as objects or stack traces.
    */
   warn(processName: string, header: string, ...payload: unknown[]) {
-    this.write("Warn", processName, header, payload);
+    this.log("Warn", processName, header, payload);
   }
 
   /**
@@ -246,7 +271,7 @@ export default class Logger {
    * @param payload Additional data, such as objects or stack traces.
    */
   fatal(processName: string, header: string, ...payload: unknown[]) {
-    this.write("Fatal", processName, header, payload);
+    this.log("Fatal", processName, header, payload);
   }
 
   /**
@@ -256,7 +281,7 @@ export default class Logger {
    * @param payload Additional data, such as objects or stack traces.
    */
   debug(processName: string, header: string, ...payload: unknown[]) {
-    this.write("Debug", processName, header, payload);
+    this.log("Debug", processName, header, payload);
   }
 
   /**
@@ -266,7 +291,7 @@ export default class Logger {
    * @param payload Additional data, such as objects or stack traces.
    */
   silly(processName: string, header: string, ...payload: unknown[]) {
-    this.write("Silly", processName, header, payload);
+    this.log("Silly", processName, header, payload);
   }
 
   /**
@@ -276,22 +301,6 @@ export default class Logger {
    * @param payload Additional data, such as objects or stack traces.
    */
   verbose(processName: string, header: string, ...payload: unknown[]) {
-    this.write("Verbose", processName, header, payload);
-  }
-
-  /**
-   * Logs informative data to the console.
-   * @param logType The type of log (Fatal, Warn, Info, Silly, etc.)
-   * @param processName The name of the process that logs.
-   * @param header The primary context of the log.
-   * @param payload Additional data, such as objects or stack traces.
-   */
-  log(
-    logType: LogType,
-    processName: string,
-    header: string,
-    payload?: unknown
-  ) {
-    this.write(logType, processName, header, payload);
+    this.log("Verbose", processName, header, payload);
   }
 }

@@ -42,7 +42,7 @@ import Serializable, {
   SerializedData,
 } from "../core/serializable.js";
 import ConcreteConstructor from "../../utils/concreteConstructor.js";
-import PlayerEventsDeclaration, {
+import PlayerEventsManager, {
   AnyPlayerEvent,
   PlayerEvents,
 } from "./utils/playerEvents.js";
@@ -110,7 +110,7 @@ export default class Player extends Serializable<RawPlayer> {
   environmentChannel?: TextChannel;
   dmChannel?: DMChannel;
 
-  _events: PlayerEventsDeclaration;
+  _events: PlayerEventsManager;
 
   async emit<T extends keyof PlayerEvents>(
     e: T,
@@ -121,7 +121,7 @@ export default class Player extends Serializable<RawPlayer> {
       args: args,
       player: this,
     } as AnyPlayerEvent;
-    this.quests.quests.forEach((quest) => quest.onEvent(event));
+    this.quests.arr.forEach((quest) => quest.onEvent(event));
     return this._events.emit(e, ...args);
   }
 
@@ -351,7 +351,7 @@ export default class Player extends Serializable<RawPlayer> {
     this.stats = new Stats(this);
     this.statusEffects = new StatusEffects(this);
 
-    this._events = new PlayerEventsDeclaration(this);
+    this._events = new PlayerEventsManager(this);
 
     this.lastAccessed = Date.now();
   }

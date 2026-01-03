@@ -1,7 +1,5 @@
 import CLICommand from "../../../models/cli/cliCommand.js";
 
-// TODO: convert all logs to use the new logger system
-
 export default new CLICommand({
   name: "fetch",
   description: "Fetches data from the Aeonix's database.",

@@ -80,6 +80,9 @@ export default class Inventory extends PlayerSubclassBase<RawInventory> {
   }
 
   clear(): void {
+    for (const entry of this.entries)
+      this.parent.emit("inventoryItemRemoved", entry);
+
     this.entries = [];
   }
 

@@ -6,6 +6,7 @@ import TypeDescriptor, {
   TypeDescriptorValue,
   UnknownTypeDescriptor,
 } from "../../utils/typeDescriptor.js";
+import util from "util";
 
 export interface SerializedData<
   Data extends Record<number, unknown> = Record<string, unknown>
@@ -343,9 +344,10 @@ export default abstract class Serializable<
         );
       }
 
-      if (current !== version) {
+      const targetVersion = calculateVersion(inst.fields);
+      if (current !== targetVersion) {
         log.error(
-          `[${this.name}] Migration incomplete: stopped at v${current}, expected v${version}`,
+          `[${this.name}] Migration incomplete: stopped at v${current}, expected v${targetVersion}`,
           {
             current,
             inst,
@@ -441,9 +443,6 @@ export default abstract class Serializable<
       }
 
       if (input.v !== version) {
-        log.info(
-          `[${usedCtor.name}] Migrating from v${input.v} to v${version}`
-        );
         inst = (await Serializable._runMigrations.call(
           usedCtor,
           inst as Record<string, unknown>,
@@ -588,5 +587,34 @@ export default abstract class Serializable<
       to: to.version,
       migrate: fn,
     };
+  }
+
+  [util.inspect.custom](depth: number, options: util.InspectOptionsStylized) {
+    if (depth <= 0) {
+      return `[${this.constructor.name}]`;
+    }
+
+    const clone: Record<string, unknown> = {};
+
+    for (const key of Reflect.ownKeys(this)) {
+      if (
+        key === "_unknownFields" ||
+        key === "excluded" ||
+        key === "migrators" ||
+        key === "fields" ||
+        key === "parent"
+      ) {
+        continue;
+      }
+
+      clone[key as string] = (this as unknown as Record<string, unknown>)[
+        key as string
+      ];
+    }
+
+    return `${this.constructor.name} ${util.inspect(clone, {
+      ...options,
+      depth: depth - 1,
+    })}`;
   }
 }
