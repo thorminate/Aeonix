@@ -3,20 +3,18 @@ import {
   ContainerBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
 import containerSnippetPaginator, {
   ContainerSnippet,
   containerSnippetPaginatorWithUpdate,
-} from "../../../utils/containerSnippetPaginator.js";
-import generateQuestContents from "./utils/generateQuestContents.js";
-import questsHeader from "./utils/questsHeader.js";
-import findQuestFromIdStrict from "./utils/findQuestFromIdStrict.js";
-import generateQuestContainer from "./utils/generateQuestContainer.js";
-import stringifyQuest from "./utils/stringifyQuest.js";
-import Quest from "../../../models/player/utils/quests/quest.js";
-import { search } from "../../../utils/levenshtein.js";
+} from "#utils/containerSnippetPaginator.js";
+import generateQuestContents from "#commands/quests/utils/generateQuestContents.js";
+import questsHeader from "#commands/quests/utils/questsHeader.js";
+import findQuestFromIdStrict from "#commands/quests/utils/findQuestFromIdStrict.js";
+import generateQuestContainer from "#commands/quests/utils/generateQuestContainer.js";
+import stringifyQuest from "#commands/quests/utils/stringifyQuest.js";
+import Quest from "#player/utils/quests/quest.js";
+import { search } from "#utils/levenshtein.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()

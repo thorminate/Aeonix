@@ -1,14 +1,12 @@
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
+import AeonixEvent from "#core/aeonixEvent.js";
 import {
   ApplicationCommand,
   ApplicationCommandChoicesOption,
   ApplicationCommandOption,
   ApplicationCommandOptionBase,
 } from "discord.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
-import Aeonix from "../../../aeonix.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
+import Aeonix from "#root/aeonix.js";
 
 async function getApplicationCommands(aeonix: Aeonix, guildId: string) {
   const applicationCommands = (await aeonix.guilds.fetch(guildId)).commands; // get global commands

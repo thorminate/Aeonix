@@ -1,7 +1,15 @@
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
+import AeonixEvent from "#core/aeonixEvent.js";
 
 export default new AeonixEvent<"tick">({
-  async callback({ aeonix }) {
+  async callback({
+    aeonix,
+    args: [currentTime, currentDay, currentMonth, currentYear],
+  }) {
+    aeonix.players
+      .array() // only ticks players in cache
+      .forEach((player) =>
+        player.emit("tick", currentTime, currentDay, currentMonth, currentYear)
+      );
     await aeonix.savePlayers();
   },
   async onError(e, { aeonix }) {

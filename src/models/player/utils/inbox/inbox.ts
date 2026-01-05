@@ -1,13 +1,13 @@
-import aeonix from "../../../../index.js";
-import ParentAwareSubArray from "../../../../utils/parentAwareSubArray.js";
+import aeonix from "#root/index.js";
+import ParentAwareSubArray from "#utils/parentAwareSubArray.js";
 import {
   ClassConstructor,
   arrayOf,
   dynamicType,
-} from "../../../../utils/typeDescriptor.js";
-import { baseFields, defineField } from "../../../core/serializable.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
-import Letter, { RawLetter } from "./letter.js";
+} from "#utils/typeDescriptor.js";
+import { baseFields, defineField } from "#core/serializable.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
+import Letter, { RawLetter } from "#player/utils/inbox/letter.js";
 
 export interface RawInbox {
   letters: RawLetter[];

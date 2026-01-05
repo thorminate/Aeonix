@@ -1,4 +1,4 @@
-import AeonixConfig from "./models/core/aeonixConfig.js";
+import AeonixConfig from "#core/aeonixConfig.js";
 
 export default new AeonixConfig({
   tickRate: 10 * 1000,

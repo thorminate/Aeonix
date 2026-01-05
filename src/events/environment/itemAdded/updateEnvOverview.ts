@@ -1,4 +1,4 @@
-import EnvironmentEvent from "../../../models/events/environmentEvent.js";
+import EnvironmentEvent from "#core/environmentEvent.js";
 
 export default new EnvironmentEvent<"itemAdded">({
   async callback({ env }) {

@@ -1,4 +1,4 @@
-import Stats, { RawStats } from "./utils/stats/stats.js";
+import Stats, { RawStats } from "#player/utils/stats/stats.js";
 import {
   APIContainerComponent,
   ButtonBuilder,
@@ -16,43 +16,45 @@ import {
   TextDisplayBuilder,
   User,
 } from "discord.js";
-import Inventory, { RawInventory } from "./utils/inventory/inventory.js";
-import calculateXpRequirement from "./utils/stats/calculateXpRequirement.js";
-import aeonix from "../../index.js";
-import PlayerMoveToResult from "./utils/playerMoveToResult.js";
-import Inbox, { RawInbox } from "./utils/inbox/inbox.js";
-import Location, { RawLocation } from "./utils/location/location.js";
-import Persona, { RawPersona } from "./utils/persona/persona.js";
+import Inventory, { RawInventory } from "#player/utils/inventory/inventory.js";
+import calculateXpRequirement from "#player/utils/stats/calculateXpRequirement.js";
+import aeonix from "#root/index.js";
+import PlayerMoveToResult from "#player/utils/playerMoveToResult.js";
+import Inbox, { RawInbox } from "#player/utils/inbox/inbox.js";
+import Location, { RawLocation } from "#player/utils/location/location.js";
+import Persona, { RawPersona } from "#player/utils/persona/persona.js";
 import StatusEffects, {
   RawStatusEffects,
-} from "./utils/statusEffects/statusEffects.js";
-import merge from "../../utils/merge.js";
-import Quests, { RawQuests } from "./utils/quests/quests.js";
-import Settings, { RawSettings } from "./utils/settings/settings.js";
-import PlayerRef from "./utils/playerRef.js";
-import Environment from "../environment/environment.js";
-import formatNotification from "./utils/inbox/formatNotification.js";
-import Notification from "../../content/letters/notification/notification.js";
-import { PlayerCreationOptions } from "../../managers/playerManager.js";
-import playerModel from "./utils/playerModel.js";
-import isSerializedData from "./utils/isSerializedData.js";
+} from "#player/utils/statusEffects/statusEffects.js";
+import merge from "#utils/merge.js";
+import Quests, { RawQuests } from "#player/utils/quests/quests.js";
+import Settings, { RawSettings } from "#player/utils/settings/settings.js";
+import PlayerRef from "#player/utils/playerRef.js";
+import Environment from "#environment/environment.js";
+import formatNotification from "#player/utils/inbox/formatNotification.js";
+import Notification from "#letters/notification/notification.js";
+import { PlayerCreationOptions } from "#managers/playerManager.js";
+import playerModel from "#player/utils/playerModel.js";
+import isSerializedData from "#player/utils/isSerializedData.js";
 import Serializable, {
   baseFields,
   defineField,
   SerializedData,
-} from "../core/serializable.js";
-import ConcreteConstructor from "../../utils/concreteConstructor.js";
+} from "#core/serializable.js";
+import ConcreteConstructor from "#utils/concreteConstructor.js";
 import PlayerEventsManager, {
   AnyPlayerEvent,
   PlayerEvents,
-} from "./utils/playerEvents.js";
-import Race from "./utils/race/race.js";
-import { ClassConstructor, dynamicType } from "../../utils/typeDescriptor.js";
-import HumanRace from "../../content/races/humanRace/humanRace.js";
+} from "#player/utils/playerEvents.js";
+import Race from "#player/utils/race/race.js";
+import { ClassConstructor, dynamicType } from "#utils/typeDescriptor.js";
+import HumanRace from "#races/humanRace/humanRace.js";
 
 export interface RawPlayer {
   _id: string;
   lastAccessed: number;
+  lastTicked: number;
+
   inbox: RawInbox;
   inventory: RawInventory;
   location: RawLocation;
@@ -65,8 +67,9 @@ export interface RawPlayer {
 
 const v1 = defineField(baseFields, {
   add: {
-    _id: { id: 1, type: String },
-    lastAccessed: { id: 2, type: Number },
+    _id: { id: 0, type: String },
+    lastAccessed: { id: 1, type: Number },
+    lastTicked: { id: 2, type: Number },
     inbox: { id: 3, type: Inbox as ConcreteConstructor<Inbox> },
     inventory: {
       id: 4,
@@ -98,11 +101,11 @@ const v1 = defineField(baseFields, {
           !(typeof o === "object") ||
           !("d" in o) ||
           !(typeof o.d === "object") ||
-          !("1" in o.d!) ||
-          !(typeof o.d[1] === "string")
+          !("0" in o.d!) ||
+          !(typeof o.d[0] === "string")
         )
           return Race as unknown as ClassConstructor;
-        const cls = await aeonix.races.loadRaw(o.d[1]);
+        const cls = await aeonix.races.loadRaw(o.d[0]);
         return cls ?? (Race as unknown as ClassConstructor);
       }),
     },
@@ -115,6 +118,8 @@ export default class Player extends Serializable<RawPlayer> {
 
   _id: string;
   lastAccessed: number;
+  lastTicked: number;
+
   inbox: Inbox;
   inventory: Inventory;
   location: Location;
@@ -141,8 +146,11 @@ export default class Player extends Serializable<RawPlayer> {
       args: args,
       player: this,
     } as AnyPlayerEvent;
+
     this.quests.arr.forEach((quest) => quest.onEvent(event));
+    this.statusEffects.arr.forEach((effect) => effect.onEvent(event));
     this.race.onEvent(event);
+    if (e === "tick") this.lastTicked = Date.now();
     return this._events.emit(e, ...args);
   }
 
@@ -377,6 +385,7 @@ export default class Player extends Serializable<RawPlayer> {
     this._events = new PlayerEventsManager(this);
 
     this.lastAccessed = Date.now();
+    this.lastTicked = 0;
   }
 
   static async create(

@@ -1,20 +1,16 @@
-import aeonix from "../../../../index.js";
+import aeonix from "#root/index.js";
 import {
   ClassConstructor,
   arrayOf,
   dynamicType,
-} from "../../../../utils/typeDescriptor.js";
-import {
-  baseFields,
-  defineField,
-  SerializedData,
-} from "../../../core/serializable.js";
-import Item, { RawItem } from "../../../item/item.js";
-import Player from "../../player.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
+} from "#utils/typeDescriptor.js";
+import { baseFields, defineField, SerializedData } from "#core/serializable.js";
+import Item, { RawItem } from "#item/item.js";
+import Player from "#player/player.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
 
 export interface RawInventory {
-  entries: RawItem[]; // entries
+  arr: RawItem[]; // entries
   capacity: number; // capacity
 }
 
@@ -47,31 +43,31 @@ export default class Inventory extends PlayerSubclassBase<RawInventory> {
   migrators = [];
 
   capacity: number = 10;
-  entries: Item[] = [];
+  arr: Item[] = [];
 
   add(...entries: Item[]): void {
     for (const entry of entries) {
-      this.entries.push(entry);
+      this.arr.push(entry);
       this.parent.emit("inventoryItemAdded", entry);
     }
   }
 
   remove(entry: Item | string): void {
     if (typeof entry === "string") {
-      this.entries = this.entries.filter((e: Item) => e.name !== entry);
+      this.arr = this.arr.filter((e: Item) => e.name !== entry);
 
       return;
     }
 
     this.parent.emit("inventoryItemRemoved", entry);
 
-    this.entries = this.entries.filter((e: Item) => e.name != entry.name);
+    this.arr = this.arr.filter((e: Item) => e.name != entry.name);
   }
 
   findOne(query: { key?: string; value: string }): Item | undefined {
     if (!query.key) query.key = "name";
 
-    return this.entries.find(
+    return this.arr.find(
       (e: Item) => e[query.key as keyof Item] === query.value
     );
   }
@@ -79,16 +75,16 @@ export default class Inventory extends PlayerSubclassBase<RawInventory> {
   find(query: { key?: string; value: string }): Item[] {
     if (!query.key) query.key = "name";
 
-    return this.entries.filter(
+    return this.arr.filter(
       (e: Item) => e[query.key as keyof Item] === query.value
     );
   }
 
   clear(): void {
-    for (const entry of this.entries)
+    for (const entry of this.arr)
       this.parent.emit("inventoryItemRemoved", entry);
 
-    this.entries = [];
+    this.arr = [];
   }
 
   constructor(player: Player, capacity: number = 20) {

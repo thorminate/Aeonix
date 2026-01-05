@@ -1,14 +1,14 @@
 import { EventEmitter } from "events";
 import path from "path";
 import url from "url";
-import getAllFiles from "../../../utils/getAllFiles.js";
+import getAllFiles from "#utils/getAllFiles.js";
 import EnvironmentEventDeclaration, {
   EnvironmentEventParams,
-} from "../../events/environmentEvent.js";
-import Environment from "../environment.js";
-import Item from "../../item/item.js";
-import Player from "../../player/player.js";
-import aeonix from "../../../index.js";
+} from "#core/environmentEvent.js";
+import Environment from "#environment/environment.js";
+import Item from "#item/item.js";
+import Player from "#player/player.js";
+import aeonix from "#root/index.js";
 
 export interface EnvironmentEvents {
   playerJoined: [player: Player];

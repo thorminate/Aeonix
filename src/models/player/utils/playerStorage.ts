@@ -1,7 +1,7 @@
 import { modelOptions, prop, Severity } from "@typegoose/typegoose";
 import zlib from "zlib";
 import { encode } from "cbor2";
-import { SerializedData } from "../../core/serializable.js";
+import { SerializedData } from "#core/serializable.js";
 
 @modelOptions({
   schemaOptions: { collection: "players" },

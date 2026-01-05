@@ -1,4 +1,4 @@
-import Item from "../../../../models/item/item.js";
+import Item from "#item/item.js";
 
 export default function findEntryFromIdStrict(
   items: Item[],

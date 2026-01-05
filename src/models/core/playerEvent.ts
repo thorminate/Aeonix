@@ -1,6 +1,6 @@
-import Aeonix from "../../aeonix.js";
-import Player from "../player/player.js";
-import { PlayerEvents } from "../player/utils/playerEvents.js";
+import Aeonix from "#root/aeonix.js";
+import Player from "#player/player.js";
+import { PlayerEvents } from "#player/utils/playerEvents.js";
 
 export class PlayerEventParams<Args extends PlayerEvents[keyof PlayerEvents]> {
   player: Player;

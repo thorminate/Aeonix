@@ -1,12 +1,12 @@
 import { ButtonStyle, MessageFlags } from "discord.js";
-import deletePlayer from "./../deletePlayer/deletePlayer.js";
-import onboarding1 from "../../modals/onboarding1/onboarding1.js";
-import componentWrapper from "../../../utils/componentWrapper.js";
+import deletePlayer from "#buttons/deletePlayer/deletePlayer.js";
+import onboarding1 from "#modals/onboarding1/onboarding1.js";
+import componentWrapper from "#utils/componentWrapper.js";
 import Interaction, {
   ButtonBuilderV2,
   InteractionTypes,
-} from "../../../models/events/interaction.js";
-import aeonix from "../../../index.js";
+} from "#core/interaction.js";
+import aeonix from "#root/index.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()

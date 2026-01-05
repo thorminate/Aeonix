@@ -1,4 +1,4 @@
-import merge from "../../utils/merge.js";
+import merge from "#utils/merge.js";
 
 interface Setters {
   tickRate: number;

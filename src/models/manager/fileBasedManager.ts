@@ -1,6 +1,6 @@
 import path from "path";
-import getAllFiles from "../../utils/getAllFiles.js";
-import CachedManager from "./cachedManager.js";
+import getAllFiles from "#utils/getAllFiles.js";
+import CachedManager from "#manager/cachedManager.js";
 
 export default abstract class FileBasedManager<T> extends CachedManager<T> {
   protected pathCache: Map<string, string> = new Map();

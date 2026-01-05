@@ -1,5 +1,5 @@
-import Letter from "../../../models/player/utils/inbox/letter.js";
-import NotificationCategory from "./utils/notificationCategory.js";
+import Letter from "#player/utils/inbox/letter.js";
+import NotificationCategory from "#letters/notification/utils/notificationCategory.js";
 
 export default abstract class Notification extends Letter {
   abstract category: NotificationCategory;

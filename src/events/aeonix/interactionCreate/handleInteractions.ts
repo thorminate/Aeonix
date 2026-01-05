@@ -12,11 +12,11 @@ import {
   StringSelectMenuInteraction,
   UserSelectMenuInteraction,
 } from "discord.js";
-import Player from "../../../models/player/player.js";
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
-import Environment from "../../../models/environment/environment.js";
-import Aeonix from "../../../aeonix.js";
-import PlayerRef from "../../../models/player/utils/playerRef.js";
+import Player from "#player/player.js";
+import AeonixEvent from "#core/aeonixEvent.js";
+import Environment from "#environment/environment.js";
+import Aeonix from "#root/aeonix.js";
+import PlayerRef from "#player/utils/playerRef.js";
 
 type AnyInteraction<CT extends CacheType> = ButtonInteraction<CT> &
   ChannelSelectMenuInteraction<CT> &

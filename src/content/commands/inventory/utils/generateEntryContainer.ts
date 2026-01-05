@@ -7,7 +7,7 @@ import {
   SeparatorSpacingSize,
   ActionRowBuilder,
 } from "discord.js";
-import Item from "../../../../models/item/item.js";
+import Item from "#item/item.js";
 
 export default function generateEntryContainer(entry: Item) {
   return new ContainerBuilder()

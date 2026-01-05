@@ -1,10 +1,7 @@
 import { randomUUID } from "crypto";
-import Player from "../../player.js";
-import Serializable, {
-  baseFields,
-  defineField,
-} from "../../../core/serializable.js";
-import { AnyPlayerEvent } from "../playerEvents.js";
+import Player from "#player/player.js";
+import Serializable, { baseFields, defineField } from "#core/serializable.js";
+import { AnyPlayerEvent } from "#player/utils/playerEvents.js";
 
 export interface RawQuest {
   id: string; // id
@@ -15,10 +12,10 @@ export interface RawQuest {
 
 const v1 = defineField(baseFields, {
   add: {
-    id: { id: 1, type: String },
-    type: { id: 2, type: String },
-    completed: { id: 5, type: Boolean },
-    data: { id: 6, type: Object },
+    id: { id: 0, type: String },
+    type: { id: 1, type: String },
+    completed: { id: 2, type: Boolean },
+    data: { id: 3, type: Object },
   },
 });
 

@@ -11,19 +11,19 @@ import {
   TextChannel,
   TextDisplayBuilder,
 } from "discord.js";
-import aeonix from "../../index.js";
-import Player from "../player/player.js";
-import EnvironmentEventContext from "./environmentEvents/environmentEventContext.js";
-import EnvironmentEventResult from "./environmentEvents/environmentEventResult.js";
-import environmentModel from "./utils/environmentModel.js";
-import Item from "../item/item.js";
-import merge from "../../utils/merge.js";
-import Serializable, { baseFields, defineField } from "../core/serializable.js";
-import { arrayOf, ClassConstructor } from "../../utils/typeDescriptor.js";
+import aeonix from "#root/index.js";
+import Player from "#player/player.js";
+import EnvironmentEventContext from "#environment/environmentEvents/environmentEventContext.js";
+import EnvironmentEventResult from "#environment/environmentEvents/environmentEventResult.js";
+import environmentModel from "#environment/utils/environmentModel.js";
+import Item from "#item/item.js";
+import merge from "#utils/merge.js";
+import Serializable, { baseFields, defineField } from "#core/serializable.js";
+import { arrayOf, ClassConstructor } from "#utils/typeDescriptor.js";
 import EnvironmentEventsManager, {
   EnvironmentEvents,
-} from "./environmentEvents/environmentEvents.js";
-import EnvironmentItems from "./environmentItems/environmentItems.js";
+} from "#environment/environmentEvents/environmentEvents.js";
+import EnvironmentItems from "#environment/environmentItems/environmentItems.js";
 
 interface RawEnvironment {
   _id: string;

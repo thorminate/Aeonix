@@ -1,4 +1,4 @@
-import CLICommand from "../../../models/cli/cliCommand.js";
+import CLICommand from "#cli/cliCommand.js";
 import ms, { StringValue } from "ms";
 
 export default new CLICommand({

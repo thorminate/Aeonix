@@ -1,13 +1,13 @@
-import BackpackItem from "../../../content/items/backpackItem/backpackItem.js";
-import TutorialQuest from "../../../content/quests/tutorialQuest/tutorialQuest.js";
+import BackpackItem from "#items/backpackItem/backpackItem.js";
+import TutorialQuest from "#quests/tutorialQuest/tutorialQuest.js";
 import Serializable, {
   baseFields,
   defineField,
   SerializedData,
-} from "../../../models/core/serializable.js";
-import Environment from "../../../models/environment/environment.js";
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
-import { arrayOf } from "../../../utils/typeDescriptor.js";
+} from "#core/serializable.js";
+import Environment from "#environment/environment.js";
+import AeonixEvent from "#core/aeonixEvent.js";
+import { arrayOf } from "#utils/typeDescriptor.js";
 
 // #region Test Models
 interface RawTestModel {
@@ -51,22 +51,21 @@ const v1 = defineField(baseFields, {
   add: {
     v1Field: { id: 1, type: String },
   },
-} as const);
+});
 
 const v2 = defineField(v1, {
   remove: ["v1Field"],
   add: {
     v2Field: { id: 2, type: String },
   },
-} as const);
+});
 
 class MigrationTestModel extends Serializable<RawMigrationModel> {
   fields = [v1, v2];
   migrators = [
     Serializable.defineMigrator(v1, v2, async (data) => {
-      return {
-        v2Field: data.v1Field || "migrated",
-      };
+      data.v2Field = data.v1Field;
+      delete data.v1Field;
     }),
   ];
 
@@ -208,13 +207,13 @@ export default new AeonixEvent<"ready">({
     const item = new BackpackItem();
     player.inventory.add(item);
 
-    if (player.inventory.entries.length !== 1) {
+    if (player.inventory.arr.length !== 1) {
       log.error(
         "Inv Test Error, inventory should have 1 item",
         player.inventory
       );
       test = false;
-    } else if (player.inventory.entries[0]?.quantity !== 1) {
+    } else if (player.inventory.arr[0]?.quantity !== 1) {
       log.error("Inv Test Error, quantity should be 1", player.inventory);
       test = false;
     }

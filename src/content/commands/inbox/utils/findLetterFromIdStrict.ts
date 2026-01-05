@@ -1,4 +1,4 @@
-import Letter from "../../../../models/player/utils/inbox/letter.js";
+import Letter from "#player/utils/inbox/letter.js";
 
 export default function findLetterFromIdStrict(
   letters: Letter[],

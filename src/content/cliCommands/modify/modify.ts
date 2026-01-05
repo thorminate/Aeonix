@@ -1,8 +1,8 @@
-import CLICommand, { defineOptions } from "../../../models/cli/cliCommand.js";
-import Item from "../../../models/item/item.js";
-import Quest from "../../../models/player/utils/quests/quest.js";
-import { ClassConstructor } from "../../../utils/typeDescriptor.js";
-import StatusEffect from "../../../models/player/utils/statusEffects/statusEffect.js";
+import CLICommand, { defineOptions } from "#cli/cliCommand.js";
+import Item from "#item/item.js";
+import Quest from "#player/utils/quests/quest.js";
+import { ClassConstructor } from "#utils/typeDescriptor.js";
+import StatusEffect from "#player/utils/statusEffects/statusEffect.js";
 
 const options = defineOptions([
   {
@@ -264,7 +264,7 @@ export default new CLICommand({
 
               for (let i = 0; i < qty; i++) {
                 const effect = new EffectClass(data) as StatusEffect;
-                player.statusEffects.effects.push(effect);
+                player.statusEffects.apply(effect);
               }
               log.info(
                 `Added ${qty} status effect(s) of type '${descriptor!}' to player ${
@@ -275,9 +275,7 @@ export default new CLICommand({
               log.error("Failed to add status effect", e);
             }
           } else if (action === "remove") {
-            player.statusEffects.effects = player.statusEffects.effects.filter(
-              (e) => e.id !== descriptor!
-            );
+            player.statusEffects.remove(descriptor!);
             log.info(
               `Removed status effect(s) with ID '${descriptor!}' from player ${
                 player.persona.name

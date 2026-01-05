@@ -1,10 +1,8 @@
 import path from "path"; // Get the path library.
-import getAllFiles from "../utils/getAllFiles.js"; // Get the getAllFiles function.
+import getAllFiles from "#utils/getAllFiles.js"; // Get the getAllFiles function.
 import url from "url";
-import AeonixEvent, {
-  AeonixEventParams,
-} from "../models/events/aeonixEvent.js";
-import Aeonix, { AeonixEvents } from "../aeonix.js";
+import AeonixEvent, { AeonixEventParams } from "#core/aeonixEvent.js";
+import Aeonix, { AeonixEvents } from "#root/aeonix.js";
 
 export default async (aeonix: Aeonix) => {
   const log = aeonix.logger.for("EventHandler");

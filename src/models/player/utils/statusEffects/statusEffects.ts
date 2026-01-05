@@ -1,25 +1,23 @@
-import aeonix from "../../../../index.js";
+import aeonix from "#root/index.js";
 import {
   arrayOf,
   ClassConstructor,
   dynamicType,
-} from "../../../../utils/typeDescriptor.js";
-import {
-  baseFields,
-  defineField,
-  SerializedData,
-} from "../../../core/serializable.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
-import StatusEffect, { RawStatusEffect } from "./statusEffect.js";
+} from "#utils/typeDescriptor.js";
+import { baseFields, defineField, SerializedData } from "#core/serializable.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
+import StatusEffect, {
+  RawStatusEffect,
+} from "#player/utils/statusEffects/statusEffect.js";
 
 export interface RawStatusEffects {
-  effects: RawStatusEffect[];
+  arr: RawStatusEffect[];
 }
 
 const v1 = defineField(baseFields, {
   add: {
-    effects: {
-      id: 1,
+    arr: {
+      id: 0,
       type: arrayOf(
         dynamicType(async (o: SerializedData) => {
           if (
@@ -43,5 +41,19 @@ export default class StatusEffects extends PlayerSubclassBase<RawStatusEffects> 
   fields = [v1];
   migrators = [];
 
-  effects: StatusEffect[] = [];
+  arr: StatusEffect[] = [];
+
+  apply(effect: StatusEffect) {
+    this.arr.push(effect);
+
+    effect.start(this.parent);
+  }
+
+  remove(id: string) {
+    const idx = this.arr.findIndex((e) => e.id === id);
+
+    this.arr[idx]!.end(this.parent);
+
+    this.arr.splice(idx, 1);
+  }
 }

@@ -1,6 +1,6 @@
-import Player from "../../../models/player/player.js";
-import Letter from "../../../models/player/utils/inbox/letter.js";
-import TutorialQuest from "../../quests/tutorialQuest/tutorialQuest.js";
+import Player from "#player/player.js";
+import Letter from "#player/utils/inbox/letter.js";
+import TutorialQuest from "#quests/tutorialQuest/tutorialQuest.js";
 
 export default class TutorialQuestLetter extends Letter {
   type: string = "tutorialQuestLetter";

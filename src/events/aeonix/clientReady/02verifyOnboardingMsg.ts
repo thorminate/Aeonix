@@ -7,9 +7,9 @@ import {
   TextDisplayBuilder,
   TextDisplayComponent,
 } from "discord.js";
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
-import componentWrapper from "../../../utils/componentWrapper.js";
-import onboarding0 from "../../../content/buttons/onboarding0/onboarding0.js";
+import AeonixEvent from "#core/aeonixEvent.js";
+import componentWrapper from "#utils/componentWrapper.js";
+import onboarding0 from "#buttons/onboarding0/onboarding0.js";
 
 // turn on word wrap to see the full message
 

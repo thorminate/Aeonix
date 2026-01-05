@@ -1,5 +1,5 @@
-import Item from "../../../models/item/item.js";
-import ItemUsageResult from "../../../models/item/utils/itemUsageResult.js";
+import Item from "#item/item.js";
+import ItemUsageResult from "#item/utils/itemUsageResult.js";
 
 interface ISwordData {
   range: number;

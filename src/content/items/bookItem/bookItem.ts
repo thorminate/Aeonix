@@ -1,6 +1,6 @@
-import Item from "../../../models/item/item.js";
-import ItemEventResult from "../../../models/item/utils/itemEventResult.js";
-import ItemUsageResult from "../../../models/item/utils/itemUsageResult.js";
+import Item from "#item/item.js";
+import ItemEventResult from "#item/utils/itemEventResult.js";
+import ItemUsageResult from "#item/utils/itemUsageResult.js";
 
 interface IBookData {
   num: number;

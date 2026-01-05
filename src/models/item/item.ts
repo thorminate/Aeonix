@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import ItemUsageResult from "./utils/itemUsageResult.js";
-import ItemEventResult from "./utils/itemEventResult.js";
-import Player from "../player/player.js";
-import Serializable, { baseFields, defineField } from "../core/serializable.js";
+import ItemUsageResult from "#item/utils/itemUsageResult.js";
+import ItemEventResult from "#item/utils/itemEventResult.js";
+import Player from "#player/player.js";
+import Serializable, { baseFields, defineField } from "#core/serializable.js";
 
 export interface RawItem {
   id: string; // id
@@ -17,14 +17,14 @@ export interface RawItem {
 
 const v1 = defineField(baseFields, {
   add: {
-    id: { id: 1, type: String },
-    type: { id: 2, type: String },
-    createdAt: { id: 3, type: Number },
-    quantity: { id: 4, type: Number },
-    weight: { id: 5, type: Number },
-    value: { id: 6, type: Number },
-    data: { id: 7, type: Object },
-    isInteracted: { id: 8, type: Boolean },
+    id: { id: 0, type: String },
+    type: { id: 1, type: String },
+    createdAt: { id: 2, type: Number },
+    quantity: { id: 3, type: Number },
+    weight: { id: 4, type: Number },
+    value: { id: 5, type: Number },
+    data: { id: 6, type: Object },
+    isInteracted: { id: 7, type: Boolean },
   },
 });
 

@@ -4,8 +4,8 @@ import {
   SeparatorSpacingSize,
   TextDisplayBuilder,
 } from "discord.js";
-import Notification from "../../../../content/letters/notification/notification.js";
-import notificationCategoryToColor from "./notificationCategoryToColor.js";
+import Notification from "#letters/notification/notification.js";
+import notificationCategoryToColor from "#player/utils/inbox/notificationCategoryToColor.js";
 
 export default function formatNotification(n: Notification): ContainerBuilder {
   const c = new ContainerBuilder().setAccentColor(

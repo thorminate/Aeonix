@@ -1,5 +1,4 @@
-import Player from "../../../models/player/player.js";
-import StatusEffect from "../../../models/player/utils/statusEffects/statusEffect.js";
+import StatusEffect from "#player/utils/statusEffects/statusEffect.js";
 
 export default class StatusEffectTemplate extends StatusEffect {
   type = "#statusEffectTemplate"; // should always be the exact same as the filename
@@ -8,16 +7,11 @@ export default class StatusEffectTemplate extends StatusEffect {
   duration = 5; // Duration in turns
   isPermanent = false;
 
-  onEffectStart(player: Player): Player {
-    return player;
-  }
+  onEffectStart() {}
 
-  onEffectTick(player: Player): Player {
-    // Optionally, you can add logic for each game tick while the status effect is active
-    return player;
-  }
+  onEffectTick() {} // Optionally, you can add logic for each game tick while the status effect is active
 
-  onEffectEnd(player: Player): Player {
-    return player;
-  }
+  onEffectEnd() {}
+
+  onEvent() {}
 }

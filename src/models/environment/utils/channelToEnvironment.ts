@@ -1,5 +1,5 @@
-import aeonix from "../../../index.js";
-import Environment from "../environment.js";
+import aeonix from "#root/index.js";
+import Environment from "#environment/environment.js";
 
 export default async function channelIsEnvironment(
   channelId: string

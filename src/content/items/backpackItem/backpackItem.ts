@@ -1,7 +1,7 @@
-import Item from "../../../models/item/item.js";
-import ItemEventResult from "../../../models/item/utils/itemEventResult.js";
-import ItemUsageResult from "../../../models/item/utils/itemUsageResult.js";
-import Player from "../../../models/player/player.js";
+import Item from "#item/item.js";
+import ItemEventResult from "#item/utils/itemEventResult.js";
+import ItemUsageResult from "#item/utils/itemUsageResult.js";
+import Player from "#player/player.js";
 
 export interface IBackpackData {
   capacity: number;

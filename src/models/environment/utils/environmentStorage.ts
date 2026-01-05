@@ -1,7 +1,7 @@
 import { modelOptions, Severity, prop } from "@typegoose/typegoose";
 import { encode } from "cbor2";
 import { deflateSync } from "zlib";
-import { SerializedData } from "../../core/serializable.js";
+import { SerializedData } from "#core/serializable.js";
 
 @modelOptions({
   schemaOptions: { collection: "environments" },

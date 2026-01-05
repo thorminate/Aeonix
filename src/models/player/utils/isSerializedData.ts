@@ -1,4 +1,4 @@
-import { SerializedData } from "../../core/serializable.js";
+import { SerializedData } from "#core/serializable.js";
 
 export default function isSerializedData(data: object): data is SerializedData {
   return (

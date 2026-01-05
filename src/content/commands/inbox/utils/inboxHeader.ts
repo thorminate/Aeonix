@@ -4,7 +4,7 @@ import {
   SeparatorBuilder,
   SeparatorSpacingSize,
 } from "discord.js";
-import generatePageActionRow from "./generatePageActionRow.js";
+import generatePageActionRow from "#commands/inbox/utils/generatePageActionRow.js";
 
 export default function inboxHeader(
   name: string,

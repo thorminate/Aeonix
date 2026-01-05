@@ -1,15 +1,12 @@
-import Item from "../../item/item.js";
-import Environment from "../environment.js";
-import Serializable, {
-  baseFields,
-  defineField,
-} from "../../core/serializable.js";
-import aeonix from "../../../index.js";
+import Item from "#item/item.js";
+import Environment from "#environment/environment.js";
+import Serializable, { baseFields, defineField } from "#core/serializable.js";
+import aeonix from "#root/index.js";
 import {
   ClassConstructor,
   arrayOf,
   dynamicType,
-} from "../../../utils/typeDescriptor.js";
+} from "#utils/typeDescriptor.js";
 
 interface RawEnvironmentItems {
   arr: Item[];

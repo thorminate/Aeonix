@@ -5,9 +5,9 @@ import {
   SectionBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import { ContainerSnippet } from "../../../../utils/containerSnippetPaginator.js";
-import selectRandomFromArray from "../../../../utils/selectRandomFromArray.js";
-import Player from "../../../../models/player/player.js";
+import { ContainerSnippet } from "#utils/containerSnippetPaginator.js";
+import selectRandomFromArray from "#utils/selectRandomFromArray.js";
+import Player from "#player/player.js";
 
 export default function generateInboxContents({
   inbox: { letters },

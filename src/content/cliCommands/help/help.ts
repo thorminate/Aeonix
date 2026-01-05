@@ -1,5 +1,5 @@
-import CLICommand from "../../../models/cli/cliCommand.js";
-import renderTree, { Tree } from "../../../utils/treeRenderer.js";
+import CLICommand from "#cli/cliCommand.js";
+import renderTree, { Tree } from "#utils/treeRenderer.js";
 
 export default new CLICommand({
   name: "help",

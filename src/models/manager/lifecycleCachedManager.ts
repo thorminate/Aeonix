@@ -1,5 +1,5 @@
 import { Model } from "mongoose";
-import CachedManager from "./cachedManager.js";
+import CachedManager from "#manager/cachedManager.js";
 import { Collection } from "discord.js";
 
 export default abstract class LifecycleCachedManager<

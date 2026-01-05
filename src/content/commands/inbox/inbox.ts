@@ -3,20 +3,18 @@ import {
   ContainerBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
 import containerSnippetPaginator, {
   ContainerSnippet,
   containerSnippetPaginatorWithUpdate,
-} from "../../../utils/containerSnippetPaginator.js";
-import generateInboxContents from "./utils/generateInboxContents.js";
-import addHeader from "./utils/inboxHeader.js";
-import findLetterFromIdStrict from "./utils/findLetterFromIdStrict.js";
-import generateMailContainer from "./utils/generateMailContainer.js";
-import stringifyLetter from "./utils/stringifyLetter.js";
-import Letter from "../../../models/player/utils/inbox/letter.js";
-import { search } from "../../../utils/levenshtein.js";
+} from "#utils/containerSnippetPaginator.js";
+import generateInboxContents from "#commands/inbox/utils/generateInboxContents.js";
+import addHeader from "#commands/inbox/utils/inboxHeader.js";
+import findLetterFromIdStrict from "#commands/inbox/utils/findLetterFromIdStrict.js";
+import generateMailContainer from "#commands/inbox/utils/generateMailContainer.js";
+import stringifyLetter from "#commands/inbox/utils/stringifyLetter.js";
+import Letter from "#player/utils/inbox/letter.js";
+import { search } from "#utils/levenshtein.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()

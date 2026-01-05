@@ -1,5 +1,5 @@
-import CLICommand from "../../../models/cli/cliCommand.js";
-import { LogType } from "../../../utils/log.js";
+import CLICommand from "#cli/cliCommand.js";
+import { LogType } from "#utils/log.js";
 
 export default new CLICommand({
   name: "log",

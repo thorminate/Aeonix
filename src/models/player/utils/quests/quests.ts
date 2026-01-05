@@ -1,12 +1,12 @@
-import aeonix from "../../../../index.js";
+import aeonix from "#root/index.js";
 import {
   ClassConstructor,
   arrayOf,
   dynamicType,
-} from "../../../../utils/typeDescriptor.js";
-import { baseFields, defineField } from "../../../core/serializable.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
-import Quest, { RawQuest } from "./quest.js";
+} from "#utils/typeDescriptor.js";
+import { baseFields, defineField } from "#core/serializable.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
+import Quest, { RawQuest } from "#player/utils/quests/quest.js";
 
 export interface RawQuests {
   arr: RawQuest[]; // quests

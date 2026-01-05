@@ -1,5 +1,5 @@
 import run from "package-run";
-import CLICommand from "../../../models/cli/cliCommand.js";
+import CLICommand from "#cli/cliCommand.js";
 import { config } from "@dotenvx/dotenvx";
 
 export default new CLICommand({

@@ -1,8 +1,6 @@
 import { ChannelSelectMenuBuilder } from "discord.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
-import aeonix from "../../../index.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
+import aeonix from "#root/index.js";
 
 export default new Interaction({
   data: new ChannelSelectMenuBuilder()

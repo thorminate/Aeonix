@@ -5,10 +5,10 @@ import {
   SectionBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import Player from "../../../../models/player/player.js";
-import { ContainerSnippet } from "../../../../utils/containerSnippetPaginator.js";
-import selectRandomFromArray from "../../../../utils/selectRandomFromArray.js";
-import aeonix from "../../../../index.js";
+import Player from "#player/player.js";
+import { ContainerSnippet } from "#utils/containerSnippetPaginator.js";
+import selectRandomFromArray from "#utils/selectRandomFromArray.js";
+import aeonix from "#root/index.js";
 
 export default async function generateTravelContents({
   location: { adjacents },

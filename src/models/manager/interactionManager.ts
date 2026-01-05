@@ -1,7 +1,7 @@
 import url from "url";
-import getAllFiles from "../../utils/getAllFiles.js";
-import Interaction, { InteractionTypes } from "../events/interaction.js";
-import FileBasedManager from "./fileBasedManager.js";
+import getAllFiles from "#utils/getAllFiles.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
+import FileBasedManager from "#manager/fileBasedManager.js";
 export default abstract class InteractionManager<
   T extends Interaction<InteractionTypes, boolean, boolean, boolean, boolean>
 > extends FileBasedManager<T> {

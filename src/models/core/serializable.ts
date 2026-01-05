@@ -1,9 +1,9 @@
-import aeonix from "../../index.js";
+import aeonix from "#root/index.js";
 import TypeDescriptor, {
   literalOf,
   NonResolvableTypeDescriptor,
   TypeDescriptorValue,
-} from "../../utils/typeDescriptor.js";
+} from "#utils/typeDescriptor.js";
 import util from "util";
 
 export interface SerializedData<
@@ -25,12 +25,11 @@ interface FieldData {
 }
 
 export interface MigrationEntry<
-  FromShape extends Record<string, unknown> = Record<string, unknown>,
-  ToShape extends Record<string, unknown> = Record<string, unknown>
+  T extends Record<string, unknown> = Record<string, unknown>
 > {
   from: number;
   to: number;
-  migrate: (data: FromShape) => Promise<ToShape>;
+  migrate: (inst: T) => Promise<void> | void;
 }
 
 function calculateVersion(fields: Fields<FieldSchema>[]): number {
@@ -41,12 +40,6 @@ function calculateVersion(fields: Fields<FieldSchema>[]): number {
   return version;
 }
 
-export type SerializableKeys<T> = Exclude<
-  {
-    [K in keyof T]: T[K] extends (...args: unknown[]) => unknown ? never : K;
-  }[keyof T],
-  "fields" | "version" | "_unknownFields"
->;
 export type FieldSchema = Record<string, FieldData>;
 
 export interface Fields<Shape extends FieldSchema> {
@@ -265,13 +258,10 @@ export default abstract class Serializable<
       }
 
       if (type.kind === "array") {
-        const isArray = Array.isArray(value);
-        return isArray;
+        return Array.isArray(value);
       }
 
-      if (type.kind === "unknown") return true;
-
-      return false;
+      return type.kind === "unknown";
     } catch (e) {
       log.error("Error validating value", e, { type, value });
       return false;
@@ -279,10 +269,8 @@ export default abstract class Serializable<
   }
 
   private static async _runMigrations<T extends Serializable<T>>(
-    this: new () => T,
-    data: Record<string, unknown>,
-    version: number,
-    inst: T
+    inst: Serializable<object>,
+    fromVersion: number
   ): Promise<T> {
     const log = aeonix.logger.for("Serializable._runMigrations");
     try {
@@ -290,16 +278,14 @@ export default abstract class Serializable<
         (a, b) => a.from - b.from
       );
 
-      let current = version;
-      let working = data;
-
-      let safeguard = 1000;
+      let current = fromVersion;
+      let safeguard = 200;
 
       while (safeguard-- > 0) {
         const step = migrators.find((m) => m.from === current);
         if (!step) break;
         try {
-          working = await step.migrate(working);
+          await step.migrate(inst as unknown as Record<string, unknown>);
           current = step.to;
         } catch (e) {
           log.error(
@@ -307,7 +293,7 @@ export default abstract class Serializable<
             e,
             {
               migrator: step,
-              data,
+              inst,
             }
           );
         }
@@ -336,12 +322,10 @@ export default abstract class Serializable<
         );
       }
 
-      // resync data version with actual version (some migrator functions don't already do this)
-      working.v = current;
-      return working as unknown as T;
+      return inst as T;
     } catch (e) {
-      log.error("Error running migrations", e, { inst, data, version });
-      return inst;
+      log.error("Error running migrations", e, { inst, fromVersion });
+      return inst as T;
     }
   }
 
@@ -423,12 +407,7 @@ export default abstract class Serializable<
       }
 
       if (input.v !== version) {
-        inst = (await Serializable._runMigrations.call(
-          usedCtor,
-          inst as Record<string, unknown>,
-          input.v,
-          inst
-        )) as T;
+        inst = (await Serializable._runMigrations(inst, input.v)) as T;
       }
 
       inst.onDeserialize?.(inst, parent);
@@ -518,8 +497,8 @@ export default abstract class Serializable<
   >(
     from: Fields<FromShape>,
     to: Fields<ToShape>,
-    fn: (data: ShapeToObj<FromShape>) => Promise<ShapeToObj<ToShape>>
-  ): MigrationEntry<ShapeToObj<FromShape>, ShapeToObj<ToShape>> {
+    fn: (inst: ShapeToObj<ToShape & FromShape>) => Promise<void> | void
+  ): MigrationEntry<ShapeToObj<ToShape & FromShape>> {
     return {
       from: from.version,
       to: to.version,
@@ -527,7 +506,7 @@ export default abstract class Serializable<
     };
   }
 
-  [util.inspect.custom](depth: number, options: util.InspectOptionsStylized) {
+  [util.inspect.custom](depth: number, options: util.InspectOptions) {
     if (depth <= 0) {
       return `[${this.constructor.name}]`;
     }

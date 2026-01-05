@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
+import AeonixEvent from "#core/aeonixEvent.js";
 
 export default new AeonixEvent<"messageCreate">({
   async callback({ args: [context], aeonix }) {

@@ -22,10 +22,10 @@ import {
   UserSelectMenuBuilder,
   UserSelectMenuInteraction,
 } from "discord.js";
-import merge from "../../utils/merge.js";
-import Environment from "../environment/environment.js";
-import Aeonix from "../../aeonix.js";
-import PlayerRef from "../player/utils/playerRef.js";
+import merge from "#utils/merge.js";
+import Environment from "#environment/environment.js";
+import Aeonix from "#root/aeonix.js";
+import PlayerRef from "#player/utils/playerRef.js";
 
 export type ButtonContext = Omit<
   ButtonInteraction<CacheType>,

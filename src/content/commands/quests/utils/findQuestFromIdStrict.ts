@@ -1,4 +1,4 @@
-import Quest from "../../../../models/player/utils/quests/quest.js";
+import Quest from "#player/utils/quests/quest.js";
 
 export default function findQuestFromIdStrict(
   quests: Quest[],

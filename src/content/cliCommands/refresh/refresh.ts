@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import CLICommand from "../../../models/cli/cliCommand.js";
+import CLICommand from "#cli/cliCommand.js";
 import { rmSync } from "fs";
 
 export default new CLICommand({

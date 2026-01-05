@@ -1,7 +1,7 @@
-import { arrayOf } from "../../../../utils/typeDescriptor.js";
-import { baseFields, defineField } from "../../../core/serializable.js";
-import Player from "../../player.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
+import { arrayOf } from "#utils/typeDescriptor.js";
+import { baseFields, defineField } from "#core/serializable.js";
+import Player from "#player/player.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
 
 export interface RawLocation {
   id: string; // id
@@ -11,9 +11,9 @@ export interface RawLocation {
 
 const v1 = defineField(baseFields, {
   add: {
-    id: { id: 1, type: String },
-    channelId: { id: 2, type: String },
-    adjacents: { id: 3, type: arrayOf(String) },
+    id: { id: 0, type: String },
+    channelId: { id: 1, type: String },
+    adjacents: { id: 2, type: arrayOf(String) },
   },
 });
 

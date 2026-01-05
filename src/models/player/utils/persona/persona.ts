@@ -1,6 +1,6 @@
-import { baseFields, defineField } from "../../../core/serializable.js";
-import Player from "../../player.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
+import { baseFields, defineField } from "#core/serializable.js";
+import Player from "#player/player.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
 
 export interface RawPersona {
   name: string; // name
@@ -9,8 +9,8 @@ export interface RawPersona {
 
 const v1 = defineField(baseFields, {
   add: {
-    name: { id: 1, type: String },
-    avatar: { id: 2, type: String },
+    name: { id: 0, type: String },
+    avatar: { id: 1, type: String },
   },
 });
 

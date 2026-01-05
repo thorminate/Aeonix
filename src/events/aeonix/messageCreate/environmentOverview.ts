@@ -1,5 +1,5 @@
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
-import channelToEnvironment from "../../../models/environment/utils/channelToEnvironment.js";
+import AeonixEvent from "#core/aeonixEvent.js";
+import channelToEnvironment from "#environment/utils/channelToEnvironment.js";
 
 export default new AeonixEvent<"messageCreate">({
   async callback({ args: [message], aeonix }) {

@@ -14,8 +14,8 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { CommandContext } from "../models/events/interaction.js";
-import aeonix from "../index.js";
+import { CommandContext } from "#core/interaction.js";
+import aeonix from "#root/index.js";
 
 interface SnippetPaginatorReturn<ReturnType extends "ok" | "error"> {
   message: Message;

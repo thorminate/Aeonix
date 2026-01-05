@@ -1,4 +1,4 @@
-import { SerializedData } from "../models/core/serializable.js";
+import { SerializedData } from "#core/serializable.js";
 
 /* ========================
  *  Primitive constructors

@@ -1,15 +1,15 @@
 import path from "path";
 import url from "url";
-import Environment from "../models/environment/environment.js";
+import Environment from "#environment/environment.js";
 import { Model } from "mongoose";
-import environmentModel from "../models/environment/utils/environmentModel.js";
-import EnvironmentStorage from "../models/environment/utils/environmentStorage.js";
+import environmentModel from "#environment/utils/environmentModel.js";
+import EnvironmentStorage from "#environment/utils/environmentStorage.js";
 import { decode } from "cbor2";
 import { inflateSync } from "zlib";
-import semibinaryToBuffer from "../models/player/utils/semibinaryToBuffer.js";
-import ConcreteConstructor from "../utils/concreteConstructor.js";
-import HybridCachedManager from "../models/managers/hybridCachedManager.js";
-import { SerializedData } from "../models/core/serializable.js";
+import semibinaryToBuffer from "#player/utils/semibinaryToBuffer.js";
+import ConcreteConstructor from "#utils/concreteConstructor.js";
+import HybridCachedManager from "#manager/hybridCachedManager.js";
+import { SerializedData } from "#core/serializable.js";
 
 type Holds = Environment;
 

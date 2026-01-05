@@ -5,21 +5,19 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
 import containerSnippetPaginator, {
   containerSnippetPaginatorWithUpdate,
-} from "../../../utils/containerSnippetPaginator.js";
-import inventoryHeader from "./utils/inventoryHeader.js";
-import generateInventoryContents from "./utils/generateInventoryContents.js";
-import findEntryFromIdStrict from "./utils/findEntryFromIdStrict.js";
-import generateEntryContainer from "./utils/generateEntryContainer.js";
-import stringifyEntry from "./utils/stringifyEntry.js";
-import Item from "../../../models/item/item.js";
-import { search } from "../../../utils/levenshtein.js";
-import generateNoticeCard from "../../../utils/generateNoticeCard.js";
-import ItemUsageResult from "../../../models/item/utils/itemUsageResult.js";
+} from "#utils/containerSnippetPaginator.js";
+import inventoryHeader from "#commands/inventory/utils/inventoryHeader.js";
+import generateInventoryContents from "#commands/inventory/utils/generateInventoryContents.js";
+import findEntryFromIdStrict from "#commands/inventory/utils/findEntryFromIdStrict.js";
+import generateEntryContainer from "#commands/inventory/utils/generateEntryContainer.js";
+import stringifyEntry from "#commands/inventory/utils/stringifyEntry.js";
+import Item from "#item/item.js";
+import { search } from "#utils/levenshtein.js";
+import generateNoticeCard from "#utils/generateNoticeCard.js";
+import ItemUsageResult from "#item/utils/itemUsageResult.js";
 
 export default new Interaction({
   interactionType: InteractionTypes.Command,
@@ -104,16 +102,12 @@ export default new Interaction({
             {
               await player.use(async (p) => {
                 const [entry, index] = findEntryFromIdStrict(
-                  p.inventory.entries,
+                  p.inventory.arr,
                   id
                 );
 
                 if (!entry) {
-                  log.error(
-                    "Item not found in inventory",
-                    id,
-                    p.inventory.entries
-                  );
+                  log.error("Item not found in inventory", id, p.inventory.arr);
                   return;
                 }
 
@@ -121,7 +115,7 @@ export default new Interaction({
                   components: [generateEntryContainer(entry)],
                 });
 
-                p.inventory.entries[index] = entry;
+                p.inventory.arr[index] = entry;
               });
             }
             break;
@@ -140,14 +134,10 @@ export default new Interaction({
           }
           case "#drop": {
             const entry = await player.use(async (p) => {
-              const [entry] = findEntryFromIdStrict(p.inventory.entries, id);
+              const [entry] = findEntryFromIdStrict(p.inventory.arr, id);
 
               if (!entry) {
-                log.error(
-                  "Item not found in inventory",
-                  id,
-                  p.inventory.entries
-                );
+                log.error("Item not found in inventory", id, p.inventory.arr);
                 return;
               }
 
@@ -182,23 +172,16 @@ export default new Interaction({
           }
           case "#use": {
             const tup = (await player.use(async (p) => {
-              const [entry, index] = findEntryFromIdStrict(
-                p.inventory.entries,
-                id
-              );
+              const [entry, index] = findEntryFromIdStrict(p.inventory.arr, id);
 
               if (!entry) {
-                log.error(
-                  "Item not found in inventory",
-                  id,
-                  p.inventory.entries
-                );
+                log.error("Item not found in inventory", id, p.inventory.arr);
                 return;
               }
 
               const res = await entry.use(p);
 
-              p.inventory.entries[index] = entry;
+              p.inventory.arr[index] = entry;
 
               return [entry, res];
             })) as [Item, ItemUsageResult];

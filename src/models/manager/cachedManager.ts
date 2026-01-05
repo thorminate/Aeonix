@@ -1,4 +1,4 @@
-import BaseManager from "./baseManager.js";
+import BaseManager from "#manager/baseManager.js";
 
 export default abstract class CachedManager<
   Holds,

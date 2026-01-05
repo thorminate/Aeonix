@@ -1,8 +1,8 @@
 import path from "path";
 import url from "url";
-import getAllFiles from "../../utils/getAllFiles.js";
-import ConcreteConstructor from "../../utils/concreteConstructor.js";
-import FileBasedManager from "./fileBasedManager.js";
+import getAllFiles from "#utils/getAllFiles.js";
+import ConcreteConstructor from "#utils/concreteConstructor.js";
+import FileBasedManager from "#manager/fileBasedManager.js";
 
 export abstract class ConstructableManager<T> extends FileBasedManager<T> {
   private _classCache: Map<string, ConcreteConstructor<T>> = new Map();

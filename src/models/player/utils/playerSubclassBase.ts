@@ -1,5 +1,5 @@
-import Serializable from "../../core/serializable.js";
-import Player from "../player.js";
+import Serializable from "#core/serializable.js";
+import Player from "#player/player.js";
 
 export abstract class PlayerSubclassBase<
   T extends object

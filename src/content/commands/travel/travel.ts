@@ -5,15 +5,13 @@ import {
   SlashCommandBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import containerSnippetPaginator from "../../../utils/containerSnippetPaginator.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
-import generateTravelContents from "./utils/generateTravelContents.js";
-import travelHeader from "./utils/travelHeader.js";
-import stringifyAdjacent from "./utils/stringifyAdjacent.js";
-import Environment from "../../../models/environment/environment.js";
-import { search } from "../../../utils/levenshtein.js";
+import containerSnippetPaginator from "#utils/containerSnippetPaginator.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
+import generateTravelContents from "#commands/travel/utils/generateTravelContents.js";
+import travelHeader from "#commands/travel/utils/travelHeader.js";
+import stringifyAdjacent from "#commands/travel/utils/stringifyAdjacent.js";
+import Environment from "#environment/environment.js";
+import { search } from "#utils/levenshtein.js";
 
 export default new Interaction({
   data: new SlashCommandBuilder()

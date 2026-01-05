@@ -1,5 +1,5 @@
-import TestNotification from "../../../content/letters/testNotification/testNotification.js";
-import PlayerEvent from "../../../models/events/playerEvent.js";
+import TestNotification from "#letters/testNotification/testNotification.js";
+import PlayerEvent from "#core/playerEvent.js";
 
 export default new PlayerEvent<"questAdded">({
   callback: async ({ args: [quest], player }) => {

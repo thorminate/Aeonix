@@ -6,29 +6,29 @@ import {
   Partials,
 } from "discord.js";
 import readline from "readline/promises";
-import Logger from "./utils/log.js";
+import Logger from "#utils/log.js";
 import mongoose from "mongoose";
 import { readFileSync } from "fs";
-import eventManager from "./handlers/eventHandler.js";
-import ButtonManager from "./managers/buttonManager.js";
-import CommandManager from "./managers/commandManager.js";
-import ChannelSelectMenuManager from "./managers/channelSelectMenuManager.js";
-import EnvironmentManager from "./managers/environmentManager.js";
-import ItemManager from "./managers/itemManager.js";
-import LetterManager from "./managers/letterManager.js";
-import MentionableSelectMenuManager from "./managers/mentionableSelectMenuManager.js";
-import ModalManager from "./managers/modalManager.js";
-import RoleSelectMenuManager from "./managers/roleSelectMenuManager.js";
-import StatusEffectManager from "./managers/statusEffectManager.js";
-import StringSelectMenuManager from "./managers/stringSelectMenuManager.js";
-import UserSelectMenuManager from "./managers/userSelectMenuManager.js";
-import StatusManager from "./managers/statusManager.js";
-import PlayerManager from "./managers/playerManager.js";
-import QuestManager from "./managers/questManager.js";
+import eventManager from "#handlers/eventHandler.js";
+import ButtonManager from "#managers/buttonManager.js";
+import CommandManager from "#managers/commandManager.js";
+import ChannelSelectMenuManager from "#managers/channelSelectMenuManager.js";
+import EnvironmentManager from "#managers/environmentManager.js";
+import ItemManager from "#managers/itemManager.js";
+import LetterManager from "#managers/letterManager.js";
+import MentionableSelectMenuManager from "#managers/mentionableSelectMenuManager.js";
+import ModalManager from "#managers/modalManager.js";
+import RoleSelectMenuManager from "#managers/roleSelectMenuManager.js";
+import StatusEffectManager from "#managers/statusEffectManager.js";
+import StringSelectMenuManager from "#managers/stringSelectMenuManager.js";
+import UserSelectMenuManager from "#managers/userSelectMenuManager.js";
+import StatusManager from "#managers/statusManager.js";
+import PlayerManager from "#managers/playerManager.js";
+import QuestManager from "#managers/questManager.js";
 import { IPackageJson } from "package-json-type";
-import AeonixCLI from "./models/cli/cli.js";
-import config from "./config.js";
-import RaceManager from "./managers/raceManager.js";
+import AeonixCLI from "#cli/cli.js";
+import config from "#root/config.js";
+import RaceManager from "#managers/raceManager.js";
 
 export type AeonixEvents = ClientEvents & {
   tick: [
@@ -149,7 +149,7 @@ export default class Aeonix extends Client {
     for (const player of allPlayers) {
       const diff = Date.now() - player.lastAccessed!;
 
-      // if the player has not been accessed within the alloted tick rate, unload the player from the cache
+      // if the player has not been accessed within the alloted tick, unload the player from the cache
       if (diff > this.config.tickRate) {
         await player.commit(false);
         this.players.release(player._id);
@@ -165,7 +165,7 @@ export default class Aeonix extends Client {
     for (const environment of allEnvironments) {
       const diff = Date.now() - environment.lastAccessed!;
 
-      // if the environment has not been accessed within the alloted tick rate, unload the environment from the cache
+      // if the environment has not been accessed within the alloted tick, unload the environment from the cache
       if (diff > this.config.tickRate) {
         await environment.commit(false);
         this.environments.release(environment._id);

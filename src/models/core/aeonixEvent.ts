@@ -1,4 +1,4 @@
-import Aeonix, { AeonixEvents } from "../../aeonix.js";
+import Aeonix, { AeonixEvents } from "#root/aeonix.js";
 
 export class AeonixEventParams<Args extends AeonixEvents[keyof AeonixEvents]> {
   aeonix: Aeonix;

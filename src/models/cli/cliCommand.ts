@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import Aeonix from "../../aeonix.js";
-import merge from "../../utils/merge.js";
+import Aeonix from "#root/aeonix.js";
+import merge from "#utils/merge.js";
 
 export type CLIOption<
   TName extends string = string,

@@ -1,5 +1,5 @@
-import Notification from "../notification/notification.js";
-import { NotificationCategory } from "../notification/utils/notificationCategory.js";
+import Notification from "#letters/notification/notification.js";
+import { NotificationCategory } from "#letters/notification/utils/notificationCategory.js";
 
 export default class TestNotification extends Notification {
   override type: string = "testNotification";

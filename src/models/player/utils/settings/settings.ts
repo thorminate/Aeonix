@@ -1,5 +1,5 @@
-import { baseFields, defineField } from "../../../core/serializable.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
+import { baseFields, defineField } from "#core/serializable.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
 
 export interface RawSettings {
   inboxShowArchived: boolean; // inboxShowArchived
@@ -8,8 +8,8 @@ export interface RawSettings {
 
 const v1 = defineField(baseFields, {
   add: {
-    inboxShowArchived: { id: 1, type: Boolean },
-    inboxShowNotifications: { id: 2, type: Boolean },
+    inboxShowArchived: { id: 0, type: Boolean },
+    inboxShowNotifications: { id: 1, type: Boolean },
   },
 });
 

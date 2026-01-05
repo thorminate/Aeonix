@@ -1,7 +1,7 @@
 import path from "path";
 import url from "url";
-import { ConstructableManager } from "../models/managers/constructableManager.js";
-import Race from "../models/player/utils/race/race.js";
+import { ConstructableManager } from "#manager/constructableManager.js";
+import Race from "#player/utils/race/race.js";
 
 type Holds = Race;
 

@@ -1,9 +1,6 @@
 import { randomUUID } from "crypto";
-import Player from "../../player.js";
-import Serializable, {
-  baseFields,
-  defineField,
-} from "../../../core/serializable.js";
+import Player from "#player/player.js";
+import Serializable, { baseFields, defineField } from "#core/serializable.js";
 
 export interface RawLetter {
   id: string; // id
@@ -17,12 +14,12 @@ export interface RawLetter {
 
 const v1 = defineField(baseFields, {
   add: {
-    id: { id: 1, type: String },
-    type: { id: 2, type: String },
-    createdAt: { id: 3, type: Number },
-    isRead: { id: 4, type: Boolean },
-    isArchived: { id: 5, type: Boolean },
-    isInteracted: { id: 6, type: Boolean },
+    id: { id: 0, type: String },
+    type: { id: 1, type: String },
+    createdAt: { id: 2, type: Number },
+    isRead: { id: 3, type: Boolean },
+    isArchived: { id: 4, type: Boolean },
+    isInteracted: { id: 5, type: Boolean },
   },
 });
 

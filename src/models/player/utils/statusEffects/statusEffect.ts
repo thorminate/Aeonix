@@ -1,9 +1,7 @@
 import { randomUUID } from "node:crypto";
-import Player from "../../player.js";
-import Serializable, {
-  baseFields,
-  defineField,
-} from "../../../core/serializable.js";
+import Player from "#player/player.js";
+import Serializable, { baseFields, defineField } from "#core/serializable.js";
+import { AnyPlayerEvent } from "#player/utils/playerEvents.js";
 
 export interface RawStatusEffect {
   id: string;
@@ -14,10 +12,10 @@ export interface RawStatusEffect {
 
 const v1 = defineField(baseFields, {
   add: {
-    id: { id: 1, type: String },
-    type: { id: 2, type: String },
-    exposure: { id: 3, type: Number },
-    data: { id: 4, type: Object },
+    id: { id: 0, type: String },
+    type: { id: 1, type: String },
+    exposure: { id: 2, type: Number },
+    data: { id: 3, type: Object },
   },
 });
 
@@ -52,9 +50,11 @@ export default abstract class StatusEffect<
     this.onEffectEnd(player);
   }
 
-  abstract onEffectStart(player: Player): Player;
-  abstract onEffectTick(player: Player): Player;
-  abstract onEffectEnd(player: Player): Player;
+  abstract onEffectStart(player: Player): void;
+  abstract onEffectTick(player: Player): void;
+  abstract onEffectEnd(player: Player): void;
+
+  abstract onEvent(event: AnyPlayerEvent): void;
 
   constructor(data?: Data) {
     super();

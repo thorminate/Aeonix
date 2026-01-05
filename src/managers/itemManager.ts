@@ -1,7 +1,7 @@
 import path from "path";
 import url from "url";
-import Item from "../models/item/item.js";
-import { ConstructableManager } from "../models/managers/constructableManager.js";
+import Item from "#item/item.js";
+import { ConstructableManager } from "#manager/constructableManager.js";
 
 type Holds = Item;
 

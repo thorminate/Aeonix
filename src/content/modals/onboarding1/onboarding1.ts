@@ -4,11 +4,9 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
-import componentWrapper from "../../../utils/componentWrapper.js";
-import deletePlayer from "../../buttons/deletePlayer/deletePlayer.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
+import componentWrapper from "#utils/componentWrapper.js";
+import deletePlayer from "#buttons/deletePlayer/deletePlayer.js";
 
 export default new Interaction({
   data: new ModalBuilder()
@@ -42,6 +40,7 @@ export default new Interaction({
     ),
 
   // TODO: make this integrate into the race system and add multiple steps
+  // TODO: change player processes to use the ticker system and make the ticker "catch up" when its behind on ticks on a player. so if a player has been inactive for an hour, they will be caught up by 4 ticks (1 tick per 15 minutes) once they are active again.
 
   interactionType: InteractionTypes.Modal,
   ephemeral: true,

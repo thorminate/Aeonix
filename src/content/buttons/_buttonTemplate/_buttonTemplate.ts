@@ -2,8 +2,8 @@ import { ButtonStyle } from "discord.js";
 import Interaction, {
   ButtonBuilderV2,
   InteractionTypes,
-} from "../../../models/events/interaction.js";
-import aeonix from "../../../index.js";
+} from "#core/interaction.js";
+import aeonix from "#root/index.js";
 
 export default new Interaction({
   data: new ButtonBuilderV2()

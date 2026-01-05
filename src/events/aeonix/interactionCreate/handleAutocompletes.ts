@@ -4,12 +4,10 @@ import {
   PermissionsBitField,
   AutocompleteInteraction,
 } from "discord.js";
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
-import PlayerRef from "../../../models/player/utils/playerRef.js";
-import Player from "../../../models/player/player.js";
+import AeonixEvent from "#core/aeonixEvent.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
+import PlayerRef from "#player/utils/playerRef.js";
+import Player from "#player/player.js";
 
 export default new AeonixEvent<"interactionCreate">({
   callback: async ({ args: [context], aeonix }) => {

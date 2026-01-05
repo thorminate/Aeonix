@@ -4,9 +4,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import Interaction, {
-  InteractionTypes,
-} from "../../../models/events/interaction.js";
+import Interaction, { InteractionTypes } from "#core/interaction.js";
 
 export default new Interaction({
   data: new ModalBuilder()

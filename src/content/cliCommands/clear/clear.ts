@@ -1,5 +1,5 @@
-import aeonix from "../../../index.js";
-import CLICommand from "../../../models/cli/cliCommand.js";
+import aeonix from "#root/index.js";
+import CLICommand from "#cli/cliCommand.js";
 
 export default new CLICommand({
   name: "clear",

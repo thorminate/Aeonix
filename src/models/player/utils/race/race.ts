@@ -1,7 +1,7 @@
-import { arrayOf } from "../../../../utils/typeDescriptor.js";
-import { baseFields, defineField } from "../../../core/serializable.js";
-import { AnyPlayerEvent } from "../playerEvents.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
+import { arrayOf } from "#utils/typeDescriptor.js";
+import { baseFields, defineField } from "#core/serializable.js";
+import { AnyPlayerEvent } from "#player/utils/playerEvents.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
 
 type RaceTag = string; // placeholder, will be union once implemented
 
@@ -20,11 +20,11 @@ export interface RawRace {
 
 const v1 = defineField(baseFields, {
   add: {
-    type: { id: 1, type: String },
-    name: { id: 2, type: String },
-    description: { id: 3, type: String },
-    tags: { id: 4, type: arrayOf(String) },
-    modifiers: { id: 5, type: arrayOf(Object) },
+    type: { id: 0, type: String },
+    name: { id: 1, type: String },
+    description: { id: 2, type: String },
+    tags: { id: 3, type: arrayOf(String) },
+    modifiers: { id: 4, type: arrayOf(Object) },
   },
 });
 

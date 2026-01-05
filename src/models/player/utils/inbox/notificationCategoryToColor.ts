@@ -1,4 +1,4 @@
-import TNotificationCategory from "../../../../content/letters/notification/utils/notificationCategory.js";
+import TNotificationCategory from "#letters/notification/utils/notificationCategory.js";
 
 export default function notificationCategoryToColor(
   category: TNotificationCategory

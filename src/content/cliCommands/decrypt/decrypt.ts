@@ -1,6 +1,6 @@
 import run from "package-run";
-import CLICommand from "../../../models/cli/cliCommand.js";
-import aeonix from "../../../index.js";
+import CLICommand from "#cli/cliCommand.js";
+import aeonix from "#root/index.js";
 
 export default new CLICommand({
   name: "decrypt",

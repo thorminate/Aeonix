@@ -1,6 +1,6 @@
-import { baseFields, defineField } from "../../../core/serializable.js";
-import { PlayerSubclassBase } from "../playerSubclassBase.js";
-import calculateXpRequirement from "./calculateXpRequirement.js";
+import { baseFields, defineField } from "#core/serializable.js";
+import { PlayerSubclassBase } from "#player/utils/playerSubclassBase.js";
+import calculateXpRequirement from "#player/utils/stats/calculateXpRequirement.js";
 
 export interface RawStats {
   level: number; // level
@@ -16,15 +16,15 @@ export interface RawStats {
 
 const v1 = defineField(baseFields, {
   add: {
-    level: { id: 1, type: Number },
-    xp: { id: 2, type: Number },
-    maxHealth: { id: 3, type: Number },
-    health: { id: 4, type: Number },
-    strength: { id: 5, type: Number },
-    will: { id: 6, type: Number },
-    cognition: { id: 7, type: Number },
-    hasNausea: { id: 8, type: Boolean },
-    hasCompletedTutorial: { id: 9, type: Boolean },
+    level: { id: 0, type: Number },
+    xp: { id: 1, type: Number },
+    maxHealth: { id: 2, type: Number },
+    health: { id: 3, type: Number },
+    strength: { id: 4, type: Number },
+    will: { id: 5, type: Number },
+    cognition: { id: 6, type: Number },
+    hasNausea: { id: 7, type: Boolean },
+    hasCompletedTutorial: { id: 8, type: Boolean },
   },
 });
 

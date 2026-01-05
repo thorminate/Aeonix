@@ -1,18 +1,18 @@
 import { GuildMemberRoleManager, User } from "discord.js";
-import Player from "../models/player/player.js";
-import PlayerRef from "../models/player/utils/playerRef.js";
-import aeonix from "../index.js";
-import TutorialQuestLetter from "../content/letters/tutorialQuestLetter/tutorialQuestLetter.js";
+import Player from "#player/player.js";
+import PlayerRef from "#player/utils/playerRef.js";
+import aeonix from "#root/index.js";
+import TutorialQuestLetter from "#letters/tutorialQuestLetter/tutorialQuestLetter.js";
 import { Model } from "mongoose";
-import PlayerStorage from "../models/player/utils/playerStorage.js";
-import playerModel from "../models/player/utils/playerModel.js";
-import BackpackItem from "../content/items/backpackItem/backpackItem.js";
+import PlayerStorage from "#player/utils/playerStorage.js";
+import playerModel from "#player/utils/playerModel.js";
+import BackpackItem from "#items/backpackItem/backpackItem.js";
 import { decode } from "cbor2";
-import semibinaryToBuffer from "../models/player/utils/semibinaryToBuffer.js";
-import { SerializedData } from "../models/core/serializable.js";
+import semibinaryToBuffer from "#player/utils/semibinaryToBuffer.js";
+import { SerializedData } from "#core/serializable.js";
 import { inflateSync } from "zlib";
-import PlayerEventsManager from "../models/player/utils/playerEvents.js";
-import LifecycleCachedManager from "../models/managers/lifecycleCachedManager.js";
+import PlayerEventsManager from "#player/utils/playerEvents.js";
+import LifecycleCachedManager from "#manager/lifecycleCachedManager.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -163,8 +163,14 @@ export default class PlayerManager extends LifecycleCachedManager<
     aeonix.players.set(player);
     aeonix.players.markCreated(player._id);
 
+    const inboxCmdId = (await aeonix.commands.get("inbox"))?.id;
+
     await startChannel.send({
-      content: `<@${user.id}> has joined the game! Please check your inbox for further instructions (\`/inbox\`).`,
+      content: `<@${
+        user.id
+      }> has joined the game! Please check your inbox for further instructions (${
+        inboxCmdId ? `</inbox:${inboxCmdId}>` : "/inbox"
+      }).`,
     });
 
     player.environmentChannel = await player.fetchEnvironmentChannel();

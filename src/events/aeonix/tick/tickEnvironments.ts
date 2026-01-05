@@ -1,4 +1,4 @@
-import AeonixEvent from "../../../models/events/aeonixEvent.js";
+import AeonixEvent from "#core/aeonixEvent.js";
 
 export default new AeonixEvent<"tick">({
   async callback({ aeonix }) {

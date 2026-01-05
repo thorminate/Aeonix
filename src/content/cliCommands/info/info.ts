@@ -1,5 +1,5 @@
 import { blue, blueBright, redBright } from "ansis";
-import CLICommand from "../../../models/cli/cliCommand.js";
+import CLICommand from "#cli/cliCommand.js";
 import { execSync } from "child_process";
 import path from "path";
 

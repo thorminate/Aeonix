@@ -1,17 +1,23 @@
 import { EventEmitter } from "events";
-import Quest from "./quests/quest.js";
+import Quest from "#player/utils/quests/quest.js";
 import path from "path";
 import url from "url";
-import getAllFiles from "../../../utils/getAllFiles.js";
-import Player from "../player.js";
+import getAllFiles from "#utils/getAllFiles.js";
+import Player from "#player/player.js";
 import PlayerEventDeclaration, {
   PlayerEventParams,
-} from "../../events/playerEvent.js";
-import Environment from "../../environment/environment.js";
-import Item from "../../item/item.js";
-import aeonix from "../../../index.js";
+} from "#core/playerEvent.js";
+import Environment from "#environment/environment.js";
+import Item from "#item/item.js";
+import aeonix from "#root/index.js";
 
 export interface PlayerEvents {
+  tick: [
+    currentTime: number,
+    currentDay: number,
+    currentMonth: number,
+    currentYear: number
+  ];
   questAdded: [quest: Quest];
   questFulfilled: [quest: Quest];
   questFailed: [quest: Quest];

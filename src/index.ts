@@ -4,8 +4,8 @@ import readline from "readline/promises";
 import { appendFileSync, existsSync, writeFileSync } from "fs";
 import { config as dotenv } from "@dotenvx/dotenvx";
 import { magenta, green } from "ansis";
-import Aeonix from "./aeonix.js";
-import Logger from "./utils/log.js";
+import Aeonix from "#root/aeonix.js";
+import Logger from "#utils/log.js";
 
 const rl = readline.createInterface({
   input: process.stdin,

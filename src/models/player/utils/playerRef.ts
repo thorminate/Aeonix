@@ -1,5 +1,5 @@
-import aeonix from "../../../index.js";
-import Player from "../player.js";
+import aeonix from "#root/index.js";
+import Player from "#player/player.js";
 
 export default class PlayerRef {
   private weak?: WeakRef<Player>;

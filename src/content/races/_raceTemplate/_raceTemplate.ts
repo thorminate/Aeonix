@@ -1,4 +1,4 @@
-import Race from "../../../models/player/utils/race/race.js";
+import Race from "#player/utils/race/race.js";
 
 export default class RaceTemplate extends Race {
   type = "_raceTemplate"; // should always be the exact same as the filename

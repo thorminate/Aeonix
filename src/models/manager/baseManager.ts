@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import Aeonix from "../../aeonix.js";
+import Aeonix from "#root/aeonix.js";
 
 export default class BaseManager extends EventEmitter {
   private _aeonix: Aeonix | undefined;

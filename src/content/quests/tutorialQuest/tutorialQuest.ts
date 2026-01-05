@@ -1,5 +1,5 @@
-import { AnyPlayerEvent } from "../../../models/player/utils/playerEvents.js";
-import Quest from "../../../models/player/utils/quests/quest.js";
+import { AnyPlayerEvent } from "#player/utils/playerEvents.js";
+import Quest from "#player/utils/quests/quest.js";
 
 export default class TutorialQuest extends Quest {
   type: string = "tutorialQuest";

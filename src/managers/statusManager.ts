@@ -1,5 +1,5 @@
 import { ActivityType } from "discord.js";
-import BaseManager from "../models/managers/baseManager.js";
+import BaseManager from "#manager/baseManager.js";
 
 export default class StatusManager extends BaseManager {
   verbs: string[] = [

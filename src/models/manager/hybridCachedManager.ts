@@ -1,7 +1,7 @@
 import url from "url";
-import ConcreteConstructor from "../../utils/concreteConstructor.js";
+import ConcreteConstructor from "#utils/concreteConstructor.js";
 import { Model } from "mongoose";
-import FileBasedManager from "./fileBasedManager.js";
+import FileBasedManager from "#manager/fileBasedManager.js";
 
 export default abstract class HybridCachedManager<
   Holds extends {

@@ -1,8 +1,8 @@
 import path from "path";
-import Aeonix from "../../aeonix.js";
+import Aeonix from "#root/aeonix.js";
 import { fileURLToPath, pathToFileURL } from "url";
-import getAllFiles from "../../utils/getAllFiles.js";
-import CLICommand, { CLIOption, CLIOptionResult } from "./cliCommand.js";
+import getAllFiles from "#utils/getAllFiles.js";
+import CLICommand, { CLIOption, CLIOptionResult } from "#cli/cliCommand.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

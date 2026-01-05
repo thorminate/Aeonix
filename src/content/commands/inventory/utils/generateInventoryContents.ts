@@ -5,12 +5,12 @@ import {
   SectionBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import Player from "../../../../models/player/player.js";
-import { ContainerSnippet } from "../../../../utils/containerSnippetPaginator.js";
-import selectRandomFromArray from "../../../../utils/selectRandomFromArray.js";
+import Player from "#player/player.js";
+import { ContainerSnippet } from "#utils/containerSnippetPaginator.js";
+import selectRandomFromArray from "#utils/selectRandomFromArray.js";
 
 export default function generateInventoryContents({
-  inventory: { entries },
+  inventory: { arr: entries },
 }: Player): ContainerSnippet[] {
   const snippets: ContainerSnippet[] = [];
   if (entries.length === 0) {
