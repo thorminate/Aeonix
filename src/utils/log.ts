@@ -55,6 +55,11 @@ export default class Logger {
   private readonly logDir: string;
   private currentDate: string;
   private rl: readline.Interface;
+  private shouldReprompt = true;
+
+  setShouldReprompt(shouldReprompt: boolean) {
+    this.shouldReprompt = shouldReprompt;
+  }
 
   constructor(rl: readline.Interface, logDir = path.resolve("./logs")) {
     this.logDir = logDir;
@@ -231,7 +236,7 @@ export default class Logger {
     readline.cursorTo(process.stdout, 0);
 
     process.stdout.write(line + "\n");
-    this.rl.prompt(true);
+    if (this.shouldReprompt) this.rl.prompt(true);
   }
 
   /**

@@ -28,6 +28,7 @@ import QuestManager from "./managers/questManager.js";
 import { IPackageJson } from "package-json-type";
 import AeonixCLI from "./models/cli/cli.js";
 import config from "./config.js";
+import RaceManager from "./managers/raceManager.js";
 
 export type AeonixEvents = ClientEvents & {
   tick: [
@@ -68,6 +69,7 @@ export default class Aeonix extends Client {
   mentionableSelectMenus = new MentionableSelectMenuManager(this);
   modals = new ModalManager(this);
   quests = new QuestManager(this);
+  races = new RaceManager(this);
   roleSelectMenus = new RoleSelectMenuManager(this);
   statusEffects = new StatusEffectManager(this);
   stringSelectMenus = new StringSelectMenuManager(this);
@@ -119,8 +121,7 @@ export default class Aeonix extends Client {
   }
 
   async exit(code: number = 0) {
-    const log = this.logger.for("Process");
-    log.warn("Shutting down...");
+    this.logger.setShouldReprompt(false);
     try {
       await this.fullSave();
       if (this.user) {
@@ -129,7 +130,7 @@ export default class Aeonix extends Client {
       await this.destroy();
       process.exit(code); // Exit with the provided code
     } catch (e) {
-      log.error("Failed to shutdown", e);
+      this.logger.error("Process", "Failed to shutdown", e);
       process.exit(1); // Exit with error code
     }
   }
@@ -196,6 +197,7 @@ export default class Aeonix extends Client {
       o.modals.empty();
       o.players.empty();
       o.quests.empty();
+      o.races.empty();
       o.roleSelectMenus.empty();
       o.statusEffects.empty();
       o.stringSelectMenus.empty();
@@ -215,6 +217,7 @@ export default class Aeonix extends Client {
       o.modals.loadAll(),
       o.players.markReady(),
       o.quests.loadAll(),
+      o.races.loadAll(),
       o.roleSelectMenus.loadAll(),
       o.statusEffects.loadAll(),
       o.stringSelectMenus.loadAll(),

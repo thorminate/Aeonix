@@ -3,10 +3,13 @@ import Environment from "../environment.js";
 import Serializable, {
   baseFields,
   defineField,
-  dynamicArrayOf,
 } from "../../core/serializable.js";
 import aeonix from "../../../index.js";
-import { ClassConstructor } from "../../../utils/typeDescriptor.js";
+import {
+  ClassConstructor,
+  arrayOf,
+  dynamicType,
+} from "../../../utils/typeDescriptor.js";
 
 interface RawEnvironmentItems {
   arr: Item[];
@@ -16,19 +19,21 @@ const v1 = defineField(baseFields, {
   add: {
     arr: {
       id: 0,
-      type: dynamicArrayOf(async (o) => {
-        if (
-          !o ||
-          !(typeof o === "object") ||
-          !("d" in o) ||
-          !(typeof o.d === "object") ||
-          !("2" in o.d!) ||
-          !(typeof o.d[2] === "string")
-        )
-          return Item as unknown as ClassConstructor;
-        const cls = await aeonix.items.loadRaw(o.d[2]);
-        return cls ? cls : (Item as unknown as ClassConstructor);
-      }),
+      type: arrayOf(
+        dynamicType(async (o) => {
+          if (
+            !o ||
+            !(typeof o === "object") ||
+            !("d" in o) ||
+            !(typeof o.d === "object") ||
+            !("2" in o.d!) ||
+            !(typeof o.d[2] === "string")
+          )
+            return Item as unknown as ClassConstructor;
+          const cls = await aeonix.items.loadRaw(o.d[2]);
+          return cls ? cls : (Item as unknown as ClassConstructor);
+        })
+      ),
     },
   },
 });

@@ -7,6 +7,10 @@ import FileBasedManager from "./fileBasedManager.js";
 export abstract class ConstructableManager<T> extends FileBasedManager<T> {
   private _classCache: Map<string, ConcreteConstructor<T>> = new Map();
 
+  getRaw(id: string): ConcreteConstructor<T> | undefined {
+    return this._classCache.get(id);
+  }
+
   async loadRaw(id: string): Promise<ConcreteConstructor<T> | undefined> {
     if (this._classCache.has(id)) return this._classCache.get(id);
 

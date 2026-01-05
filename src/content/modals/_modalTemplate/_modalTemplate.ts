@@ -1,5 +1,5 @@
 import {
-  ActionRowBuilder,
+  LabelBuilder,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
@@ -12,14 +12,15 @@ export default new Interaction({
   data: new ModalBuilder()
     .setCustomId("template")
     .setTitle("Template Modal")
-    .addComponents(
-      new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-          .setCustomId("template")
-          .setLabel("Template")
-          .setStyle(TextInputStyle.Short)
-          .setRequired(true)
-      )
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Template")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("template")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        )
     ),
 
   interactionType: InteractionTypes.Modal,

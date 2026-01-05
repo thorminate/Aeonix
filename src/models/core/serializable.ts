@@ -1,10 +1,8 @@
 import aeonix from "../../index.js";
 import TypeDescriptor, {
-  ArrayTypeDescriptor,
-  FunctionOrLiteralTypeDescriptor,
-  TypeDescriptorResolver,
+  literalOf,
+  NonResolvableTypeDescriptor,
   TypeDescriptorValue,
-  UnknownTypeDescriptor,
 } from "../../utils/typeDescriptor.js";
 import util from "util";
 
@@ -42,34 +40,6 @@ function calculateVersion(fields: Fields<FieldSchema>[]): number {
   }
   return version;
 }
-
-export function arrayOf(type: TypeDescriptor): ArrayTypeDescriptor {
-  return { kind: "array", of: type } as ArrayTypeDescriptor;
-}
-export function dynamicArrayOf(typeResolver: TypeDescriptorResolver) {
-  return {
-    kind: "array",
-    of: typeResolver,
-  } as ArrayTypeDescriptor;
-}
-async function literalOf(
-  f: FunctionOrLiteralTypeDescriptor,
-  value: SerializedData
-): Promise<TypeDescriptor | undefined> {
-  if (f === String || f === Number || f === Boolean || f === Date)
-    return f as TypeDescriptor;
-
-  if (
-    /^class\s/.test(Function.prototype.toString.call(f)) ||
-    typeof f === "object"
-  ) {
-    return f as TypeDescriptor;
-  }
-
-  return (f as TypeDescriptorResolver)(value);
-}
-
-export const Unknown: UnknownTypeDescriptor = { kind: "unknown" };
 
 export type SerializableKeys<T> = Exclude<
   {
@@ -218,49 +188,59 @@ export default abstract class Serializable<
     value: unknown
   ): Promise<unknown> {
     const log = aeonix.logger.for("Serializable._serializeValue");
+
     try {
+      // Class / instance
       if (typeof type === "function") {
         if (
-          value !== null &&
-          value !== undefined &&
+          value &&
           typeof value === "object" &&
           "serialize" in value &&
-          value.serialize &&
           typeof value.serialize === "function"
         ) {
-          return value.serialize(value);
+          return value.serialize();
         }
-
         return value;
       }
 
-      if (type.kind === "array") {
-        if (Array.isArray(value)) {
-          return await Promise.all(
-            value.map(async (item: SerializedData) => {
-              const literal = await literalOf(type.of, item);
-              if (!literal) {
-                log.warn(
-                  "Unable to serialize array item, type could not be resolved.",
-                  item,
-                  type
-                );
-                return item;
-              }
-              return await this._serializeValue(literal, item);
-            })
-          );
+      // Dynamic / resolvable
+      if (type.kind === "resolvable") {
+        const resolved = await literalOf(type, value as SerializedData);
+        if (!resolved) {
+          log.warn("Unable to resolve type for value", value);
+          return value;
         }
+        return this._serializeValue(resolved, value);
       }
-      return [];
+
+      // Array
+      if (type.kind === "array") {
+        if (!Array.isArray(value)) {
+          log.warn("Expected array, got", value);
+          return value;
+        }
+
+        return Promise.all(
+          value.map(async (item) => {
+            const literal = await literalOf(type.of, item);
+            return literal ? this._serializeValue(literal, item) : item;
+          })
+        );
+      }
+
+      if (type.kind === "unknown") {
+        return value;
+      }
+
+      return value;
     } catch (e) {
       log.error("Error serializing value", e, { type, value });
-      return [];
+      return value;
     }
   }
 
   private static async _validateValue(
-    type: TypeDescriptor,
+    type: NonResolvableTypeDescriptor,
     value: unknown
   ): Promise<boolean> {
     const log = aeonix.logger.for("Serializable._validateValue");
@@ -289,7 +269,7 @@ export default abstract class Serializable<
         return isArray;
       }
 
-      if ("kind" in type && type.kind === "unknown") return true;
+      if (type.kind === "unknown") return true;
 
       return false;
     } catch (e) {
@@ -463,17 +443,20 @@ export default abstract class Serializable<
   }
 
   private static async _deserializeValue(
-    type: TypeDescriptor,
+    unresolved: TypeDescriptor,
     value: unknown,
     parent: unknown,
     parentKey: string
   ): Promise<unknown> {
     const log = aeonix.logger.for("Serializable._deserializeValue");
     try {
+      const type = await literalOf(unresolved, value as SerializedData);
+      if (type === null || type === undefined) return value;
+
       if (!(await this._validateValue(type, value))) {
         log.error(
           `[${this.name}] Type mismatch: ${value} (${parentKey}) is not ${type}`,
-          { type, value, parent }
+          { type, value, parent, unresolved }
         );
       }
 
@@ -486,57 +469,12 @@ export default abstract class Serializable<
         return value;
 
       if (typeof type === "function") {
-        const ctor = type as new () => object;
         if (
           "deserialize" in type &&
           type.deserialize &&
-          typeof type.deserialize === "function" &&
-          typeof value === "object"
+          typeof type.deserialize === "function"
         ) {
           return type.deserialize(value, parent);
-        }
-
-        const inst = new ctor();
-        if ("fields" in inst && typeof inst.fields === "object") {
-          try {
-            const version = calculateVersion(
-              inst.fields as Fields<FieldSchema>[]
-            );
-
-            const fieldMap = (inst.fields as Fields<FieldSchema>[]).find(
-              (f) => f.version === version
-            )?.shape as Record<string, FieldData> | undefined;
-
-            if (!fieldMap) {
-              log.error(`No fields found for version ${version}`, {
-                fields: inst.fields,
-                version: version,
-              });
-              return value;
-            }
-
-            if (
-              value !== null &&
-              value !== undefined &&
-              typeof value === "object"
-            ) {
-              for (const [key, field] of Object.entries(value)) {
-                const fieldType = fieldMap[key as keyof typeof fieldMap]?.type;
-                if (fieldType) {
-                  (inst as Record<string, unknown>)[key] =
-                    await this._deserializeValue(fieldType, field, inst, key);
-                } else {
-                  (inst as Record<string, unknown>)[key] = field;
-                }
-              }
-
-              return inst;
-            }
-          } catch (e) {
-            log.error(`[${ctor.name}] Failed to calculate version`, e, {
-              fields: inst.fields,
-            });
-          }
         }
 
         return value;
@@ -566,7 +504,7 @@ export default abstract class Serializable<
       return value;
     } catch (e) {
       log.error(`[${this.name}] Deserialization failed`, e, {
-        type,
+        unresolved,
         value,
         this: JSON.stringify(this),
       });

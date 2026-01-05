@@ -1,9 +1,12 @@
 import aeonix from "../../../../index.js";
-import { ClassConstructor } from "../../../../utils/typeDescriptor.js";
+import {
+  ClassConstructor,
+  arrayOf,
+  dynamicType,
+} from "../../../../utils/typeDescriptor.js";
 import {
   baseFields,
   defineField,
-  dynamicArrayOf,
   SerializedData,
 } from "../../../core/serializable.js";
 import Item, { RawItem } from "../../../item/item.js";
@@ -19,19 +22,21 @@ const v1 = defineField(baseFields, {
   add: {
     entries: {
       id: 0,
-      type: dynamicArrayOf(async (o: SerializedData) => {
-        if (
-          !o ||
-          !(typeof o === "object") ||
-          !("d" in o) ||
-          !(typeof o.d === "object") ||
-          !("2" in o.d!) ||
-          !(typeof o.d[2] === "string")
-        )
-          return Item as unknown as ClassConstructor;
-        const cls = await aeonix.items.loadRaw(o.d[2]);
-        return cls ? cls : (Item as unknown as ClassConstructor);
-      }),
+      type: arrayOf(
+        dynamicType(async (o: SerializedData) => {
+          if (
+            !o ||
+            !(typeof o === "object") ||
+            !("d" in o) ||
+            !(typeof o.d === "object") ||
+            !("2" in o.d!) ||
+            !(typeof o.d[2] === "string")
+          )
+            return Item as unknown as ClassConstructor;
+          const cls = await aeonix.items.loadRaw(o.d[2]);
+          return cls ? cls : (Item as unknown as ClassConstructor);
+        })
+      ),
     },
     capacity: { id: 1, type: Number },
   },

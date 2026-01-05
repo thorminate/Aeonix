@@ -137,7 +137,7 @@ export default class CLI {
         return;
       }
 
-      this.aeonix.rl.prompt();
+      if (commandToExecute.shouldReprompt ?? true) this.aeonix.rl.prompt();
     });
     this.aeonix.rl.prompt();
   }

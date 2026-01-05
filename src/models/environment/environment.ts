@@ -18,12 +18,8 @@ import EnvironmentEventResult from "./environmentEvents/environmentEventResult.j
 import environmentModel from "./utils/environmentModel.js";
 import Item from "../item/item.js";
 import merge from "../../utils/merge.js";
-import Serializable, {
-  arrayOf,
-  baseFields,
-  defineField,
-} from "../core/serializable.js";
-import { ClassConstructor } from "../../utils/typeDescriptor.js";
+import Serializable, { baseFields, defineField } from "../core/serializable.js";
+import { arrayOf, ClassConstructor } from "../../utils/typeDescriptor.js";
 import EnvironmentEventsManager, {
   EnvironmentEvents,
 } from "./environmentEvents/environmentEvents.js";

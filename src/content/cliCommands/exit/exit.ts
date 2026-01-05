@@ -5,6 +5,7 @@ export default new CLICommand({
   description: "Turns off the Aeonix.",
   options: [],
   acceptsPrimaryArg: false,
+  shouldReprompt: false,
   async execute({ aeonix }) {
     aeonix.exit();
   },

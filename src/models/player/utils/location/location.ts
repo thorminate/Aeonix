@@ -1,8 +1,5 @@
-import {
-  arrayOf,
-  baseFields,
-  defineField,
-} from "../../../core/serializable.js";
+import { arrayOf } from "../../../../utils/typeDescriptor.js";
+import { baseFields, defineField } from "../../../core/serializable.js";
 import Player from "../../player.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 

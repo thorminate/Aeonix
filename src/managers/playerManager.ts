@@ -23,6 +23,7 @@ export interface PlayerCreationOptions {
   user: User;
   name: string;
   avatar: string;
+  race?: string;
 }
 
 async function isImageUrl(url: string) {
@@ -111,6 +112,7 @@ export default class PlayerManager extends LifecycleCachedManager<
     user,
     name,
     avatar,
+    race,
   }: PlayerCreationOptions): Promise<Player | PlayerCreationResult> {
     const log = aeonix.logger.for("PlayerManager.create");
     if (await aeonix.players.exists(user.id)) return "playerAlreadyExists";
@@ -118,7 +120,7 @@ export default class PlayerManager extends LifecycleCachedManager<
     if (!avatar) avatar = user.displayAvatarURL();
     if (!(await isImageUrl(avatar))) return "notAnImageUrl";
 
-    const player = await Player.create({ user, name, avatar });
+    const player = await Player.create({ user, name, avatar, race });
 
     const playerRole = aeonix.playerRoleId;
 

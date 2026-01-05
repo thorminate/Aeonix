@@ -46,6 +46,9 @@ import PlayerEventsManager, {
   AnyPlayerEvent,
   PlayerEvents,
 } from "./utils/playerEvents.js";
+import Race from "./utils/race/race.js";
+import { ClassConstructor, dynamicType } from "../../utils/typeDescriptor.js";
+import HumanRace from "../../content/races/humanRace/humanRace.js";
 
 export interface RawPlayer {
   _id: string;
@@ -87,6 +90,22 @@ const v1 = defineField(baseFields, {
       id: 10,
       type: StatusEffects as ConcreteConstructor<StatusEffects>,
     },
+    race: {
+      id: 11,
+      type: dynamicType(async (o) => {
+        if (
+          !o ||
+          !(typeof o === "object") ||
+          !("d" in o) ||
+          !(typeof o.d === "object") ||
+          !("1" in o.d!) ||
+          !(typeof o.d[1] === "string")
+        )
+          return Race as unknown as ClassConstructor;
+        const cls = await aeonix.races.loadRaw(o.d[1]);
+        return cls ?? (Race as unknown as ClassConstructor);
+      }),
+    },
   },
 });
 
@@ -94,16 +113,17 @@ export default class Player extends Serializable<RawPlayer> {
   fields = [v1];
   migrators = [];
 
-  _id!: string;
-  lastAccessed!: number;
-  inbox!: Inbox;
-  inventory!: Inventory;
-  location!: Location;
-  persona!: Persona;
-  quests!: Quests;
-  settings!: Settings;
-  stats!: Stats;
-  statusEffects!: StatusEffects;
+  _id: string;
+  lastAccessed: number;
+  inbox: Inbox;
+  inventory: Inventory;
+  location: Location;
+  persona: Persona;
+  quests: Quests;
+  settings: Settings;
+  stats: Stats;
+  statusEffects: StatusEffects;
+  race: Race;
 
   user?: User;
   environment?: Environment;
@@ -122,6 +142,7 @@ export default class Player extends Serializable<RawPlayer> {
       player: this,
     } as AnyPlayerEvent;
     this.quests.arr.forEach((quest) => quest.onEvent(event));
+    this.race.onEvent(event);
     return this._events.emit(e, ...args);
   }
 
@@ -350,7 +371,9 @@ export default class Player extends Serializable<RawPlayer> {
     this.settings = new Settings(this);
     this.stats = new Stats(this);
     this.statusEffects = new StatusEffects(this);
-
+    this.race = data?.race
+      ? new (aeonix.races.getRaw(data.race) ?? HumanRace)(this)
+      : new HumanRace(this);
     this._events = new PlayerEventsManager(this);
 
     this.lastAccessed = Date.now();

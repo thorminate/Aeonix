@@ -1,5 +1,5 @@
 import {
-  ActionRowBuilder,
+  LabelBuilder,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
@@ -12,28 +12,37 @@ import deletePlayer from "../../buttons/deletePlayer/deletePlayer.js";
 
 export default new Interaction({
   data: new ModalBuilder()
-    .setTitle("Step 1/1 - Display Name")
+    .setTitle("Step 1/1 - Persona Setup")
     .setCustomId("onboarding1")
-    .addComponents(
-      new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-          .setCustomId("display-name")
-          .setLabel("Display/Character Name")
-          .setPlaceholder("Name of your character within this world.")
-          .setStyle(TextInputStyle.Short)
-          .setRequired(true)
-          .setMaxLength(32)
-          .setMinLength(2)
-      ),
-      new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-          .setCustomId("avatar-url")
-          .setLabel("Avatar URL")
-          .setPlaceholder("https://example.com/avatar.png")
-          .setStyle(TextInputStyle.Short)
-          .setRequired(false)
-      )
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Display/Character Name")
+        .setDescription("Your character's name within this world.")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("display-name")
+            .setPlaceholder("Cool Name")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+            .setMaxLength(32)
+            .setMinLength(2)
+        ),
+      new LabelBuilder()
+        .setLabel("Avatar URL")
+        .setDescription(
+          "The URL of your character's avatar. May be left blank and it will use your Discord avatar."
+        )
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("avatar-url")
+            .setPlaceholder("https://example.com/avatar.png")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+        )
     ),
+
+  // TODO: make this integrate into the race system and add multiple steps
+
   interactionType: InteractionTypes.Modal,
   ephemeral: true,
 

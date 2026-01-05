@@ -43,6 +43,7 @@ export default class CLICommand<
   options!: Options;
   acceptsPrimaryArg!: AcceptsPrimaryArg;
   execute!: CLICommandCallback<Options, AcceptsPrimaryArg>;
+  shouldReprompt?: boolean;
 
   constructor(o: CLICommand<Options, AcceptsPrimaryArg>) {
     return merge(this, o);

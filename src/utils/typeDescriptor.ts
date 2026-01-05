@@ -1,31 +1,54 @@
 import { SerializedData } from "../models/core/serializable.js";
 
+/* ========================
+ *  Primitive constructors
+ * ======================== */
+
 export type PrimitiveConstructor =
   | StringConstructor
   | NumberConstructor
   | BooleanConstructor
   | DateConstructor;
 
+/* ==========
+ *  Resolver
+ * ========== */
+
 export type TypeDescriptorResolver = (
   value: SerializedData
-) => TypeDescriptor | Promise<TypeDescriptor | undefined> | undefined;
+) =>
+  | NonResolvableTypeDescriptor
+  | Promise<NonResolvableTypeDescriptor | undefined>
+  | undefined;
 
-export type FunctionOrLiteralTypeDescriptor =
-  | TypeDescriptor
-  | TypeDescriptorResolver;
+/* =============
+ *  Descriptors
+ * ============= */
 
 export interface ArrayTypeDescriptor {
   kind: "array";
-  of: FunctionOrLiteralTypeDescriptor;
+  of: TypeDescriptor;
 }
 
 export interface UnknownTypeDescriptor {
   kind: "unknown";
 }
 
+export interface ResolvableType {
+  kind: "resolvable";
+  resolver: TypeDescriptorResolver;
+}
+
 export type ClassConstructor = new (...args: unknown[]) => unknown;
 
-type TypeDescriptor =
+export type TypeDescriptor =
+  | PrimitiveConstructor
+  | ClassConstructor
+  | ArrayTypeDescriptor
+  | UnknownTypeDescriptor
+  | ResolvableType;
+
+export type NonResolvableTypeDescriptor =
   | PrimitiveConstructor
   | ClassConstructor
   | ArrayTypeDescriptor
@@ -33,18 +56,9 @@ type TypeDescriptor =
 
 export default TypeDescriptor;
 
-/**
- * Helper to normalize a FunctionOrLiteralTypeDescriptor into a concrete TypeDescriptor.
- * - If it's already a TypeDescriptor, return it.
- * - If it's a resolver, use its return type (unwrapping Promise and excluding undefined).
- */
-type ResolveFunctionOrLiteral<T> = T extends TypeDescriptor
-  ? T
-  : T extends TypeDescriptorResolver
-  ? ReturnType<T> extends Promise<infer P>
-    ? Exclude<P, undefined>
-    : Exclude<ReturnType<T>, undefined>
-  : never;
+/* ==============================
+ *  Type → runtime value mapping
+ * ============================== */
 
 export type TypeDescriptorValue<T extends TypeDescriptor> =
   T extends StringConstructor
@@ -58,9 +72,54 @@ export type TypeDescriptorValue<T extends TypeDescriptor> =
     : T extends ClassConstructor
     ? InstanceType<T>
     : T extends ArrayTypeDescriptor
-    ? Array<
-        TypeDescriptorValue<ResolveFunctionOrLiteral<T["of"]> & TypeDescriptor>
-      >
+    ? Array<TypeDescriptorValue<T["of"]>>
     : T extends UnknownTypeDescriptor
     ? unknown
     : never;
+
+/* =====================
+ *  Constants & helpers
+ * ===================== */
+
+export const Unknown: UnknownTypeDescriptor = { kind: "unknown" };
+
+export function arrayOf(of: TypeDescriptor): ArrayTypeDescriptor {
+  return { kind: "array", of };
+}
+
+export function dynamicType(resolver: TypeDescriptorResolver): ResolvableType {
+  return { kind: "resolvable", resolver };
+}
+
+/* ============
+ *  Resolution
+ * ============ */
+
+export async function literalOf(
+  descriptor: TypeDescriptor,
+  value: SerializedData
+): Promise<NonResolvableTypeDescriptor | undefined> {
+  // primitives & class constructors resolve to themselves
+  if (isPrimitive(descriptor) || typeof descriptor === "function") {
+    return descriptor as NonResolvableTypeDescriptor;
+  }
+
+  if (descriptor.kind === "resolvable") {
+    return (await descriptor.resolver(value)) ?? Unknown;
+  }
+
+  // array / unknown are already literal
+  return descriptor;
+}
+
+/* ========
+ *  Guards
+ * ======== */
+
+export function isPrimitive(
+  type: TypeDescriptor
+): type is PrimitiveConstructor {
+  return (
+    type === String || type === Number || type === Boolean || type === Date
+  );
+}

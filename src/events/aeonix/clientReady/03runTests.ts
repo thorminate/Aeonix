@@ -1,13 +1,13 @@
 import BackpackItem from "../../../content/items/backpackItem/backpackItem.js";
 import TutorialQuest from "../../../content/quests/tutorialQuest/tutorialQuest.js";
 import Serializable, {
-  arrayOf,
   baseFields,
   defineField,
   SerializedData,
 } from "../../../models/core/serializable.js";
 import Environment from "../../../models/environment/environment.js";
 import AeonixEvent from "../../../models/events/aeonixEvent.js";
+import { arrayOf } from "../../../utils/typeDescriptor.js";
 
 // #region Test Models
 interface RawTestModel {

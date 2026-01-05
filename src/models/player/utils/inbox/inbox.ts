@@ -1,11 +1,11 @@
 import aeonix from "../../../../index.js";
 import ParentAwareSubArray from "../../../../utils/parentAwareSubArray.js";
-import { ClassConstructor } from "../../../../utils/typeDescriptor.js";
 import {
-  baseFields,
-  defineField,
-  dynamicArrayOf,
-} from "../../../core/serializable.js";
+  ClassConstructor,
+  arrayOf,
+  dynamicType,
+} from "../../../../utils/typeDescriptor.js";
+import { baseFields, defineField } from "../../../core/serializable.js";
 import { PlayerSubclassBase } from "../playerSubclassBase.js";
 import Letter, { RawLetter } from "./letter.js";
 
@@ -17,19 +17,21 @@ const v1 = defineField(baseFields, {
   add: {
     letters: {
       id: 1,
-      type: dynamicArrayOf(async (o: unknown) => {
-        if (
-          !o ||
-          !(typeof o === "object") ||
-          !("d" in o) ||
-          !(typeof o.d === "object") ||
-          !("2" in o.d!) ||
-          !(typeof o.d[2] === "string")
-        )
-          return Letter as unknown as ClassConstructor;
-        const cls = await aeonix.letters.loadRaw(o.d[2]);
-        return cls ? cls : (Letter as unknown as ClassConstructor);
-      }),
+      type: arrayOf(
+        dynamicType(async (o: unknown) => {
+          if (
+            !o ||
+            !(typeof o === "object") ||
+            !("d" in o) ||
+            !(typeof o.d === "object") ||
+            !("2" in o.d!) ||
+            !(typeof o.d[2] === "string")
+          )
+            return Letter as unknown as ClassConstructor;
+          const cls = await aeonix.letters.loadRaw(o.d[2]);
+          return cls ? cls : (Letter as unknown as ClassConstructor);
+        })
+      ),
     },
   },
 });
