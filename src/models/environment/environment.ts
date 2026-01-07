@@ -50,6 +50,12 @@ const v1 = defineField(baseFields, {
 export default abstract class Environment extends Serializable<RawEnvironment> {
   fields = [v1];
   migrators = [];
+  static override requiredFields = [
+    "adjacentEnvironments",
+    "channelId",
+    "name",
+    "description",
+  ];
 
   abstract _id: string;
   lastAccessed: number = 0;

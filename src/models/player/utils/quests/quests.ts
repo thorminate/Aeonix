@@ -23,11 +23,11 @@ const v1 = defineField(baseFields, {
             !(typeof o === "object") ||
             !("d" in o) ||
             !(typeof o.d === "object") ||
-            !("2" in o.d!) ||
-            !(typeof o.d[2] === "string")
+            !("1" in o.d!) ||
+            !(typeof o.d[1] === "string")
           )
             return Quest as unknown as ClassConstructor;
-          const cls = await aeonix.quests.loadRaw(o.d[2]);
+          const cls = await aeonix.quests.loadRaw(o.d[1]);
           return cls ? cls : (Quest as unknown as ClassConstructor);
         })
       ),
@@ -37,8 +37,9 @@ const v1 = defineField(baseFields, {
 
 export default class Quests extends PlayerSubclassBase<RawQuests> {
   fields = [v1];
-  arr: Quest[] = [];
   migrators = [];
+
+  arr: Quest[] = [];
 
   add(quest: Quest) {
     this.arr.push(quest);

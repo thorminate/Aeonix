@@ -24,6 +24,16 @@ export default abstract class StatusEffect<
 > extends Serializable<RawStatusEffect> {
   fields = [v1];
   migrators = [];
+  static override requiredFields = [
+    "name",
+    "description",
+    "duration",
+    "isPermanent",
+    "onEffectStart",
+    "onEffectTick",
+    "onEffectEnd",
+    "onEvent",
+  ];
 
   id: string = randomUUID();
   abstract type: string;

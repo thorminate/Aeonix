@@ -17,10 +17,8 @@ const rl = readline.createInterface({
 
 const logger = new Logger(rl);
 
-// Make sure the .env file exists
 if (!existsSync("./.env")) {
   const log = logger.for("AeonixSetupWizard");
-  // If the .env file doesn't exist, we create it.
 
   log.warn(".env file not found, starting setup wizard...");
 
@@ -46,7 +44,6 @@ if (!existsSync("./.env")) {
   log.info("Setup wizard complete!");
 }
 
-// Load environment variables
 const dotenvx = dotenv({
   quiet: true,
 });

@@ -33,6 +33,14 @@ export default abstract class Item<
 > extends Serializable<RawItem> {
   fields = [v1];
   migrators = [];
+  static override requiredFields = [
+    "name",
+    "description",
+    "interactionType",
+    "interactable",
+    "oneTimeInteraction",
+    "canDrop",
+  ];
 
   id: string = randomUUID();
   abstract name: string;

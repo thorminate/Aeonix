@@ -1,6 +1,10 @@
 import { randomUUID } from "crypto";
 import Player from "#player/player.js";
-import Serializable, { baseFields, defineField } from "#core/serializable.js";
+import Serializable, {
+  baseFields,
+  defineField,
+  SerializerError,
+} from "#core/serializable.js";
 import { AnyPlayerEvent } from "#player/utils/playerEvents.js";
 
 export interface RawQuest {
@@ -24,6 +28,14 @@ export default abstract class Quest<
 > extends Serializable<RawQuest> {
   fields = [v1];
   migrators = [];
+  static override requiredFields = [
+    "type",
+    "name",
+    "description",
+    "onFulfill",
+    "onFail",
+    "onEvent",
+  ];
 
   abstract createData(): Data;
 
@@ -32,12 +44,26 @@ export default abstract class Quest<
   abstract name: string;
   abstract description: string;
   completed = false;
-  isAbandoned = false;
   data: Data;
 
   constructor(data?: Data) {
     super();
-    this.data = data || this.createData();
+    this.data = data || this.createData ? this.createData() : ({} as Data);
+  }
+
+  override onDeserialize() {
+    if (!this.data && this.createData) {
+      this.data = this.createData();
+    }
+
+    if (typeof this.onEvent !== "function") {
+      throw new SerializerError(
+        this.constructor.name,
+        "Quest.onDeserialize",
+        `Quest ${this.type} missing onEvent method after deserialization`,
+        { this: this }
+      );
+    }
   }
 
   async fulfill(player: Player) {

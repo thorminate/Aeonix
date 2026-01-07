@@ -28,6 +28,15 @@ export default abstract class Letter<
 > extends Serializable<RawLetter> {
   fields = [v1];
   migrators = [];
+  static override requiredFields = [
+    "sender",
+    "subject",
+    "body",
+    "interactable",
+    "interactionType",
+    "oneTimeInteraction",
+    "isNotification",
+  ];
 
   abstract type: string;
   abstract sender: string;

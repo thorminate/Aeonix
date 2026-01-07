@@ -25,11 +25,11 @@ const v1 = defineField(baseFields, {
             !(typeof o === "object") ||
             !("d" in o) ||
             !(typeof o.d === "object") ||
-            !("2" in o.d!) ||
-            !(typeof o.d[2] === "string")
+            !("1" in o.d!) ||
+            !(typeof o.d[1] === "string")
           )
             return StatusEffect as unknown as ClassConstructor;
-          const cls = await aeonix.statusEffects.loadRaw(o.d[2]);
+          const cls = await aeonix.statusEffects.loadRaw(o.d[1]);
           return cls ? cls : (StatusEffect as unknown as ClassConstructor);
         })
       ),

@@ -8,7 +8,7 @@ export abstract class PlayerSubclassBase<
   override onDeserialize(data: T, parent?: object): void {
     this.parent = parent as Player;
   }
-  override excluded = ["parent"];
+  override excluded = ["parent"] as (keyof T)[];
 
   constructor(parent: Player) {
     super();

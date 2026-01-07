@@ -1,4 +1,4 @@
-import aeonix from "#root/index.js";
+import ContextualError from "#utils/contextualError.js";
 import TypeDescriptor, {
   literalOf,
   NonResolvableTypeDescriptor,
@@ -6,8 +6,20 @@ import TypeDescriptor, {
 } from "#utils/typeDescriptor.js";
 import util from "util";
 
+export class SerializerError extends ContextualError {
+  constructor(
+    clsName: string,
+    processName: string,
+    message: string,
+    context: Record<string, unknown>,
+    cause?: unknown
+  ) {
+    super(`${processName} [${clsName}] ${message}`, context, cause);
+  }
+}
+
 export interface SerializedData<
-  Data extends Record<number, unknown> = Record<string, unknown>
+  Data extends Record<number, unknown> = Record<number, unknown>
 > {
   _id?: string;
   v: number;
@@ -22,6 +34,7 @@ export const baseFields: Fields<FieldSchema> = {
 interface FieldData {
   id: number;
   type: TypeDescriptor;
+  exclude?: boolean;
 }
 
 export interface MigrationEntry<
@@ -34,7 +47,7 @@ export interface MigrationEntry<
 
 function calculateVersion(fields: Fields<FieldSchema>[]): number {
   let version = 0;
-  for (const field of Object.values(fields)) {
+  for (const field of fields) {
     version = Math.max(version, field.version);
   }
   return version;
@@ -66,16 +79,12 @@ export type MergeShape<
     PrevShape,
     keyof PrevShape
   >
-> =
-  // start from prev minus removed keys
-  Omit<
-    PrevShape,
-    D["remove"] extends (keyof PrevShape)[] ? D["remove"][number] : never
-  > &
-    // apply updates (if any)
-    (D extends { update: infer U } ? (U extends object ? U : object) : object) &
-    // apply adds (if any)
-    (D extends { add: infer A } ? (A extends object ? A : object) : object);
+> = Omit<
+  PrevShape,
+  D["remove"] extends (keyof PrevShape)[] ? D["remove"][number] : never
+> &
+  (D extends { update: infer U } ? (U extends object ? U : object) : object) &
+  (D extends { add: infer A } ? (A extends object ? A : object) : object);
 
 export function defineField<
   PrevShape extends FieldSchema,
@@ -86,7 +95,6 @@ export function defineField<
     keyof PrevShape
   >
 >(prev: Fields<PrevShape>, diff: D): Fields<MergeShape<PrevShape, D>> {
-  // runtime mutable copy starts from the exact prev.shape
   const newShape: Record<string, FieldData> = {
     ...(prev.shape as Record<string, FieldData>),
   };
@@ -102,10 +110,27 @@ export function defineField<
   }
 
   if (diff.add) {
+    const existingIds = new Set(Object.values(newShape).map((f) => f.id));
+    for (const [key, fieldData] of Object.entries(diff.add)) {
+      if (existingIds.has(fieldData.id)) {
+        throw new Error(
+          `Field ID collision: ${fieldData.id} already used (adding ${key})`
+        );
+      }
+    }
     Object.assign(newShape, diff.add as Record<string, FieldData>);
   }
 
-  // assert here — we constructed newShape to match the type-level MergeShape
+  const ids = new Set<number>();
+  for (const [key, field] of Object.entries(newShape)) {
+    if (ids.has(field.id)) {
+      throw new Error(
+        `Duplicate field id ${field.id} detected after defineField() (field: ${key})`
+      );
+    }
+    ids.add(field.id);
+  }
+
   return {
     version: prev.version + 1,
     shape: newShape as MergeShape<PrevShape, D>,
@@ -120,45 +145,87 @@ export default abstract class Serializable<
   T extends object,
   F extends Fields<FieldSchema>[] = Fields<FieldSchema>[]
 > {
-  _unknownFields: Record<number, unknown> = {};
-  abstract fields: F;
-  abstract migrators: MigrationEntry[];
+  protected static readonly requiredFields: string[] = [];
+  private _internalUnknownFields: Record<number, unknown> = {};
+  private _fieldCache?: Map<number, Fields<FieldSchema>>;
+
+  get unknownFields(): Readonly<Record<number, unknown>> {
+    return this._internalUnknownFields;
+  }
+
+  abstract readonly fields: F;
+  abstract readonly migrators: MigrationEntry[];
   onDeserialize?(data: T, parent?: object): void;
 
-  protected excluded: string[] = [];
+  protected readonly excluded: (keyof T)[] = [];
 
-  async serialize(): Promise<SerializedData | undefined> {
-    const log = aeonix.logger.for("Serializable.serialize");
+  private _getFieldsForVersion(
+    version: number
+  ): Fields<FieldSchema> | undefined {
+    if (!this._fieldCache) {
+      this._fieldCache = new Map(this.fields.map((f) => [f.version, f]));
+    }
+
+    // fast path
+    if (this._fieldCache.has(version)) {
+      return this._fieldCache.get(version);
+    }
+
+    // resolve closest lower version
+    let best: Fields<FieldSchema> | undefined;
+
+    for (const [v, fields] of this._fieldCache.entries()) {
+      if (v <= version && (!best || v > best.version)) {
+        best = fields;
+      }
+    }
+
+    return best;
+  }
+
+  async serialize(visited = new WeakSet<object>()): Promise<SerializedData> {
     try {
+      if (visited.has(this)) {
+        throw new SerializerError(
+          this.constructor.name,
+          "Serializable.serialize",
+          "Circular reference detected",
+          { serializable: this }
+        );
+      }
+      visited.add(this);
+
       const data: Record<number, unknown> = {};
 
       const version = calculateVersion(this.fields);
-
-      const fieldsForCurrentVersion = this.fields.find(
-        (f) => f.version === version
-      )?.shape;
+      const fieldsForCurrentVersion = this._getFieldsForVersion(version);
 
       if (!fieldsForCurrentVersion) {
-        log.error(`No fields found for version ${version}`, {
-          fields: this.fields,
-          version: version,
-        });
-        return;
+        throw new SerializerError(
+          this.constructor.name,
+          "Serializable.serialize",
+          `No fields found for version ${version}`,
+          {
+            fields: this.fields,
+            version: version,
+          }
+        );
       }
 
-      for (const [key, field] of Object.entries(fieldsForCurrentVersion) as [
-        string,
-        FieldData
-      ][]) {
+      for (const [key, field] of Object.entries(
+        fieldsForCurrentVersion.shape
+      ) as [string, FieldData][]) {
         if (key === "version" || key === "fields") continue;
-        if (this.excluded.includes(key)) continue;
+        if (field.exclude) continue;
+        if (this.excluded.includes(key as keyof T)) continue;
 
         const value = (this as unknown as Record<string, unknown>)[key];
         if (value === undefined || value === null) continue;
 
         data[(field as FieldData).id] = await this._serializeValue(
           (field as FieldData).type,
-          value
+          value,
+          visited
         );
       }
 
@@ -171,19 +238,24 @@ export default abstract class Serializable<
 
       return obj as SerializedData;
     } catch (e) {
-      log.error("Error serializing object", { e, serializable: this });
-      return;
+      throw new SerializerError(
+        this.constructor.name,
+        "Serializable.serialize",
+        "Error serializing object",
+        { serializable: this },
+        e
+      );
+    } finally {
+      visited.delete(this);
     }
   }
 
   private async _serializeValue(
     type: TypeDescriptor,
-    value: unknown
+    value: unknown,
+    visited: WeakSet<object>
   ): Promise<unknown> {
-    const log = aeonix.logger.for("Serializable._serializeValue");
-
     try {
-      // Class / instance
       if (typeof type === "function") {
         if (
           value &&
@@ -191,32 +263,48 @@ export default abstract class Serializable<
           "serialize" in value &&
           typeof value.serialize === "function"
         ) {
-          return value.serialize();
+          if (visited.has(value)) {
+            throw new SerializerError(
+              this.constructor.name,
+              "Serializable._serializeValue",
+              "Circular reference detected in nested serializable",
+              { serializable: value }
+            );
+          }
+          return value.serialize(visited);
         }
         return value;
       }
 
-      // Dynamic / resolvable
       if (type.kind === "resolvable") {
         const resolved = await literalOf(type, value as SerializedData);
         if (!resolved) {
-          log.warn("Unable to resolve type for value", value);
-          return value;
+          throw new SerializerError(
+            this.constructor.name,
+            "Serializable._serializeValue",
+            "Unable to resolve type for value",
+            { value, type }
+          );
         }
-        return this._serializeValue(resolved, value);
+        return this._serializeValue(resolved, value, visited);
       }
 
-      // Array
       if (type.kind === "array") {
         if (!Array.isArray(value)) {
-          log.warn("Expected array, got", value);
-          return value;
+          throw new SerializerError(
+            this.constructor.name,
+            "Serializable._serializeValue",
+            "Expected array, got",
+            { value, type }
+          );
         }
 
         return Promise.all(
           value.map(async (item) => {
             const literal = await literalOf(type.of, item);
-            return literal ? this._serializeValue(literal, item) : item;
+            return literal
+              ? this._serializeValue(literal, item, visited)
+              : item;
           })
         );
       }
@@ -227,8 +315,13 @@ export default abstract class Serializable<
 
       return value;
     } catch (e) {
-      log.error("Error serializing value", e, { type, value });
-      return value;
+      throw new SerializerError(
+        this.constructor.name,
+        "Serializable._serializeValue",
+        "Error serializing value",
+        { type, value },
+        e
+      );
     }
   }
 
@@ -236,7 +329,6 @@ export default abstract class Serializable<
     type: NonResolvableTypeDescriptor,
     value: unknown
   ): Promise<boolean> {
-    const log = aeonix.logger.for("Serializable._validateValue");
     try {
       if (type === null || type === undefined) return true;
 
@@ -254,7 +346,10 @@ export default abstract class Serializable<
         );
 
       if (typeof type === "function") {
-        return typeof value === "object";
+        if (value === null || value === undefined || typeof value !== "object")
+          return false;
+
+        return true;
       }
 
       if (type.kind === "array") {
@@ -263,69 +358,155 @@ export default abstract class Serializable<
 
       return type.kind === "unknown";
     } catch (e) {
-      log.error("Error validating value", e, { type, value });
-      return false;
+      throw new SerializerError(
+        this.name,
+        "Serializable._validateValue",
+        "Error validating value",
+        {
+          type,
+          value,
+        },
+        e
+      );
     }
   }
 
-  private static async _runMigrations<T extends Serializable<T>>(
-    inst: Serializable<object>,
-    fromVersion: number
-  ): Promise<T> {
-    const log = aeonix.logger.for("Serializable._runMigrations");
+  private static _buildMigrationGraph(
+    migrators: MigrationEntry[]
+  ): Map<number, number[]> {
+    const graph = new Map<number, number[]>();
+
+    for (const { from, to } of migrators) {
+      if (to <= from) {
+        throw new SerializerError(
+          this.name,
+          "Serializable._buildMigrationGraph",
+          `Invalid migration direction: v${from} → v${to} (must increase version)`,
+          { from, to }
+        );
+      }
+
+      if (!graph.has(from)) graph.set(from, []);
+      graph.get(from)!.push(to);
+    }
+
+    const visited = new Set<number>();
+    const stack = new Set<number>();
+
+    const visit = (node: number) => {
+      if (stack.has(node)) {
+        throw new SerializerError(
+          this.name,
+          "Serializable._buildMigrationGraph",
+          `Migration cycle detected involving v${node}`,
+          { migrators }
+        );
+      }
+
+      if (visited.has(node)) return;
+
+      visited.add(node);
+      stack.add(node);
+
+      for (const next of graph.get(node) ?? []) {
+        visit(next);
+      }
+
+      stack.delete(node);
+    };
+
+    for (const node of graph.keys()) {
+      visit(node);
+    }
+
+    return graph;
+  }
+
+  private static _findMigrationPath(
+    graph: Map<number, number[]>,
+    fromVersion: number,
+    toVersion: number
+  ): number[] | null {
+    if (fromVersion === toVersion) return [];
+
+    const queue: { version: number; path: number[] }[] = [
+      { version: fromVersion, path: [fromVersion] },
+    ];
+    const visited = new Set<number>([fromVersion]);
+
+    while (queue.length > 0) {
+      const { version: current, path } = queue.shift()!;
+
+      if (current === toVersion) return path;
+
+      const neighbors = graph.get(current) || [];
+      for (const next of neighbors) {
+        if (!visited.has(next)) {
+          visited.add(next);
+          queue.push({ version: next, path: [...path, next] });
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private static async _runMigrations<
+    TObj extends object,
+    TFields extends Fields<FieldSchema>[]
+  >(inst: Serializable<TObj, TFields>, fromVersion: number): Promise<void> {
     try {
-      const migrators = [...(inst.migrators ?? [])].sort(
-        (a, b) => a.from - b.from
-      );
+      const targetVersion = calculateVersion(inst.fields);
+      const graph = this._buildMigrationGraph(inst.migrators);
+      const path = this._findMigrationPath(graph, fromVersion, targetVersion);
 
-      let current = fromVersion;
-      let safeguard = 200;
+      if (!path) {
+        throw new SerializerError(
+          this.name,
+          "Serializable.validateMigrationPath",
+          `No migration path from v${fromVersion} to v${targetVersion}. `,
+          {
+            availableMigrations: inst.migrators
+              .map((m) => `v${m.from} → v${m.to}`)
+              .join(", "),
+          }
+        );
+      }
 
-      while (safeguard-- > 0) {
-        const step = migrators.find((m) => m.from === current);
-        if (!step) break;
+      for (let i = 0; i < path.length - 1; i++) {
+        const from = path[i];
+        const to = path[i + 1];
+
+        const step = inst.migrators.find((m) => m.from === from && m.to === to);
+        if (!step) {
+          throw new SerializerError(
+            this.name,
+            "Serializable._runMigrations",
+            `Migration step not found: v${from} → v${to}`,
+            { from, to, path }
+          );
+        }
+
         try {
           await step.migrate(inst as unknown as Record<string, unknown>);
-          current = step.to;
         } catch (e) {
-          log.error(
-            `[${this.name}] Migration ${current} → ${step.to} failed`,
-            e,
-            {
-              migrator: step,
-              inst,
-            }
+          throw new SerializerError(
+            this.name,
+            "Serializable._runMigrations",
+            `Migration ${from} → ${to} failed`,
+            { from, to, step: `v${from} → v${to}` },
+            e
           );
         }
       }
-
-      if (safeguard < 0) {
-        log.error(
-          `[${this.name}] Migration incomplete: exceeded max iterations`,
-          {
-            current,
-            inst,
-            migrators,
-          }
-        );
-      }
-
-      const targetVersion = calculateVersion(inst.fields);
-      if (current !== targetVersion) {
-        log.error(
-          `[${this.name}] Migration incomplete: stopped at v${current}, expected v${targetVersion}`,
-          {
-            current,
-            inst,
-            migrators,
-          }
-        );
-      }
-
-      return inst as T;
     } catch (e) {
-      log.error("Error running migrations", e, { inst, fromVersion });
-      return inst as T;
+      throw new SerializerError(
+        this.name,
+        "Serializable._runMigrations",
+        "Error running migrations",
+        { inst, fromVersion },
+        e
+      );
     }
   }
 
@@ -335,9 +516,14 @@ export default abstract class Serializable<
     parent?: object,
     ctor: new () => T = this
   ): Promise<T> {
-    const log = aeonix.logger.for("Serializable.deserialize");
-    if (!input || typeof input !== "object" || !input.d)
-      return input as unknown as T;
+    if (!input || typeof input !== "object" || !input.d) {
+      throw new SerializerError(
+        this.name,
+        "Serializable.deserialize",
+        `Invalid input`,
+        { input }
+      );
+    }
 
     let inst;
 
@@ -346,52 +532,54 @@ export default abstract class Serializable<
     try {
       inst = new usedCtor();
     } catch (e) {
-      log.error(
-        `[${usedCtor.name}] Failed to deserialize: error creating instance`,
-        e,
-        { input }
+      throw new SerializerError(
+        usedCtor.name,
+        "Serializable.deserialize",
+        `Failed to deserialize: error creating instance`,
+        { input },
+        e
       );
-      return input as unknown as T;
     }
     try {
-      const version = calculateVersion(inst.fields);
-
       const unknown: Record<number, unknown> = {};
 
-      const fieldsForCurrentVersion = inst.fields.find(
-        (f) => f.version === input.v
-      )?.shape;
+      const fieldsForCurrentVersion = inst._getFieldsForVersion(input.v);
 
       if (!fieldsForCurrentVersion) {
-        log.error(`[${usedCtor.name}] No fields found for version ${input.v}`, {
-          fields: inst.fields,
-          version: input.v,
-        });
-        return inst;
+        throw new SerializerError(
+          usedCtor.name,
+          "Serializable.deserialize",
+          `No fields found for version ${input.v}`,
+          {
+            fields: inst.fields,
+            version: input.v,
+          }
+        );
       }
 
-      for (const [key, field] of Object.entries(fieldsForCurrentVersion)) {
+      for (const [key, field] of Object.entries(
+        fieldsForCurrentVersion.shape
+      )) {
         const raw = input?.d?.[(field as FieldData)?.id];
         if (raw === undefined) continue;
 
         (inst as unknown as Record<string, unknown>)[key] = raw;
       }
 
-      // preserve unknown fields
       for (const [id, val] of Object.entries(input.d)) {
-        const known = Object.values(fieldsForCurrentVersion).some(
+        const known = Object.values(fieldsForCurrentVersion.shape).some(
           (f) => (f as FieldData).id === Number(id)
         );
         if (!known) unknown[Number(id)] = val;
       }
 
-      inst._unknownFields = unknown;
+      inst._internalUnknownFields = unknown;
 
       for (const key of Object.keys(
         inst as unknown as Record<string, unknown>
       )) {
-        const fieldData = fieldsForCurrentVersion[
-          key as keyof typeof fieldsForCurrentVersion
+        const fieldData = fieldsForCurrentVersion.shape[
+          key as keyof typeof fieldsForCurrentVersion.shape
         ] as FieldData | undefined;
         if (!fieldData) continue;
         const value = (inst as unknown as Record<string, unknown>)[key];
@@ -406,18 +594,76 @@ export default abstract class Serializable<
           );
       }
 
-      if (input.v !== version) {
-        inst = (await Serializable._runMigrations(inst, input.v)) as T;
+      const targetVersion = calculateVersion(inst.fields);
+      if (input.v !== targetVersion) {
+        await Serializable._runMigrations(inst, input.v);
+      }
+
+      const requiredProps =
+        (usedCtor as { requiredFields?: string[] }).requiredFields || [];
+
+      for (const prop of requiredProps) {
+        if (typeof prop !== "string") {
+          throw new SerializerError(
+            usedCtor.name,
+            "Serializable.deserialize",
+            `requiredProps contains non-string value`,
+            {
+              prop,
+              propType: typeof prop,
+              inst: inst.constructor.name,
+              requiredProps,
+            }
+          );
+        }
+
+        const value = (inst as unknown as Record<string, unknown>)[prop];
+
+        if (value === undefined || value === null) {
+          let proto = inst;
+          let descriptor;
+          let safeguard = 100;
+
+          while (proto && !descriptor && --safeguard > 0) {
+            descriptor = Object.getOwnPropertyDescriptor(proto, prop);
+            proto = Object.getPrototypeOf(proto);
+          }
+
+          if (descriptor?.get) {
+            continue;
+          }
+
+          throw new SerializerError(
+            usedCtor.name,
+            "Serializable.deserialize",
+            `Abstract property '${prop}' missing after deserialization`,
+            {
+              prop,
+              requiredProps,
+              inst: inst.constructor.name,
+              availableProps: Object.keys(inst),
+            }
+          );
+        }
+      }
+
+      for (const [id] of Object.entries(inst._internalUnknownFields)) {
+        const known = Object.values(
+          inst._getFieldsForVersion(calculateVersion(inst.fields))!.shape
+        ).some((f) => f.id === Number(id));
+        if (known) delete inst._internalUnknownFields[Number(id)];
       }
 
       inst.onDeserialize?.(inst, parent);
       return inst;
     } catch (e) {
-      log.error(`[${usedCtor.name}] Deserialization failed`, e, {
-        inst,
-        input,
-      });
-      return inst;
+      throw new SerializerError(
+        usedCtor.name,
+        "Serializable.deserialize",
+        `Deserialization failed`,
+        { inst, input },
+        e
+      );
     }
   }
 
@@ -427,14 +673,15 @@ export default abstract class Serializable<
     parent: unknown,
     parentKey: string
   ): Promise<unknown> {
-    const log = aeonix.logger.for("Serializable._deserializeValue");
     try {
       const type = await literalOf(unresolved, value as SerializedData);
       if (type === null || type === undefined) return value;
 
       if (!(await this._validateValue(type, value))) {
-        log.error(
-          `[${this.name}] Type mismatch: ${value} (${parentKey}) is not ${type}`,
+        throw new SerializerError(
+          this.name,
+          "Serializable._deserializeValue",
+          `Type mismatch: ${value} (${parentKey}) is not ${type}`,
           { type, value, parent, unresolved }
         );
       }
@@ -464,11 +711,12 @@ export default abstract class Serializable<
           (value as SerializedData[]).map(async (item: SerializedData, i) => {
             const literal = await literalOf(type.of, item);
             if (!literal) {
-              log.warn(
-                "Unable to serialize array item, type could not be resolved.",
+              throw new SerializerError(
+                this.name,
+                "Serializable._deserializeValue",
+                "Unable to deserialize array item, type could not be resolved.",
                 { item, type }
               );
-              return item;
             }
             return await this._deserializeValue(
               literal,
@@ -482,12 +730,13 @@ export default abstract class Serializable<
 
       return value;
     } catch (e) {
-      log.error(`[${this.name}] Deserialization failed`, e, {
-        unresolved,
-        value,
-        this: JSON.stringify(this),
-      });
-      return value;
+      throw new SerializerError(
+        this.name,
+        "Serializable._deserializeValue",
+        `Deserialization failed`,
+        { unresolved, value, parentKey, this: this },
+        e
+      );
     }
   }
 
@@ -515,7 +764,7 @@ export default abstract class Serializable<
 
     for (const key of Reflect.ownKeys(this)) {
       if (
-        key === "_unknownFields" ||
+        key === "_internalUnknownFields" ||
         key === "excluded" ||
         key === "migrators" ||
         key === "fields" ||

@@ -40,7 +40,7 @@ export default new Interaction({
     ),
 
   // TODO: make this integrate into the race system and add multiple steps
-  // TODO: change player processes to use the ticker system and make the ticker "catch up" when its behind on ticks on a player. so if a player has been inactive for an hour, they will be caught up by 4 ticks (1 tick per 15 minutes) once they are active again.
+  // TODO: change player processes to use a player ticker system and make the ticker "catch up" when its behind on ticks on a player. so if a player has been inactive for an hour, they will be caught up by 4 ticks (1 tick per 15 minutes) once they are active again.
 
   interactionType: InteractionTypes.Modal,
   ephemeral: true,

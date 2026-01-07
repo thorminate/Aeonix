@@ -21,8 +21,6 @@ export interface RawRace {
 const v1 = defineField(baseFields, {
   add: {
     type: { id: 0, type: String },
-    name: { id: 1, type: String },
-    description: { id: 2, type: String },
     tags: { id: 3, type: arrayOf(String) },
     modifiers: { id: 4, type: arrayOf(Object) },
   },
@@ -31,6 +29,7 @@ const v1 = defineField(baseFields, {
 export default abstract class Race extends PlayerSubclassBase<RawRace> {
   fields = [v1];
   migrators = [];
+  static override requiredFields = ["name", "description"];
 
   abstract readonly type: string;
   abstract readonly name: string;

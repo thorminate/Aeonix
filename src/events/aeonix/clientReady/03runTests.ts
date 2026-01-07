@@ -143,7 +143,7 @@ export default new AeonixEvent<"ready">({
     )) as TestModel;
     if (
       unknownModel.string !== "val" ||
-      unknownModel._unknownFields[99] !== "unknown"
+      unknownModel.unknownFields[99] !== "unknown"
     ) {
       log.error(
         "Serializer test failed: Unknown fields not preserved",
