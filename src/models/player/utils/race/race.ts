@@ -27,8 +27,9 @@ const v1 = defineField(baseFields, {
 });
 
 export default abstract class Race extends PlayerSubclassBase<RawRace> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
+  static override serializerRoot = Race;
   static override requiredFields = ["name", "description"];
 
   abstract readonly type: string;

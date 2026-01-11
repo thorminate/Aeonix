@@ -31,8 +31,9 @@ const v1 = defineField(baseFields, {
 export default abstract class Item<
   Data extends object = object
 > extends Serializable<RawItem> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
+  static override serializerRoot = Item;
   static override requiredFields = [
     "name",
     "description",

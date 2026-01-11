@@ -158,7 +158,7 @@ export default class EnvironmentEventsManager extends EventEmitter {
       const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
       const eventFolders = await getAllFiles(
-        path.join(__dirname, "..", "..", "..", "events", "environment"),
+        path.join(__dirname, "..", "..", "..", "..", "events", "environment"),
         true
       );
 

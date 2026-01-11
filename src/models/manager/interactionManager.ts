@@ -21,10 +21,19 @@ export default abstract class InteractionManager<
       )
     ).default as T;
 
-    this.onAccess?.(imported);
-    this.set(imported);
+    try {
+      this.onAccess?.(imported);
+      this.set(imported);
+      return imported;
+    } catch (e) {
+      this.aeonix?.logger.error(
+        "InteractionManager",
+        "Instance failed to load properly",
+        { id, e }
+      );
+    }
 
-    return imported;
+    return;
   }
 
   async loadAll(noDuplicates = false): Promise<T[]> {
@@ -46,10 +55,18 @@ export default abstract class InteractionManager<
 
       const id = this.getKey(imported);
 
-      if (id && (!noDuplicates || !this.exists(id))) {
-        this.onAccess?.(imported);
-        this.set(imported);
-        total.push(imported);
+      try {
+        if (id && (!noDuplicates || !this.exists(id))) {
+          this.onAccess?.(imported);
+          this.set(imported);
+          total.push(imported);
+        }
+      } catch (e) {
+        this.aeonix?.logger.error(
+          "InteractionManager",
+          "Instance failed to load properly",
+          { id, e }
+        );
       }
     }
 

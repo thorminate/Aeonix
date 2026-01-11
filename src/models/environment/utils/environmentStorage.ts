@@ -4,7 +4,7 @@ import { deflateSync } from "zlib";
 import { SerializedData } from "#core/serializable.js";
 
 @modelOptions({
-  schemaOptions: { collection: "environments" },
+  schemaOptions: { collection: "environments", versionKey: false },
   options: { allowMixed: Severity.ALLOW },
 })
 export default class EnvironmentStorage {

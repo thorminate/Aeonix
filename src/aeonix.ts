@@ -29,24 +29,16 @@ import { IPackageJson } from "package-json-type";
 import AeonixCLI from "#cli/cli.js";
 import config from "#root/config.js";
 import RaceManager from "#managers/raceManager.js";
+import Time from "./models/core/time.js";
+import PersistentState from "./models/core/persistentState.js";
 
 export type AeonixEvents = ClientEvents & {
-  tick: [
-    currentTime: number,
-    currentDay: number,
-    currentMonth: number,
-    currentYear: number
-  ];
+  tick: [time: Time];
 };
 
 export default class Aeonix extends Client {
   rl: readline.Interface;
   db = mongoose;
-
-  private _currentTime = 1;
-  private _currentDay = 1;
-  private _currentMonth = 1;
-  private _currentYear = 1;
 
   playerRoleId: string = "";
   guildId: string = "";
@@ -76,48 +68,19 @@ export default class Aeonix extends Client {
   userSelectMenus = new UserSelectMenuManager(this);
   status = new StatusManager(this);
   cli = new AeonixCLI(this);
+  state: PersistentState = new PersistentState();
   config = config;
 
   logger: Logger;
 
-  get currentTime() {
-    const now = this._currentTime;
-
-    if (now <= 0 || now > 24) {
-      this.logger.error(
-        "Aeonix.currentTime",
-        "Invalid current time, resetting to 1",
-        { currentTime: now }
-      );
-      this._currentTime = 1; // Reset to 1 if the time is invalid
-      return 1; // Default to 1 if the time is invalid
-    }
-
-    return now;
+  get time() {
+    return this.state.time;
   }
 
   tick() {
-    this._currentTime += 1;
-    if (this._currentTime > 24) {
-      this._currentTime = 1;
-      this._currentDay += 1;
-      if (this._currentDay > 30) {
-        this._currentDay = 1;
-        this._currentMonth += 1;
-        if (this._currentMonth > 12) {
-          this._currentMonth = 1;
-          this._currentYear += 1;
-        }
-      }
-    }
+    this.time.addTime(1);
 
-    this.emit(
-      "tick",
-      this.currentTime,
-      this._currentDay,
-      this._currentMonth,
-      this._currentYear
-    );
+    this.emit("tick", this.time);
   }
 
   async exit(code: number = 0) {
@@ -178,55 +141,59 @@ export default class Aeonix extends Client {
   async fullSave() {
     await this.savePlayers();
     await this.saveEnvironments();
+    await this.state.save();
   }
 
   async makeAllCaches(o: Aeonix, shouldInitCLI = false, shouldClear = false) {
-    if (shouldClear) {
-      const clearCLI = () => {
-        o.cli.cache.clear();
-        o.rl.removeAllListeners("line");
-      };
+    try {
+      if (shouldClear) {
+        const clearCLI = () => {
+          o.cli.cache.clear();
+          o.rl.removeAllListeners("line");
+        };
 
-      o.buttons.empty();
-      o.channelSelectMenus.empty();
-      o.commands.empty();
-      o.environments.empty();
-      o.items.empty();
-      o.letters.empty();
-      o.mentionableSelectMenus.empty();
-      o.modals.empty();
-      o.players.empty();
-      o.quests.empty();
-      o.races.empty();
-      o.roleSelectMenus.empty();
-      o.statusEffects.empty();
-      o.stringSelectMenus.empty();
-      o.userSelectMenus.empty();
+        o.buttons.empty();
+        o.channelSelectMenus.empty();
+        o.commands.empty();
+        o.environments.empty();
+        o.items.empty();
+        o.letters.empty();
+        o.mentionableSelectMenus.empty();
+        o.modals.empty();
+        o.players.empty();
+        o.quests.empty();
+        o.races.empty();
+        o.roleSelectMenus.empty();
+        o.statusEffects.empty();
+        o.stringSelectMenus.empty();
+        o.userSelectMenus.empty();
 
-      if (shouldInitCLI) clearCLI();
+        if (shouldInitCLI) clearCLI();
+      }
+
+      await Promise.all([
+        o.buttons.loadAll(),
+        o.channelSelectMenus.loadAll(),
+        o.commands.loadAll(),
+        o.environments.loadAll(),
+        o.items.loadAll(),
+        o.letters.loadAll(),
+        o.mentionableSelectMenus.loadAll(),
+        o.modals.loadAll(),
+        o.players.markReady(),
+        o.quests.loadAll(),
+        o.races.loadAll(),
+        o.roleSelectMenus.loadAll(),
+        o.statusEffects.loadAll(),
+        o.stringSelectMenus.loadAll(),
+        o.userSelectMenus.loadAll(),
+        shouldInitCLI ? o.cli.init() : null,
+      ]);
+
+      this.logger.info("CacheOrchestrator", "All caches made");
+    } catch (e) {
+      o.logger.error("CacheOrchestrator", "Failed to make all caches", e);
     }
-
-    await Promise.all([
-      o.buttons.loadAll(),
-      o.channelSelectMenus.loadAll(),
-      o.commands.loadAll(),
-      o.environments.loadAll(),
-      o.items.loadAll(),
-      o.letters.loadAll(),
-      o.mentionableSelectMenus.loadAll(),
-      o.modals.loadAll(),
-      o.players.markReady(),
-      o.quests.loadAll(),
-      o.races.loadAll(),
-      o.roleSelectMenus.loadAll(),
-      o.statusEffects.loadAll(),
-      o.stringSelectMenus.loadAll(),
-      o.userSelectMenus.loadAll(),
-      shouldInitCLI ? o.cli.init() : null,
-    ]);
-
-    this.logger.info("CacheOrchestrator", "All caches made");
-
     return o;
   }
 
@@ -340,6 +307,8 @@ export default class Aeonix extends Client {
             mongoose.connection.close();
           });
         });
+
+        this.state = await PersistentState.fetch();
 
         await this.makeAllCaches(this);
       } catch (e) {

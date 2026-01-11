@@ -11,6 +11,13 @@ export default new CLICommand({
       log.error("Missing argument, requires a config key");
       return;
     }
+    if (primaryArgs[0] === "time") {
+      log.info(
+        `Got current time:\n Time: ${aeonix.time.currentTime}\n Day: ${aeonix.time.currentDay}\n Month: ${aeonix.time.currentMonth}\n Year: ${aeonix.time.currentYear}`
+      );
+      return;
+    }
+
     if (!(primaryArgs[0] in aeonix.config)) {
       log.error("Invalid config key");
       return;

@@ -39,6 +39,10 @@ export default abstract class LifecycleCachedManager<
     return this._deletedIds.has(id);
   }
 
+  async preload(id: string) {
+    await this.get(id);
+  }
+
   override async get(id: string): Promise<Holds | undefined> {
     await this.waitUntilReady();
 
@@ -68,15 +72,20 @@ export default abstract class LifecycleCachedManager<
     const raw = (await this.model().findById(id).lean()) as DB | undefined;
     if (!raw) return undefined;
 
-    const instance = await this.onLoad(raw);
+    try {
+      const instance = await this.onLoad(raw);
+      this.onAccess?.(instance);
+      this.set(instance);
+      return instance;
+    } catch (e) {
+      this.aeonix?.logger.error(
+        "LifecycleCachedManager",
+        "Instance failed to load properly",
+        { id, e }
+      );
+    }
 
-    this.onAccess?.(instance);
-
-    this.set(instance);
-    return instance;
-  }
-  async preload(id: string) {
-    await this.get(id);
+    return;
   }
 
   async loadAll(noDuplicates = false): Promise<Holds[]> {
@@ -95,19 +104,23 @@ export default abstract class LifecycleCachedManager<
           return cached;
         }
 
-        const instance = await this.onLoad(doc as DB);
-        this.onAccess?.(instance);
-        return instance;
-      });
-
-      const batchResults = await Promise.all(batchPromises);
-
-      for (const instance of batchResults) {
-        if (instance) {
+        try {
+          const instance = await this.onLoad(doc as DB);
+          this.onAccess?.(instance);
           this.set(instance);
           total.push(instance);
+        } catch (e) {
+          this.aeonix?.logger.error(
+            "LifecycleCachedManager",
+            "Instance failed to load properly",
+            { id: doc._id, e }
+          );
         }
-      }
+
+        return;
+      });
+
+      await Promise.all(batchPromises);
     }
 
     this.markReady();

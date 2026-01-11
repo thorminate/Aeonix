@@ -13,8 +13,8 @@ import {
 } from "discord.js";
 import aeonix from "#root/index.js";
 import Player from "#player/player.js";
-import EnvironmentEventContext from "#environment/environmentEvents/environmentEventContext.js";
-import EnvironmentEventResult from "#environment/environmentEvents/environmentEventResult.js";
+import EnvironmentEventContext from "#environment/utils/environmentEvents/environmentEventContext.js";
+import EnvironmentEventResult from "#environment/utils/environmentEvents/environmentEventResult.js";
 import environmentModel from "#environment/utils/environmentModel.js";
 import Item from "#item/item.js";
 import merge from "#utils/merge.js";
@@ -22,10 +22,10 @@ import Serializable, { baseFields, defineField } from "#core/serializable.js";
 import { arrayOf, ClassConstructor } from "#utils/typeDescriptor.js";
 import EnvironmentEventsManager, {
   EnvironmentEvents,
-} from "#environment/environmentEvents/environmentEvents.js";
-import EnvironmentItems from "#environment/environmentItems/environmentItems.js";
+} from "#environment/utils/environmentEvents/environmentEvents.js";
+import EnvironmentItems from "#environment/utils/environmentItems/environmentItems.js";
 
-interface RawEnvironment {
+export interface RawEnvironment {
   _id: string;
   lastAccessed: number;
   overviewMessageId: string;
@@ -48,8 +48,9 @@ const v1 = defineField(baseFields, {
 });
 
 export default abstract class Environment extends Serializable<RawEnvironment> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
+  static override serializerRoot = Environment;
   static override requiredFields = [
     "adjacentEnvironments",
     "channelId",

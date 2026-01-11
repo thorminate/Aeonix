@@ -4,11 +4,12 @@ import Player from "#player/player.js";
 export abstract class PlayerSubclassBase<
   T extends object
 > extends Serializable<T> {
-  parent: Player;
+  static override excluded = ["parent"];
   override onDeserialize(data: T, parent?: object): void {
     this.parent = parent as Player;
   }
-  override excluded = ["parent"] as (keyof T)[];
+
+  parent: Player;
 
   constructor(parent: Player) {
     super();

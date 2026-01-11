@@ -4,11 +4,28 @@ import { SerializedData } from "#core/serializable.js";
  *  Primitive constructors
  * ======================== */
 
+export type TypedArrayConstructor =
+  | Uint8ArrayConstructor
+  | Uint16ArrayConstructor
+  | Uint32ArrayConstructor
+  | BigUint64ArrayConstructor
+  | Int8ArrayConstructor
+  | Int16ArrayConstructor
+  | Int32ArrayConstructor
+  | BigInt64ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;
+
 export type PrimitiveConstructor =
   | StringConstructor
   | NumberConstructor
   | BooleanConstructor
-  | DateConstructor;
+  | DateConstructor
+  | BigIntConstructor
+  | RegExpConstructor
+  | TypedArrayConstructor
+  | typeof URL
+  | ErrorConstructor;
 
 /* ==========
  *  Resolver
@@ -30,6 +47,22 @@ export interface ArrayTypeDescriptor {
   of: TypeDescriptor;
 }
 
+export interface MapDescriptor {
+  kind: "map";
+  key: TypeDescriptor;
+  value: TypeDescriptor;
+}
+
+export interface SetDescriptor {
+  kind: "set";
+  of: TypeDescriptor;
+}
+
+export interface RecordDescriptor {
+  kind: "record";
+  of: TypeDescriptor;
+}
+
 export interface UnknownTypeDescriptor {
   kind: "unknown";
 }
@@ -45,6 +78,9 @@ export type TypeDescriptor =
   | PrimitiveConstructor
   | ClassConstructor
   | ArrayTypeDescriptor
+  | MapDescriptor
+  | SetDescriptor
+  | RecordDescriptor
   | UnknownTypeDescriptor
   | ResolvableType;
 
@@ -52,6 +88,9 @@ export type NonResolvableTypeDescriptor =
   | PrimitiveConstructor
   | ClassConstructor
   | ArrayTypeDescriptor
+  | MapDescriptor
+  | SetDescriptor
+  | RecordDescriptor
   | UnknownTypeDescriptor;
 
 export default TypeDescriptor;
@@ -85,6 +124,18 @@ export const Unknown: UnknownTypeDescriptor = { kind: "unknown" };
 
 export function arrayOf(of: TypeDescriptor): ArrayTypeDescriptor {
   return { kind: "array", of };
+}
+
+export function mapOf(k: TypeDescriptor, v: TypeDescriptor): MapDescriptor {
+  return { kind: "map", key: k, value: v };
+}
+
+export function setOf(of: TypeDescriptor): SetDescriptor {
+  return { kind: "set", of };
+}
+
+export function recordOf(of: TypeDescriptor): RecordDescriptor {
+  return { kind: "record", of };
 }
 
 export function dynamicType(resolver: TypeDescriptorResolver): ResolvableType {

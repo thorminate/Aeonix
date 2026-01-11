@@ -39,8 +39,8 @@ const v1 = defineField(baseFields, {
 });
 
 export default class Inventory extends PlayerSubclassBase<RawInventory> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
 
   capacity: number = 10;
   arr: Item[] = [];

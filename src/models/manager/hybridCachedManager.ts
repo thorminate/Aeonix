@@ -59,12 +59,20 @@ export default abstract class HybridCachedManager<
     const ctor = await this.loadRawClass(id);
     if (!ctor) return;
 
-    const instance = await this.onLoad(doc, ctor);
+    try {
+      const instance = await this.onLoad(doc, ctor);
+      await this.onAccess?.(instance);
+      this.set(instance);
+      return instance;
+    } catch (e) {
+      this.aeonix?.logger.error(
+        "HybridCachedManager",
+        "Instance failed to load properly",
+        { id, e }
+      );
+    }
 
-    await this.onAccess?.(instance);
-    this.set(instance);
-
-    return instance;
+    return;
   }
 
   async loadAll(noDuplicates = false): Promise<Holds[]> {
@@ -103,11 +111,18 @@ export default abstract class HybridCachedManager<
       const ctor = await this.loadRawClass(id);
       if (!ctor) continue;
 
-      const instance = await this.onLoad(doc, ctor);
-      await this.onAccess?.(instance);
-
-      this.set(instance);
-      total.push(instance);
+      try {
+        const instance = await this.onLoad(doc, ctor);
+        await this.onAccess?.(instance);
+        this.set(instance);
+        total.push(instance);
+      } catch (e) {
+        this.aeonix?.logger.error(
+          "HybridCachedManager",
+          "Instance failed to load properly",
+          { id, e }
+        );
+      }
     }
 
     this.markReady();

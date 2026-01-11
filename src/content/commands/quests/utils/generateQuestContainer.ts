@@ -30,7 +30,10 @@ export default function generateQuestContainer(quest: Quest) {
           .setCustomId("#close")
           .setLabel("Close")
           .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId("#abandon-" + quest.id)
+        new ButtonBuilder()
+          .setCustomId("#abandon-" + quest.id)
+          .setLabel("Abandon")
+          .setStyle(ButtonStyle.Danger)
       )
     );
 }

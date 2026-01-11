@@ -129,7 +129,11 @@ export default new Interaction({
                 return;
               }
 
-              quest.fail(p);
+              await quest.fail(p);
+
+              await buttonContext.update({
+                components: [generateQuestContainer(quest)],
+              });
             });
           }
         }

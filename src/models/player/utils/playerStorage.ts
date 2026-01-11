@@ -1,10 +1,10 @@
 import { modelOptions, prop, Severity } from "@typegoose/typegoose";
-import zlib from "zlib";
 import { encode } from "cbor2";
 import { SerializedData } from "#core/serializable.js";
+import { deflateSync } from "zlib";
 
 @modelOptions({
-  schemaOptions: { collection: "players" },
+  schemaOptions: { collection: "players", versionKey: false },
   options: { allowMixed: Severity.ALLOW },
 })
 export default class PlayerStorage {
@@ -18,6 +18,6 @@ export default class PlayerStorage {
   constructor({ _id, d, v }: SerializedData) {
     this._id = _id!;
     this.v = v!;
-    this.d = zlib.deflateSync(encode(d));
+    this.d = deflateSync(encode(d));
   }
 }

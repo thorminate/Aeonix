@@ -26,8 +26,9 @@ const v1 = defineField(baseFields, {
 export default abstract class Letter<
   Data extends Record<string, unknown> = Record<string, unknown>
 > extends Serializable<RawLetter> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
+  static override serializerRoot = Letter;
   static override requiredFields = [
     "sender",
     "subject",

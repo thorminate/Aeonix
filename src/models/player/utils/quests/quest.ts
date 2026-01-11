@@ -8,10 +8,11 @@ import Serializable, {
 import { AnyPlayerEvent } from "#player/utils/playerEvents.js";
 
 export interface RawQuest {
-  id: string; // id
-  type: string; // type
-  completed: boolean; // completed
-  data?: object | undefined; // data
+  id: string;
+  type: string;
+  completed: boolean;
+  isAbandoned: boolean;
+  data?: object | undefined;
 }
 
 const v1 = defineField(baseFields, {
@@ -19,15 +20,17 @@ const v1 = defineField(baseFields, {
     id: { id: 0, type: String },
     type: { id: 1, type: String },
     completed: { id: 2, type: Boolean },
-    data: { id: 3, type: Object },
+    isAbandoned: { id: 3, type: Boolean },
+    data: { id: 4, type: Object },
   },
 });
 
 export default abstract class Quest<
   Data extends Record<string, unknown> = Record<string, unknown>
 > extends Serializable<RawQuest> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
+  static override serializerRoot = Quest;
   static override requiredFields = [
     "type",
     "name",
@@ -44,6 +47,7 @@ export default abstract class Quest<
   abstract name: string;
   abstract description: string;
   completed = false;
+  isAbandoned = false;
   data: Data;
 
   constructor(data?: Data) {

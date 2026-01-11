@@ -9,7 +9,7 @@ import { inflateSync } from "zlib";
 import semibinaryToBuffer from "#player/utils/semibinaryToBuffer.js";
 import ConcreteConstructor from "#utils/concreteConstructor.js";
 import HybridCachedManager from "#manager/hybridCachedManager.js";
-import { SerializedData } from "#core/serializable.js";
+import { SerializableClass, SerializedData } from "#core/serializable.js";
 
 type Holds = Environment;
 
@@ -69,7 +69,11 @@ export default class EnvironmentManager extends HybridCachedManager<
     const inst = await (
       Environment as unknown as ConcreteConstructor<Environment> &
         typeof Environment
-    ).deserialize(uncompressed, undefined, ctor);
+    ).deserialize(
+      uncompressed,
+      undefined,
+      ctor as unknown as SerializableClass
+    );
 
     // Fetch all the data for quick use
     inst.overviewMessage = await inst.fetchLastOverviewMessage();

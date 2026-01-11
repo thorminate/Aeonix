@@ -13,6 +13,7 @@ import { SerializedData } from "#core/serializable.js";
 import { inflateSync } from "zlib";
 import PlayerEventsManager from "#player/utils/playerEvents.js";
 import LifecycleCachedManager from "#manager/lifecycleCachedManager.js";
+import Time from "#root/models/core/time.js";
 
 export type PlayerCreationResult =
   | "playerAlreadyExists"
@@ -100,6 +101,16 @@ export default class PlayerManager extends LifecycleCachedManager<
     inst.environment = await inst.fetchEnvironment();
     inst.environmentChannel = await inst.fetchEnvironmentChannel();
     inst.dmChannel = await inst.fetchDMChannel();
+
+    // Catch up on lost ticks
+    const lastTick = inst.lastTicked.clone();
+    const diff = inst.lastTicked.timeDiff(Time.now());
+
+    for (let i = 1; i <= diff; i++) {
+      lastTick.addTime(i);
+      aeonix.logger.debug("PlayerManager.onLoad", "Catching up ticks", lastTick);
+      await inst.emit("tick", lastTick);
+    }
 
     return inst;
   }

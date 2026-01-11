@@ -10,14 +10,10 @@ import PlayerEventDeclaration, {
 import Environment from "#environment/environment.js";
 import Item from "#item/item.js";
 import aeonix from "#root/index.js";
+import Time from "#root/models/core/time.js";
 
 export interface PlayerEvents {
-  tick: [
-    currentTime: number,
-    currentDay: number,
-    currentMonth: number,
-    currentYear: number
-  ];
+  tick: [time: Time];
   questAdded: [quest: Quest];
   questFulfilled: [quest: Quest];
   questFailed: [quest: Quest];

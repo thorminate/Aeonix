@@ -49,11 +49,12 @@ import PlayerEventsManager, {
 import Race from "#player/utils/race/race.js";
 import { ClassConstructor, dynamicType } from "#utils/typeDescriptor.js";
 import HumanRace from "#races/humanRace/humanRace.js";
+import Time from "../core/time.js";
 
 export interface RawPlayer {
   _id: string;
   lastAccessed: number;
-  lastTicked: number;
+  lastTicked: Time;
 
   inbox: RawInbox;
   inventory: RawInventory;
@@ -69,7 +70,7 @@ const v1 = defineField(baseFields, {
   add: {
     _id: { id: 0, type: String },
     lastAccessed: { id: 1, type: Number },
-    lastTicked: { id: 2, type: Number },
+    lastTicked: { id: 2, type: Time as ClassConstructor },
     inbox: { id: 3, type: Inbox as ConcreteConstructor<Inbox> },
     inventory: {
       id: 4,
@@ -113,12 +114,12 @@ const v1 = defineField(baseFields, {
 });
 
 export default class Player extends Serializable<RawPlayer> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
 
   _id: string;
   lastAccessed: number;
-  lastTicked: number;
+  lastTicked: Time;
 
   inbox: Inbox;
   inventory: Inventory;
@@ -150,7 +151,7 @@ export default class Player extends Serializable<RawPlayer> {
     this.quests.arr.forEach((quest) => quest.onEvent(event));
     this.statusEffects.arr.forEach((effect) => effect.onEvent(event));
     this.race.onEvent(event);
-    if (e === "tick") this.lastTicked = Date.now();
+    if (e === "tick") this.lastTicked = Time.now();
     return this._events.emit(e, ...args);
   }
 
@@ -385,7 +386,7 @@ export default class Player extends Serializable<RawPlayer> {
     this._events = new PlayerEventsManager(this);
 
     this.lastAccessed = Date.now();
-    this.lastTicked = 0;
+    this.lastTicked = new Time(0, 0, 0, 0);
   }
 
   static async create(

@@ -29,8 +29,8 @@ const v1 = defineField(baseFields, {
 });
 
 export default class Stats extends PlayerSubclassBase<RawStats> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
 
   level: number = 1;
   xp: number = 0;

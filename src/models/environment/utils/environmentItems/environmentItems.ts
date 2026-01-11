@@ -36,8 +36,8 @@ const v1 = defineField(baseFields, {
 });
 
 export default class EnvironmentItems extends Serializable<RawEnvironmentItems> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
 
   arr: Item[] = [];
   parent: Environment | null = null;

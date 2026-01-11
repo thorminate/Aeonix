@@ -15,8 +15,8 @@ const v1 = defineField(baseFields, {
 });
 
 export default class Persona extends PlayerSubclassBase<RawPersona> {
-  fields = [v1];
-  migrators = [];
+  static override fields = [v1];
+  static override migrators = [];
 
   name: string;
   avatar: string;

@@ -37,11 +37,19 @@ export abstract class ConstructableManager<T> extends FileBasedManager<T> {
     const raw = await this.loadRaw(id);
     if (!raw) return;
 
-    const instance = new raw();
-
-    await this.onAccess?.(instance);
-    this.set(instance);
-    return instance;
+    try {
+      const instance = new raw();
+      await this.onAccess?.(instance);
+      this.set(instance);
+      return instance;
+    } catch (e) {
+      this.aeonix?.logger.error(
+        "ConstructableManager",
+        "Instance failed to load properly",
+        { id, e }
+      );
+    }
+    return;
   }
 
   async loadAllRaw(): Promise<ConcreteConstructor<T>[]> {
@@ -72,12 +80,20 @@ export abstract class ConstructableManager<T> extends FileBasedManager<T> {
     const total: T[] = [];
 
     for (const rawClass of raw) {
-      const instance = new rawClass();
-      const id = this.getKey(instance);
-      if (id && (!noDuplicates || !this.exists(id))) {
-        await this.onAccess?.(instance);
-        this.set(instance);
-        total.push(instance);
+      try {
+        const instance = new rawClass();
+        const id = this.getKey(instance);
+        if (id && (!noDuplicates || !this.exists(id))) {
+          await this.onAccess?.(instance);
+          this.set(instance);
+          total.push(instance);
+        }
+      } catch (e) {
+        this.aeonix?.logger.error(
+          "ConstructableManager",
+          "Instance failed to load properly",
+          { rawClass, e }
+        );
       }
     }
 
